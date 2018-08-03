@@ -1,0 +1,26 @@
+﻿FUNCTION Main(args[])
+    VARIABLE result = Fibonacci(9)
+    System.Console.WriteLine("Fib 9 = " + result)
+    RETURN result
+END FUNCTION
+
+FUNCTION Fibonacci(n)
+    # To return the first Fibonacci number
+    IF n = 0 THEN
+        RETURN 0
+    END IF
+
+    VARIABLE a = 0
+    VARIABLE b = 1
+    VARIABLE c = 0
+    VARIABLE i = 2
+
+    DO WHILE i <= n
+        c = a + b
+        a = b
+        b = c
+        i = i + 1
+    LOOP
+
+    RETURN b
+END FUNCTION

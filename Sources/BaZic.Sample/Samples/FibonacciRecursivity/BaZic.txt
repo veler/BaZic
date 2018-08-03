@@ -1,0 +1,13 @@
+﻿FUNCTION Main(args[])
+    VARIABLE result = Fibonacci(9)
+    System.Console.WriteLine("Fib 9 = " + result)
+    RETURN result
+END FUNCTION
+
+FUNCTION Fibonacci(n)
+    IF n <= 1 THEN
+        RETURN n
+    ELSE
+        RETURN Fibonacci(n - 1) + Fibonacci(n - 2)
+    END IF
+END FUNCTION

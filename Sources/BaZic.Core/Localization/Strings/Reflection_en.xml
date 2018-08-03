@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Language>
+  <Reflection>
+    <EventReflectionAccess>Unable to access to the event '{eventName}' of the type '{targetObjectType}'.</EventReflectionAccess>
+    <FastInstantiateReflectionNoConstructorFound>There is no constructor of '{typeName}' that accept arguments of types '{argumentsTypes}'.</FastInstantiateReflectionNoConstructorFound>
+    <VariableNoArray>Unable to set an array to a non-array declared variable and vice-versa.</VariableNoArray>
+    <FastMethodReflection>
+      <BadInstanceType>The given instance is not of type '{expectedType}'.</BadInstanceType>
+      <MethodNotFound>The method '{methodName}' does not exist in the type '{typeName}'.</MethodNotFound>
+      <NoMethodMatchArguments>There is no method '{methodName}' in '{typeName}' that accept arguments of types '{argumentsTypes}'.</NoMethodMatchArguments>
+    </FastMethodReflection>
+    <FastPropertyReflection>
+      <NoAccess>Unable to access to the property '{propertyName}' of the type '{objectType}'.</NoAccess>
+      <NoGetter>The property '{propertyName}' does not have an accessible getter.</NoGetter>
+      <NoSetter>The property '{propertyName}' does not have an accessible setter.</NoSetter>
+    </FastPropertyReflection>
+  </Reflection>
+</Language>

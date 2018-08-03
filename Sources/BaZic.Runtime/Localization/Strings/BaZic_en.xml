@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Language>
+    <BaZic>
+        <AbstractSyntaxTree>
+            <InvalidNamespace>A namespace must only contains letters and numbers and must not start with a digit.</InvalidNamespace>
+            <InvalidIdentifier>An identifier must only contains letters and numbers and must not start with a digit.</InvalidIdentifier>
+        </AbstractSyntaxTree>
+        <Lexer>
+            <NoMatchImplemented>The current TokenDefinition might not have a Match method implementation.</NoMatchImplemented>
+            <UnableGenerateInvalidToken>Unable to generate an invalid token.</UnableGenerateInvalidToken>
+        </Lexer>
+        <Optimizer>
+            <UndeclaredName>The name '{methodName}' does not exist in the current context.</UndeclaredName>
+            <MethodNoMatchArguments>There is no method '{methodName}' that takes {argumentCount} argument(s).</MethodNoMatchArguments>
+        </Optimizer>
+        <Parser>
+            <ParserError>Line {line}; Column {column}; Level {level}; {message}</ParserError>
+            <BadFirstToken>The first token of the input code must be of type '{firstTokenType}'.</BadFirstToken>
+            <UnexpectedOrMissingCharacter>Syntax error. Unexpected or missing character.</UnexpectedOrMissingCharacter>
+            <UnexpectedToken>A '{tokenDescription}' is expected but a '{currentTokenDescription}' has been found.</UnexpectedToken>
+            <VariableNeverUsed>The variable '{variableName}' is declared but never used.</VariableNeverUsed>
+            <UnexpectedRightBracket>Unexpected right bracket or right parenthesis.</UnexpectedRightBracket>
+            <XamlParsingError>Parsing error in the XAML Code : {error}</XamlParsingError>
+            <XamlUnknownParsingError>Unable to parse the XAML code.</XamlUnknownParsingError>
+            <ForbiddenMember>In a BaZic program's root context, only variable declaration and methods are allowed.</ForbiddenMember>
+            <DuplicatedVariable>A variable or binding '{variableName}' is already declared line {line}.</DuplicatedVariable>
+            <DuplicatedParameter>A method argument '{parameterName}' is already declared line {line}.</DuplicatedParameter>
+            <DuplicatedMethod>A method '{methodName}' is already declared line {line}.</DuplicatedMethod>
+            <NoExpressionAnalyzer>There is no code analyzer for an expression of type '{typeName}'</NoExpressionAnalyzer>
+            <CannotAwait>Cannot await a synchronous method.</CannotAwait>
+            <NotArrayVariable>The variable '{variableName}' is not an array and cannot be use in this context.</NotArrayVariable>
+            <ArrayVariable>The variable '{variableName}' is an array and cannot be use in this context.</ArrayVariable>
+            <OneDimensionVariable>The BaZic declared variable or parameter '{variableName}' is an array of one dimension. Only one index must be specified here.</OneDimensionVariable>
+            <ArrayExpectedOnBothSide>The value is an array on a side and not on the other side of the assignment.</ArrayExpectedOnBothSide>
+            <ArrayAssign>Cannot assign an array to a non-array variable or parameter.</ArrayAssign>
+            <VariableDefaultValue>The default value of a global variable can only be made of primitive values, not any reference, instanciation or invocation.</VariableDefaultValue>
+            <NoXamlBinding>Unable to define a BIND statement when there is no XAML code or that the XAML code is incorrect.</NoXamlBinding>
+            <XamlControlNotFoundBinding>Unable to find the control named '{controlName}' in the user interface to make this binding.</XamlControlNotFoundBinding>
+            <NotAccessibleProperty>The binding '{variableName}' is invalid because the property '{controlName}.{propertyName}' does not have an accessible getter and a setter.</NotAccessibleProperty>
+            <NoXamlEvent>Unable to define a EVENT function when there is no XAML code or that the XAML code is incorrect.</NoXamlEvent>
+            <XamlControlNotFoundEvent>Unable to find the control named '{controlName}' in the user interface to make this event function.</XamlControlNotFoundEvent>
+            <NotAccessibleEvent>The event function '{controlName}_{eventName}' is invalid because the event '{controlName}.{eventName}' does not exist or is not accessible.</NotAccessibleEvent>
+            <Expressions>
+                <CannotStartWithOperator>An expression cannot starts with an operator.</CannotStartWithOperator>
+                <NotValid>A valid expression is expected.</NotValid>
+                <EndTokenExpected>Invalid expression. '{tokens}' is expected.</EndTokenExpected>
+                <AsyncMethodExpected>Asynchronous method invocation expected.</AsyncMethodExpected>
+                <UnexpectedIndexer>Cannot apply indexing with '[]' to this expression.</UnexpectedIndexer>
+                <IndexerExpected>Array index expected in the '[]'.</IndexerExpected>
+                <IllegalPropertyAccess>Cannot access to a property in this expression.</IllegalPropertyAccess>
+                <MethodNameExpected>Method name expected.</MethodNameExpected>
+                <IllegalExceptionKeyword>The 'EXCEPTION' keyword can only be use in a CATCH block.</IllegalExceptionKeyword>
+                <TypeExpected>Type expected.</TypeExpected>
+                <InstantiateExpectParenths>A new expression requires () after type name.</InstantiateExpectParenths>
+                <ExpressionOnOneLine>Unexpected end of expression. An expression must be wrote on a unique line.</ExpressionOnOneLine>
+                <NotPrimitive>It looks like the current value is not primitive.</NotPrimitive>
+                <InvalidNamespaceOrVariable>The name '{name}' does not look like a valid namespace or variable.</InvalidNamespaceOrVariable>
+                <ReferenceExpected>A reference to an object is expected.</ReferenceExpected>
+                <MemberAccessExpected>A member access is expected.</MemberAccessExpected>
+            </Expressions>
+            <Statements>
+                <StatementExpected>A statement is expected.</StatementExpected>
+                <InvalidMethodDeclaration>A method cannot be declared in this context.</InvalidMethodDeclaration>
+                <InvalidStatement>Invalid statement. Are you missing a keyword?</InvalidStatement>
+                <InvalidBindingDeclaration>A binding cannot be declared in this context.</InvalidBindingDeclaration>
+                <DefaultValueArrayExpected>The variable '{variableName}' is declared as an array. The default value is not an array.</DefaultValueArrayExpected>
+                <DefaultValueNoArrayExpected>The variable '{variableName}' is not declared as an array but the default value is an array.</DefaultValueNoArrayExpected>
+                <AssignOrLineExpected>Invalid statement. Assignment or new line expected.</AssignOrLineExpected>
+                <LineExpected>Invalid statement. New line expected.</LineExpected>
+                <InvalidBreak>The 'BREAK' statement can only be use in a DO LOOP block.</InvalidBreak>
+                <NotAssignable>Invalid statement. The left expression is not assignable.</NotAssignable>
+                <AssignOrCallExpected>Only assignment and call can be use as a statement here.</AssignOrCallExpected>
+                <AsyncEvent>An event function cannot be marked as asynchronous.</AsyncEvent>
+                <EventNoParameter>An event function must not have parameter.</EventNoParameter>
+                <AsyncEntryPoint>The program's entry point can't be asynchronous.</AsyncEntryPoint>
+                <UniqueArgumentEntryPoint>The program's entry point must have one and only one argument.</UniqueArgumentEntryPoint>
+                <EntryPointArgumentArrayExpected>The program's entry point's argument must be an array.</EntryPointArgumentArrayExpected>
+            </Statements>
+        </Parser>
+        <TokenIdentificationHelper>
+            <RestrictedToken>The identifier '{tokenValue}' is a private BaZic keyword and cannot be use as an identifier.</RestrictedToken>
+            <IdentifierExpected>An identifier is expected.</IdentifierExpected>
+            <InvalidIdentifier>An identifier can only contains alphanumeric characters.</InvalidIdentifier>
+            <InvalidBindingOrEventName>In a BIND or EVENT FUNCTION statement, the identifier must strickly have the syntax 'ControlName_PropertyName'.</InvalidBindingOrEventName>
+        </TokenIdentificationHelper>
+        <BaZicCodeGenerator>
+            <NoGeneratorForExpressionImplemented>There is no code generator for an expression of type '{expressionName}'.</NoGeneratorForExpressionImplemented>
+            <NoGeneratorForStatementImplemented>There is no code generator for a statement of type '{statementName}'.</NoGeneratorForStatementImplemented>
+            <NoGeneratorForOperatorImplemented>There is no code generator for the operator '{operatorName}'.</NoGeneratorForOperatorImplemented>
+        </BaZicCodeGenerator>
+        <Runtime>
+            <Debugger>
+                <Exception>
+                    <InternalException>It's not your fault, it's ours ! ... {message} ... Retry.</InternalException>
+                    <MethodNotAwaitableException>Unable to await the method '{methodName}' because it is not marked as asynchronous.</MethodNotAwaitableException>
+                    <MissingEntryPointMethodException>The program entry point method is missing or has not been found.</MissingEntryPointMethodException>
+                    <SeveralEntryPointMethodException>A program can only contains one entry point method.</SeveralEntryPointMethodException>
+                    <StateException>The current state of the BaZic interpreter is not correct for this operation.</StateException>
+                    <UnexpectedException>Unexpected and unmanaged error has been detected : {message}</UnexpectedException>
+                    <VariableNotFoundException>The variable '{variableName}' does not exist or is not accessible.</VariableNotFoundException>
+                </Exception>
+                <ValueInfo>
+                    <Null>{Null}</Null>
+                    <ArrayInfo>{typeName} (length: {Length})</ArrayInfo>
+                </ValueInfo>
+            </Debugger>
+            <Interpreters>
+                <Interpreter>
+                    <DuplicatedVariableId>Two variables with the same 'unique' ID ({id}) exists in the program. This is incoherent.</DuplicatedVariableId>
+                    <ForbiddenBinding>Unable to declare a binding in this context.</ForbiddenBinding>
+                    <UiControlNotFound>Unable to find the control named '{controlName}'.</UiControlNotFound>
+                    <NotArrayExpected>Unable to set the variable '{variableName}'. The value must not be an array of values.</NotArrayExpected>
+                    <ArrayExpected>Unable to set the variable '{variableName}'. The value must be an array of values.</ArrayExpected>
+                    <VariableDeclared>Variable '{variableName}' declared. Default value : {value}</VariableDeclared>
+                    <VariableSetted>Variable '{variableName}' value set to : {value}</VariableSetted>
+                    <ParentMethodNotFound>The interpreter needs to access to the callee method but cannot find it.</ParentMethodNotFound>
+                    <ExecutingExpression>Executing an expression of type '{expressionName}'.</ExecutingExpression>
+                    <InterpreterNotFound>Unable to find an interpreter for this expression : '{expressionName}'.</InterpreterNotFound>
+                    <ExpressionReturnedValue>The expression returned the value '{expressionResult}' ({valueInfo}).</ExpressionReturnedValue>
+                </Interpreter>
+                <BlockInterpreter>
+                    <GoTo>Jumping to the label '{labelName}'.</GoTo>
+                    <LabelNotFound>Unable to find a parent block interpreter and/or unable the label '{labelName}'.</LabelNotFound>
+                    <DeclaringLabels>Registering labels.</DeclaringLabels>
+                    <ExecutingStatement>Executing a statement of type '{statementName}'.</ExecutingStatement>
+                    <BreakpointIntercepted>A Breakpoint has been intercepted.</BreakpointIntercepted>
+                    <InterpreterNotFound>Unable to find an interpreter for this statement : '{statementName}'.</InterpreterNotFound>
+                    <ExitingBlock>A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.</ExitingBlock>
+                </BlockInterpreter>
+                <MethodInterpreter>
+                    <Preparing>Preparing to invoke the method '{methodName}'.</Preparing>
+                    <BadArgumentCount>There is a method '{methodName}', but it does not have {argumentsCount} argument(s).</BadArgumentCount>
+                    <ExecutingArguments>Executing the argument values of the method.</ExecutingArguments>
+                    <Await>Invoking and await the asynchronous method '{methodName}'.</Await>
+                    <Async>Invoking (and don't await) the asynchronous method '{methodName}'.</Async>
+                    <Sync>Invoking the synchronous method '{methodName}'.</Sync>
+                    <StackOverflow>You called too many (more than {stackOverflowLimit}) methods in the program execution. It looks like an infinite loop recursive call which is not allowed.</StackOverflow>
+                    <EndExecution>End of the execution of the method '{methodName}'. Returned value : {returnedValue} ({valueInfo})</EndExecution>
+                </MethodInterpreter>
+                <ProgramInterpreter>
+                    <DeclaringGlobalVariable>Declaring global variables.</DeclaringGlobalVariable>
+                    <EntryPointDetected>Program's entry point detected.</EntryPointDetected>
+                    <LoadingUi>Loading user interface.</LoadingUi>
+                    <DeclaringEvents>Registering events.</DeclaringEvents>
+                    <EventRaised>An event has been raised from an interaction with the user interface.</EventRaised>
+                    <DeclaringBindings>Declaring bindings.</DeclaringBindings>
+                    <ShowUi>Showing user interface.</ShowUi>
+                    <CloseUi>Hidding/closing user interface.</CloseUi>
+                </ProgramInterpreter>
+                <Expressions>
+                    <ArrayIndexerInterpreter>
+                        <NullValue>Unable to get a value from null.</NullValue>
+                        <IndexerForbidden>Cannot apply indexing with [] to an expression of type '{typeName}'. An array is expected.</IndexerForbidden>
+                        <OneIndexerAllowed>In BaZic, only one index is allowed to be specified.</OneIndexerAllowed>
+                        <CastToNumber>Unable to cast the index value to a number.</CastToNumber>
+                        <OutOfRange>Unable to get the item number '{indexValue}' because the limit of the array is '{length}'.</OutOfRange>
+                        <IndexMustNotBeNull>The index cannot be null.</IndexMustNotBeNull>
+                        <KeyDoesNotExist>The item '{key}' does not exist in this array.</KeyDoesNotExist>
+                        <UnsupportedArray>Unable to get the item at the specified index. Unsupported array of type '{arrayType}'.</UnsupportedArray>
+                    </ArrayIndexerInterpreter>
+                    <BinaryOperatorInterpreter>
+                        <PerformOperation>Doing an operation '{operator}'.</PerformOperation>
+                        <DivideByZero>Attempted to divide by zero.</DivideByZero>
+                        <OperatorNotImplemented>The operator '{operator}' is not implemented by the '{typeName}' class.</OperatorNotImplemented>
+                    </BinaryOperatorInterpreter>
+                    <ExceptionInterpreter>
+                        <BlockExpected>A block interpreter is expected.</BlockExpected>
+                        <TryCatchExpected>The use of the 'EXCEPTION' keyword is exclusively possible in a CATCH block.</TryCatchExpected>
+                    </ExceptionInterpreter>
+                    <InstantiateInterpreter>
+                        <CreateTypeNull>The '{createTypePropertyName}' property of a '{instantiateExpressionName}' cannot be null.</CreateTypeNull>
+                        <CreateInstance>Creating a new instance of '{typeName}'</CreateInstance>
+                    </InstantiateInterpreter>
+                    <InvokeCoreMethodInterpreter>
+                        <TargetObjectNull>Unable to access to a method of {Null}.</TargetObjectNull>
+                        <UndefinedMethodName>The method name is undefined.</UndefinedMethodName>
+                    </InvokeCoreMethodInterpreter>
+                    <InvokeMethodInterpreter>
+                        <MethodNotFound>Unable to find a method called '{methodName}'.</MethodNotFound>
+                        <SeveralMethods>Several methods named '{methodName}' exists. There must be only one.</SeveralMethods>
+                    </InvokeMethodInterpreter>
+                    <NotOperatorInterpreter>
+                        <ExpressionNull>The expression associated with the {notOperatorTypeName} cannot be null.</ExpressionNull>
+                        <ValueNull>Cannot perform a NOT operator on a {Null} value.</ValueNull>
+                        <BooleanExpected>Cannot perform a NOT operator on a value of type '{expressionType}'. A boolean value is expected.</BooleanExpected>
+                    </NotOperatorInterpreter>
+                    <PropertyReferenceInterpreter>
+                        <GettingProperty>Getting the property '{property}'.</GettingProperty>
+                        <NullValue>Unable to access to a property of {Null}.</NullValue>
+                        <UndefinedName>The property name is undefined.</UndefinedName>
+                    </PropertyReferenceInterpreter>
+                </Expressions>
+                <Statements>
+                    <AssignInterpreter>
+                        <Assign>Assign '{left}' to '{right}'.</Assign>
+                        <NowEqualsTo>'{left}' is now equal to {rightValue}</NowEqualsTo>
+                        <NotAssignable>The left expression is not assignable.</NotAssignable>
+                        <NoInterpreter>Unable to find an interpreter for an expression of type '{leftExpressionName}'.</NoInterpreter>
+                        <TargetObjectNull>Unable to set a value from {Null}.</TargetObjectNull>
+                        <OutOfRange>Unable to get the item number '{indexValue}' because the limit of the array is '{length}'.</OutOfRange>
+                        <UnsupportedArray>Unable to set the item at the specified index. Unsupported array of type '{arrayType}'.</UnsupportedArray>
+                    </AssignInterpreter>
+                    <BreakInterpreter>
+                        <Illegal>Illegal position of a 'BREAK' statement. A 'BREAK' statement must be placed in an iteration (DO, LOOP).</Illegal>
+                    </BreakInterpreter>
+                    <ConditionInterpreter>
+                        <ExecutingCondition>Executing the condition '{condition}'.</ExecutingCondition>
+                        <EndExecutingCondition>End of the execution of the condition '{condition}'.</EndExecutingCondition>
+                        <MissingCondition>A conditional expression is missing.</MissingCondition>
+                        <CastToBool>Unable to cast this number to a boolean.</CastToBool>
+                        <BooleanExpected>Unable to perform a condition statement without a boolean value as conditional expression result.</BooleanExpected>
+                    </ConditionInterpreter>
+                    <ReturnInterpreter>
+                        <Return>Return : {valueString}</Return>
+                    </ReturnInterpreter>
+                    <ThrowInterpreter>
+                        <ExceptionExpected>The expression passed to a 'THROW' statement must derived from '{exceptionTypeName}' and cannot be null.</ExceptionExpected>
+                    </ThrowInterpreter>
+                    <TryCatchInterpreter>
+                        <ExceptionCaught>An exception of type '{exceptionTypeName}' has been thrown and catch into a Try Catch statement.</ExceptionCaught>
+                    </TryCatchInterpreter>
+                </Statements>
+            </Interpreters>
+            <Memory>
+                <EventReflectionAccess>Unable to access to the event '{eventName}' of the type '{targetObjectType}'.</EventReflectionAccess>
+                <FastInstantiateReflectionNoConstructorFound>There is no constructor of '{typeName}' that accept arguments of types '{argumentsTypes}'.</FastInstantiateReflectionNoConstructorFound>
+                <VariableNoArray>Unable to set an array to a non-array declared variable and vice-versa.</VariableNoArray>
+                <FastMethodReflection>
+                    <BadInstanceType>The given instance is not of type '{expectedType}'.</BadInstanceType>
+                    <MethodNotFound>The method '{methodName}' does not exist in the type '{typeName}'.</MethodNotFound>
+                    <NoMethodMatchArguments>There is no method '{methodName}' in '{typeName}' that accept arguments of types '{argumentsTypes}'.</NoMethodMatchArguments>
+                </FastMethodReflection>
+                <FastPropertyReflection>
+                    <NoAccess>Unable to access to the property '{propertyName}' of the type '{objectType}'.</NoAccess>
+                    <NoGetter>The property '{propertyName}' does not have an accessible getter.</NoGetter>
+                    <NoSetter>The property '{propertyName}' does not have an accessible setter.</NoSetter>
+                </FastPropertyReflection>
+            </Memory>
+            <BaZicInterpreter>
+                <CannotRunOptimizedProgramInRelease>Unable to run a optimized BaZic program in Release mode.</CannotRunOptimizedProgramInRelease>
+                <StopRequested>The user requests to stop the interpreter as soon as possible.</StopRequested>
+                <OneStateMinimum>At least one state is expected.</OneStateMinimum>
+                <AssemblyLoaded>Reference assembly '{assemblyPath}' loaded in the application domain.</AssemblyLoaded>
+                <AssemblyFailedLoad>Unable to load the required assembly '{assemblyPath}'.</AssemblyFailedLoad>
+            </BaZicInterpreter>
+            <BaZicInterpreterStateChangeEventArgs>
+                <StoppedWithErrorForbidden>You might want to stop the algorithm interpreter by throwing an error. Please do not use this constructor.</StoppedWithErrorForbidden>
+                <Error>[Error] {message}</Error>
+                <Log>[Log] {log}</Log>
+                <State>[State] {state}</State>
+            </BaZicInterpreterStateChangeEventArgs>
+            <CompiledProgramRunner>
+                <GenerationCSharp>Generating and parsing CSharp code.</GenerationCSharp>
+                <Compiling>Compiling assembly.</Compiling>
+                <BuiltSucceed>Compilation succeed. Loading the generated assembly.</BuiltSucceed>
+                <RunningProgram>Running the program.</RunningProgram>
+                <ExecutionEnded>The program ended.</ExecutionEnded>
+                <BuildFaild>Compilation failed : {errorNumber}: {errorDescription}</BuildFaild>
+            </CompiledProgramRunner>
+        </Runtime>
+    </BaZic>
+</Language>

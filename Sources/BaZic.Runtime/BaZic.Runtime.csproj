@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BF5A111D-8643-40E7-810F-80776BF00B43}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BaZic.Runtime</RootNamespace>
+    <AssemblyName>BaZic.Runtime</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <OverwriteReadOnlyOutputFiles>True</OverwriteReadOnlyOutputFiles>
+    <TransformOnBuild>True</TransformOnBuild>
+    <TransformOutOfDateOnly>False</TransformOutOfDateOnly>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis, Version=2.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.Common.2.7.0\lib\netstandard1.3\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=2.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.CodeAnalysis.CSharp.2.7.0\lib\netstandard1.3\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.AppContext, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.AppContext.4.3.0\lib\net463\System.AppContext.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Console, Version=4.0.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Console.4.3.1\lib\net46\System.Console.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.FileVersionInfo, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Diagnostics.FileVersionInfo.4.3.0\lib\net46\System.Diagnostics.FileVersionInfo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.StackTrace, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Diagnostics.StackTrace.4.3.0\lib\net46\System.Diagnostics.StackTrace.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.FileSystem, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.FileSystem.4.3.0\lib\net46\System.IO.FileSystem.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Linq, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Linq.4.3.0\lib\net463\System.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Linq.Expressions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Linq.Expressions.4.3.0\lib\net463\System.Linq.Expressions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Reflection, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reflection.4.3.0\lib\net462\System.Reflection.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata, Version=1.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Reflection.Metadata.1.4.2\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.Extensions.4.3.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.InteropServices.4.3.0\lib\net463\System.Runtime.InteropServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Encoding.CodePages, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Text.Encoding.CodePages.4.3.0\lib\net46\System.Text.Encoding.CodePages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Thread, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Threading.Thread.4.3.0\lib\net46\System.Threading.Thread.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Xml.ReaderWriter.4.3.1\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.XmlDocument, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Xml.XmlDocument.4.3.0\lib\net46\System.Xml.XmlDocument.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.XPath, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Xml.XPath.4.3.0\lib\net46\System.Xml.XPath.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.XPath.XDocument, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Xml.XPath.XDocument.4.3.0\lib\net46\System.Xml.XPath.XDocument.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ArrayCreationExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ArrayIndexerExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\AssignStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BaZicProgram.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BaZicUiProgram.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BinaryOperatorExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BinaryOperatorType.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BindingDeclaration.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BreakpointStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\BreakStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ClassReferenceExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\CommentStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ConditionStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\EntryPointMethod.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\Event.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ExceptionReferenceExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\Expression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ExpressionStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\GoToLabelStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\IAssignable.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\InstantiateExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\InvokeCoreMethodExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\InvokeMethodExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\IterationStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\LabelConditionStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\LabelDeclaration.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\MemberIdentifier.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\MethodDeclaration.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\NodeObject.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\NotOperatorExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ParameterDeclaration.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\PrimitiveExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\PropertyReferenceExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ReferenceExpression.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ReturnStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\Statement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ThrowStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\TryCatchStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\VariableDeclaration.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\VariableReferenceExpression.cs" />
+    <Compile Include="BaZic\Code\BaZicCodeGenerator.cs" />
+    <Compile Include="BaZic\Code\BaZicParserException.cs" />
+    <Compile Include="BaZic\Code\CSharpCodeGenerator.cs" />
+    <Compile Include="BaZic\Code\Lexer\BaZicLexer.cs" />
+    <Compile Include="BaZic\Code\Lexer\SymbolHelper.cs" />
+    <Compile Include="BaZic\Code\Lexer\Token.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\CommentTokenDefinition.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\DoubleTokenDefinition.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\IdentifierTokenDefinition.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\IntegerTokenDefinition.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\StringTokenDefinition.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\TokenDefinition.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\TokenMatch.cs" />
+    <Compile Include="BaZic\Code\Lexer\Tokens\TokenType.cs" />
+    <Compile Include="BaZic\Code\Optimizer\BaZicOptimizer.cs" />
+    <Compile Include="BaZic\Code\Optimizer\MethodInformation.cs" />
+    <Compile Include="BaZic\Code\Optimizer\UniqueShortNameGenerator.cs" />
+    <Compile Include="BaZic\Code\Parser\BaZicParser.cs" />
+    <Compile Include="BaZic\Code\Parser\BaZicParserExpression.cs" />
+    <Compile Include="BaZic\Code\Parser\BaZicParserStatement.cs" />
+    <Compile Include="BaZic\Code\Parser\ExpressionGroupSeparator.cs" />
+    <Compile Include="BaZic\Code\Parser\ParserResult.cs" />
+    <Compile Include="BaZic\Code\Parser\TokenIdentificationHelper.cs" />
+    <Compile Include="BaZic\Code\Parser\VariableStatistics.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreterCore.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreterState.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangedBridge.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangeEventArgs.cs" />
+    <Compile Include="BaZic\Runtime\CompiledProgramRunner.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\BlockState.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Call.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\DebugInfo.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Error.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\BadArgumentException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\BadTypeException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\BaZicInterpreterException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\DivideByZeroException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\IncoherentStatementException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\InternalException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\LoadAssemblyException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\MethodNotAwaitableException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\MethodNotFoundException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\MissingEntryPointMethodException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\NotAssignableException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\NullValueException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\OutOfRangeException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\SeveralEntryPointMethodException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\StackOverflowException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\StateException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\UiException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\UnexpectedException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\Exceptions\VariableNotFoundException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\ValueInfo.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\BlockInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\ArrayCreationInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\ArrayIndexerInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\BinaryOperatorInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\ClassReferenceInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\ExceptionInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\ExpressionInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\InstanciateInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\InvokeCoreMethodInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\InvokeMethodInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\NotOperatorInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\PrimitiveInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\PropertyReferenceInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Expression\VariableReferenceInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Interpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\MethodInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\ProgramInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\AssignInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\BreakInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\ConditionInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\ExpressionStatementInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\IterationInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\LabelConditionInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\ReturnInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\StatementInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\ThrowInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\TryCatchInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Interpreter\Statement\VariableDeclarationInterpreter.cs" />
+    <Compile Include="BaZic\Runtime\Memory\Binding.cs" />
+    <Compile Include="BaZic\Runtime\Memory\Variable.cs" />
+    <Content Include="Properties\AssemblyInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AssemblyInfo.codegen.cs</LastGenOutput>
+    </Content>
+    <Compile Include="Localization\L.codegen.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>L.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.codegen.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssemblyInfo.tt</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Resources\CSharpCodeGeneratorHelper.cs" />
+    <EmbeddedResource Include="Resources\CSharpCodeGeneratorUiHelper.cs" />
+    <EmbeddedResource Include="Resources\ObservableDictionary.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Localization\L.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>L.codegen.cs</LastGenOutput>
+    </Content>
+    <EmbeddedResource Include="Localization\Strings\BaZic_en.xml" />
+    <EmbeddedResource Include="Localization\Strings\BaZic_fr.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BaZic.Core\BaZic.Core.csproj">
+      <Project>{7ceaf4bf-7ffa-4e0d-8811-f4e6e13cce99}</Project>
+      <Name>BaZic.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />
+</Project>

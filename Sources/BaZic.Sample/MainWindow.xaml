@@ -1,0 +1,52 @@
+﻿<Window x:Class="BaZic.Sample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BaZic.Sample"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="1024">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Language="True">
+                <ToolBarTray DockPanel.Dock="Top">
+                    <ToolBar>
+                        <Button x:Name="LoadRandomProgramButton" Content="Load a random program" Click="LoadRandomProgramButton_Click"/>
+                    </ToolBar>
+                </ToolBarTray>
+                <TextBlock DockPanel.Dock="Top" Text="BaZic code :"/>
+                <TextBox x:Name="BaZicCodeTextBox" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
+            </DockPanel>
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" />
+            <DockPanel Grid.Row="2" Language="True">
+                <TextBlock DockPanel.Dock="Top" Text="Optional XAML code :"/>
+                <TextBox x:Name="XamlCodeTextBox" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
+            </DockPanel>
+        </Grid>
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+        <DockPanel Grid.Column="2" LastChildFill="True">
+            <ToolBarTray DockPanel.Dock="Top">
+                <ToolBar>
+                    <Button x:Name="RunProgramButton" Content="Run the program" Click="RunProgramButton_Click"/>
+                    <CheckBox x:Name="OptimizeCheckBox" Content="Optimize the AST"/>
+                    <Button x:Name="PauseButton" Content="Pause" Visibility="Collapsed" Click="PauseButton_Click"/>
+                    <Button x:Name="StopButton" Content="Stop" Visibility="Collapsed" Click="StopButton_Click"/>
+                    <Button x:Name="ResumeButton" Content="Resume" Visibility="Collapsed" Click="ResumeButton_Click"/>
+                    <Button x:Name="NextStepButton" Content="Next step" Visibility="Collapsed" Click="NextStepButton_Click"/>
+                </ToolBar>
+            </ToolBarTray>
+            <TextBlock DockPanel.Dock="Top" Text="Logs (syntax error + execution logs) :"/>
+            <TextBox IsReadOnly="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Text="{Binding Logs, Mode=OneWay, IsAsync=True}"/>
+        </DockPanel>
+    </Grid>
+</Window>

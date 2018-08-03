@@ -1,0 +1,10 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" Inherits="LocalizationGenerator.LocalizationGenerator" #>
+<#@ output extension=".codegen.cs" #>
+
+<#@ assembly name="System.Core" #>
+<#@ assembly Name="System.Configuration.dll" #>
+<#@ assembly Name="..\..\Tools\LocalizationGenerator\bin\LocalizationGenerator.dll" #>
+
+<#
+    Generate(Host.ResolvePath("Strings"), "Localization.Strings", "BaZic.Core.Localization", "L");
+#>
