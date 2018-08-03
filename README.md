@@ -7,8 +7,8 @@ Made entirely in C#, this was initially a project designed to learn how to make 
 
 ## BaZic Language
 
-* [Learn about the BaZic syntax](/Docs/BaZic.md)
-* [BaZic interpreter](/BaZic_Interpreter.md)
+* [Learn about the BaZic language](/Docs/BaZic.md)
+* [How to use the BaZic interpreter](/Docs/BaZic_Interpreter.md)
 
 ```
 VARIABLE initialValue = 100

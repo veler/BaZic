@@ -32,6 +32,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{01B8ADFA-2
 		Docs\Architecture.png = Docs\Architecture.png
 		Docs\BaZic.md = Docs\BaZic.md
 		Docs\BaZic_Interpreter.md = Docs\BaZic_Interpreter.md
+		Docs\Lexer.png = Docs\Lexer.png
+		Docs\Optimizer.png = Docs\Optimizer.png
+		Docs\Parser.png = Docs\Parser.png
 		Docs\Technical_Overview.md = Docs\Technical_Overview.md
 	EndProjectSection
 EndProject
