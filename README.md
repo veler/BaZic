@@ -47,6 +47,8 @@ Note : BaZic is `not` compatible with Windows 8, 8.1 and 10 for ARM and is not c
 
 Simply run `BaZic.Sample.exe`.
 
+![Play](/Docs/Play.png)
+
 # Build and Test
 
 ## Setup development environment
