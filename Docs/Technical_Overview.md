@@ -29,7 +29,6 @@ A token is an object in memory that contains several informations :
 ## Parser
 
 The parser will then use the list of token to find some logical series to determine what is there exactly in the code.
-
 Let's take the variable declaration statement as an example. Here is a simplified grammar for the example that match a variable declaration :
 
 ```
