@@ -16,18 +16,18 @@ In this mode, the BaZic code is converted to C# (CSharp) code with a set of addi
 
 ## Using the BaZic interpreter
 
-The `AutoZask.Core` and `AutoZask.Runtime` assemblies are required.
+The `BaZic.Core` and `BaZic.Runtime` assemblies are required.
 
 ### Parse a BaZic code
 
 ```csharp
 void Run(string baZicCode)
 {
-    AutoZask.Runtime.BaZic.Code.Parser.BaZicParser parser = new AutoZask.Runtime.BaZic.Code.Parser.BaZicParser();
-    AutoZask.Runtime.BaZic.Code.Parser.ParserResult result = parser.Parse(baZicCode, optimize: false);
+    BaZic.Runtime.BaZic.Code.Parser.BaZicParser parser = new BaZic.Runtime.BaZic.Code.Parser.BaZicParser();
+    BaZic.Runtime.BaZic.Code.Parser.ParserResult result = parser.Parse(baZicCode, optimize: false);
 
     // Retrieves the syntax tree.
-    AutoZask.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program = result.Program;
+    BaZic.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program = result.Program;
 
     if (result.Issues.InnerExceptions.Count > 0)
     {
@@ -39,9 +39,9 @@ void Run(string baZicCode)
 ### Generate a BaZic code
 
 ```csharp
-void Run(AutoZask.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program)
+void Run(BaZic.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program)
 {
-    AutoZask.Runtime.BaZic.Code.BaZicCodeGenerator codeGenerator = new AutoZask.Runtime.BaZic.Code.BaZicCodeGenerator();
+    BaZic.Runtime.BaZic.Code.BaZicCodeGenerator codeGenerator = new BaZic.Runtime.BaZic.Code.BaZicCodeGenerator();
     string generatedCode = codeGenerator.Generate(program);
 }
 ```
@@ -49,9 +49,9 @@ void Run(AutoZask.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program)
 ### Interpret a BaZic code
 
 ```csharp
-async void Run(AutoZask.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program)
+async void Run(BaZic.Runtime.BaZic.Code.AbstractSyntaxTree.BaZicProgram program)
 {
-    using (AutoZask.Runtime.BaZic.Runtime.BaZicInterpreter interpreter = new AutoZask.Runtime.BaZic.Runtime.BaZicInterpreter(program))
+    using (BaZic.Runtime.BaZic.Runtime.BaZicInterpreter interpreter = new BaZic.Runtime.BaZic.Runtime.BaZicInterpreter(program))
     {
         await interpreter.StartDebugAsync(verbose: true, args: null);
 
