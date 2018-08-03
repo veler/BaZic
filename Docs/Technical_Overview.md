@@ -42,6 +42,8 @@ What tell us this grammar is exactly what the parser is doing :
 * Optionally, if it is followed by a `=` symbol and an `Expression`
 * Then the default value of the variable is the `Expression`
 
+![Parser](/Docs/Parser.png)
+
 ## Optimizer
 
 The optimizer is here to solve several problems.
