@@ -108,6 +108,7 @@ namespace LocalizationGenerator
             WriteLine($"using System.Windows;");
             WriteLine($"using System.Xml;");
             WriteLine($"");
+            WriteLine("#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member");
             WriteLine($"namespace {rootNamespace}");
             WriteLine($"{{");
             IncreaseIndent();
@@ -172,6 +173,7 @@ namespace LocalizationGenerator
 
             WriteLine(languageHelper);
             WriteLine($"}}");
+            WriteLine("#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member");
         }
 
         private void WriteClassesOrProperties(List<LangString> langStrings, string parentClassName)

@@ -859,7 +859,7 @@ namespace BaZic.Runtime.BaZic.Code
         /// <summary>
         /// Generates the code for a <see cref="ParameterDeclaration"/>.
         /// </summary>
-        /// <param name="method">The parameter declaration</param>
+        /// <param name="parameter">The parameter declaration</param>
         /// <returns>A BaZic code</returns>
         private string GenerateParameterDeclaration(ParameterDeclaration parameter)
         {

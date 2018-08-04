@@ -63,6 +63,7 @@ namespace BaZic.Core.ComponentModel.Reflection
         /// Creates a delegate designed to call a method that takes the specified list of arguments type.
         /// </summary>
         /// <param name="eventInfo">The information on the event.</param>
+        /// <param name="action">The action to run.</param>
         /// <returns>Returns a delegate or throw an error.</returns>
         private Delegate GetEventMethodDelegate(EventInfo eventInfo, Action action)
         {

@@ -66,6 +66,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         /// <summary>
         /// Execute the condition
         /// </summary>
+        /// <param name="baZicInterpreter">The <see cref="BaZicInterpreterCore"/>.</param>
         /// <param name="parentInterpreter">The parent block interpreter</param>
         /// <param name="condition">The condition expression</param>
         /// <returns>Return true, false, or null in case of error</returns>

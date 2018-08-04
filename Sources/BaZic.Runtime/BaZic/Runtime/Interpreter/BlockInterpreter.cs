@@ -46,7 +46,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// <param name="baZicInterpreter">The main interpreter.</param>
         /// <param name="parentInterpreter">The parent interpreter.</param>
         /// <param name="isInIteration">Defines whether the current block of statement is executed inside of a iteration statement.</param>
-        /// <param name="isInCatch">Defines whether the current block of statement is executed inside of a Catch statement.</param>
+        /// <param name="caughtException">Defines the caught exception.</param>
         /// <param name="statements">The list of statements to interpret.</param>
         internal BlockInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, bool isInIteration, Exception caughtException, IReadOnlyList<Code.AbstractSyntaxTree.Statement> statements)
             : base(baZicInterpreter, parentInterpreter)

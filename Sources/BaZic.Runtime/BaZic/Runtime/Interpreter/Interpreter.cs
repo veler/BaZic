@@ -398,9 +398,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// <summary>
         /// Add a new log
         /// </summary>
-        /// <param name="source">The source from where we changed the state (an interpreter usually)</param>
-        /// <param name="format">the message format</param>
-        /// <param name="args">the message arguments</param>
+        /// <param name="message">the message</param>
         internal void VerboseLog(string message)
         {
             BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(message));

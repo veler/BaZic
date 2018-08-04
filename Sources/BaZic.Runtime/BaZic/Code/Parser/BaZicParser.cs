@@ -655,6 +655,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// </summary>
         /// <param name="variableReference">The reference.</param>
         /// <param name="isArrayExpected">Defines whether an array must be expected or not. A null value means that we don't care.</param>
+        /// <param name="throwIssueForVariableNotFound">Defines whether an issue must be added if the variable is not found</param>
         /// <returns>Returns whether the variable is an array or not (if the variable exists).</returns>
         private bool? ValidateVariableReferenceExpression(VariableReferenceExpression variableReference, bool? isArrayExpected = null, bool throwIssueForVariableNotFound = true)
         {

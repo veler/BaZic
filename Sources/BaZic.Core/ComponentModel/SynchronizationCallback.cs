@@ -81,7 +81,7 @@ namespace BaZic.Core.ComponentModel
         }
 
         /// <summary>
-        /// Gets the inner callback to be invoked by the <see cref="Invoke"/> method.
+        /// Gets the inner callback to be invoked by the <seealso cref="Invoke()"/> method.
         /// </summary>
         /// <value>
         /// The <see cref="Delegate"/> that is associated with this callback.
@@ -116,7 +116,6 @@ namespace BaZic.Core.ComponentModel
         /// <summary>
         /// Dynamically invokes (late-bound) the method represented by this callback.
         /// </summary>
-        /// <param name="state">An object containing information to be used by the callback method.</param>
         [SecurityPermissionAttribute(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.ControlEvidence | SecurityPermissionFlag.ControlPolicy)]
         public void Invoke()
         {
@@ -299,7 +298,6 @@ namespace BaZic.Core.ComponentModel
         /// <summary>
         /// Converts a <see cref="SynchronizationCallback"/> into a <see cref="WaitCallback"/> that can be invoked.
         /// </summary>
-        /// <param name="callback">The callback to convert.</param>
         /// <returns>A <see cref="WaitCallback"/> that invokes this callback.</returns>
         public WaitCallback ToWaitCallback()
         {
@@ -309,7 +307,6 @@ namespace BaZic.Core.ComponentModel
         /// <summary>
         /// Converts a <see cref="SynchronizationCallback"/> into a <see cref="TimerCallback"/> that can be invoked.
         /// </summary>
-        /// <param name="callback">The callback to convert.</param>
         /// <returns>A <see cref="TimerCallback"/> that invokes this callback.</returns>
         public TimerCallback ToTimerCallback()
         {

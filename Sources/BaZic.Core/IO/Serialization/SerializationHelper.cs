@@ -40,7 +40,7 @@ namespace BaZic.Core.IO.Serialization
         /// Deserialize the given byte array representation to an object.
         /// </summary>
         /// <typeparam name="T">The type to convert to.</typeparam>
-        /// <param name="xml">The byte array representation of an object.</param>
+        /// <param name="binary">The byte array representation of an object.</param>
         /// <returns>An object resulting from the deserialization of a byte array.</returns>
         internal static T ConvertFromBinary<T>(byte[] binary) where T : class, new()
         {

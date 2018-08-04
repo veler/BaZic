@@ -45,7 +45,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// Initializes a new instance of the <see cref="ArrayIndexerExpression"/> class.
         /// </summary>
         /// <param name="targetObject">The reference to the array</param>
-        /// <param name="indice">The index of the array.</param>
+        /// <param name="indexes">The index of the array.</param>
         public ArrayIndexerExpression(ReferenceExpression targetObject, Expression[] indexes)
             : this(targetObject)
         {

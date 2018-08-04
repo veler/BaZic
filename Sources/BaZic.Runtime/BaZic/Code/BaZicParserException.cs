@@ -106,6 +106,7 @@ namespace BaZic.Runtime.BaZic.Code
 
         #region Methods
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return Localization.L.BaZic.Parser.FormattedParserError(Line, Column, Level.ToString(), Message);

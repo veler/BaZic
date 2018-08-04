@@ -82,10 +82,10 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="inputCode">The BaZic code to interpret.</param>
         /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
-        public BaZicInterpreter(string inputCode, string xamlCode, bool optimized = false)
+        public BaZicInterpreter(string inputCode, string xamlCode, bool optimize = false)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_bridge, _assemblySandbox, inputCode, xamlCode, optimized);
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_bridge, _assemblySandbox, inputCode, xamlCode, optimize);
             Initialize();
         }
 

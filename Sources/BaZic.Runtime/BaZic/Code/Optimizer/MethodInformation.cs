@@ -17,7 +17,7 @@ namespace BaZic.Runtime.BaZic.Code.Optimizer
         internal MethodDeclaration MethodDeclaration { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="VariableDeclaration>"/> that represents the arguments or variables in a inline context. The guid is the ID of the previous <see cref="ParameterDeclaration"/> that must be changed in all the <see cref="VariableReferenceExpression"/>.
+        /// Gets or sets the <see cref="VariableDeclaration"/> that represents the arguments or variables in a inline context. The guid is the ID of the previous <see cref="ParameterDeclaration"/> that must be changed in all the <see cref="VariableReferenceExpression"/>.
         /// </summary>
         internal Dictionary<Guid, VariableDeclaration> SubstituteVariableDeclarations { get; set; }
 

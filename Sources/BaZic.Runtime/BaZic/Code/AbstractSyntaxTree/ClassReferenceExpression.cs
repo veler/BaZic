@@ -36,7 +36,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// <summary>
         /// Initliaze a new instance of the <see cref="ClassReferenceExpression"/> class.
         /// </summary>
-        /// <param name="@namespace">The full namespace path that contains the class</param>
+        /// <param name="namespace">The full namespace path that contains the class</param>
         /// <param name="className">The name of the class</param>
         public ClassReferenceExpression(string @namespace, string className)
         {
@@ -56,7 +56,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// <summary>
         /// Verify if a namespace is valid (not null, no space, doesn't start with number and doesn't contains special character except the dot).
         /// </summary>
-        /// <param name="@namespace">The namespace to check</param>
+        /// <param name="namespace">The namespace to check</param>
         /// <returns>Returns false if the namespace is invalid.</returns>
         private bool IsValidNamespace(string @namespace)
         {

@@ -138,11 +138,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="inputCode">The BaZic code to interpret.</param>
         /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
-        private BaZicInterpreterCore(BaZicInterpreterStateChangedBridge baZicInterpreterStateChangedBridge, AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimized = false)
+        private BaZicInterpreterCore(BaZicInterpreterStateChangedBridge baZicInterpreterStateChangedBridge, AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimize = false)
             : this(baZicInterpreterStateChangedBridge, assemblySandbox)
         {
             var parser = new BaZicParser();
-            var parsingResult = parser.Parse(inputCode, xamlCode, optimized);
+            var parsingResult = parser.Parse(inputCode, xamlCode, optimize);
 
             if (parsingResult.Issues.InnerExceptions.OfType<BaZicParserException>().Count(issue => issue.Level == BaZicParserExceptionLevel.Error) != 0 || (!parsingResult.Issues.InnerExceptions.OfType<BaZicParserException>().Any() && parsingResult.Issues.InnerExceptions.Count > 0))
             {

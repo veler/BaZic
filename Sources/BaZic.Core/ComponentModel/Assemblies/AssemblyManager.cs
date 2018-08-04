@@ -70,7 +70,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Attempt to load the specified Assembly from its full name or location on the hard drive.
         /// </summary>
-        /// <param name="assemblyByteArray">The assembly's full name or location on the hard drive</param>
+        /// <param name="assemblyPath">The assembly's full name or location on the hard drive</param>
         /// <param name="forReflectionPurpose">Defines whether the assembly must be load for reflection only or also execution.</param>
         /// <returns>If succeeded, returns the loaded assembly.</returns>
         internal void LoadAssembly(string assemblyPath, bool forReflectionPurpose)

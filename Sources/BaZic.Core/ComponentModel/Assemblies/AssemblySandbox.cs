@@ -70,7 +70,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Attempt to load the specified Assembly from its full name or location on the hard drive.
         /// </summary>
-        /// <param name="assemblyPath">The assembly's full name or location on the hard drive</param>
+        /// <param name="assemblyStream">The assembly stream</param>
         public void LoadAssembly(MemoryStream assemblyStream)
         {
             assemblyStream.Seek(0, SeekOrigin.Begin);
