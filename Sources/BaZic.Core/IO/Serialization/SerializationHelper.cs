@@ -7,14 +7,14 @@ namespace BaZic.Core.IO.Serialization
     /// <summary>
     /// Provides a set of methods to serialize and deserialize a data.
     /// </summary>
-    internal static class SerializationHelper
+    public static class SerializationHelper
     {
         /// <summary>
         /// Serialize the given object to a byte array representation.
         /// </summary>
         /// <param name="source">The object to serialize</param>
         /// <returns>Returns a byte array representation of the given value.</returns>
-        internal static byte[] ConvertToBinary(object source)
+        public static byte[] ConvertToBinary(object source)
         {
             if (source == null)
             {
@@ -42,7 +42,7 @@ namespace BaZic.Core.IO.Serialization
         /// <typeparam name="T">The type to convert to.</typeparam>
         /// <param name="binary">The byte array representation of an object.</param>
         /// <returns>An object resulting from the deserialization of a byte array.</returns>
-        internal static T ConvertFromBinary<T>(byte[] binary) where T : class, new()
+        public static T ConvertFromBinary<T>(byte[] binary) where T : class, new()
         {
             if (binary == null)
             {
