@@ -31,32 +31,32 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Gets or sets the full name of the assembly.
         /// </summary>
-        internal string FullName { get; set; }
+        public string FullName { get; set; }
 
         /// <summary>
         /// Gets or sets the path to the file of the assembly.
         /// </summary>
-        internal string Location { get; set; }
+        public string Location { get; set; }
 
         /// <summary>
         /// Gets or sets the culture of the assembly.
         /// </summary>
-        internal string Culture { get; set; }
+        public string Culture { get; set; }
 
         /// <summary>
         /// Gets or sets the public key token of the assembly.
         /// </summary>
-        internal string PublicKeyToken { get; set; }
+        public string PublicKeyToken { get; set; }
 
         /// <summary>
         /// Gets or sets the processor target architecture.
         /// </summary>
-        internal ProcessorArchitecture ProcessorArchitecture { get; set; }
+        public ProcessorArchitecture ProcessorArchitecture { get; set; }
 
         /// <summary>
         /// Gets or sets custom information about the assembly.
         /// </summary>
-        internal string Custom { get; set; }
+        public string Custom { get; set; }
 
         #endregion
 
