@@ -104,4 +104,4 @@ The BaZic language and its component are subject to evoluate and you can contrib
 
 # Licenses
 
-[GNU General Public License v2.0](/LICENSE.md)
+[MIT License](/LICENSE.md)
