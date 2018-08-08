@@ -21,7 +21,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Expression
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 123.ToString()
     VARIABLE var2 = 123.ToString(""X"") # to Hexadecimal
     VARIABLE var3 = System.Int32.Parse(""123"")
@@ -86,7 +86,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromMilliseconds(500.0))
     VARIABLE client = NEW System.Net.WebClient()
     RETURN AWAIT client.DownloadStringTaskAsync(""LocalWebPage.html"")
@@ -158,7 +158,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 123.toString()
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);

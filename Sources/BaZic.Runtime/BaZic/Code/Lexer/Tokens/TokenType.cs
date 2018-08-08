@@ -82,6 +82,9 @@ namespace BaZic.Runtime.BaZic.Code.Lexer.Tokens
         [Description("EVENT")]
         Event,
 
+        [Description("EXTERN")]
+        Extern,
+
         [Description("FUNCTION")]
         Function,
 

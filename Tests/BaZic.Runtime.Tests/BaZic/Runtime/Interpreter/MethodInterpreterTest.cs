@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN args[0]
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -69,7 +69,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     AWAIT Main(NEW [1, 2, 3])
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);

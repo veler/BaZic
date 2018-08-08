@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1
     VARIABLE var2[] = NEW [1, 2, 3]
 
@@ -132,7 +132,7 @@ END FUNCTION";
             parser = new BaZicParser();
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     NEW System.Text.UTF32Encoding().BodyName = 2
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -148,7 +148,7 @@ END FUNCTION";
             parser = new BaZicParser();
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     NEW System.Text.StringBuilder().Capacity = True # Should fail because of incompatible type.
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);

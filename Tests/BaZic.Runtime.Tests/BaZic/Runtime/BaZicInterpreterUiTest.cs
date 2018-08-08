@@ -26,7 +26,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 @"
 BIND Button1_Content
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION
 
 EVENT FUNCTION Window1_Closed()
@@ -154,7 +154,7 @@ END FUNCTION
 @"
 BIND Button1_Text
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION";
 
             var xamlCode = @"
@@ -199,7 +199,7 @@ END FUNCTION";
             @"
 BIND Button1_Content
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Button1_Content = ""Hello""
 END FUNCTION";
 

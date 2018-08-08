@@ -21,7 +21,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Expression
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN (NEW [])[0]
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -63,7 +63,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN (NEW [1, 2])[1]
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -114,7 +114,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 123
     RETURN var1[0]
 END FUNCTION";
@@ -159,7 +159,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE list[] = NEW [""Hello"", ""World""]
     list[0] = ""Hi""
     list[""Hey""] = ""Hey""

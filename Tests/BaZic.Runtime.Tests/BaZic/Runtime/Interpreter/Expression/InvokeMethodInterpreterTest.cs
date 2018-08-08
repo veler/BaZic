@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Expression
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = Method1(""Hello"")
     VARIABLE var2 = MethodAsync(""Hello Async"", 3.0)
     VARIABLE var3 = AWAIT MethodAsync(""Hello Await Async"", 1.0)
@@ -64,7 +64,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN FirstMethod(100)
 END FUNCTION
 
@@ -94,7 +94,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     FirstMethod(1000) # A Stackoverflow must never happen if FirstMethod is ASYNC.
 END FUNCTION
 
@@ -124,7 +124,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     FirstMethod(1000) # A Stackoverflow must never happen because every 100 recursive call, a new thread is created.
 END FUNCTION
 
@@ -154,7 +154,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = Method1(""Hello"")
     RETURN var1
 END FUNCTION

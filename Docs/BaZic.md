@@ -71,7 +71,7 @@ Understanding the grammar syntax :
 ### Function declaration
 
 ```
-('ASYNC' | 'EVENT')? 'FUNCTION' Identifier '(' Parameter_List ')'
+'EXTERN'? ('ASYNC' | 'EVENT')? 'FUNCTION' Identifier '(' Parameter_List ')'
     Statement_List
 'END' 'FUNCTION'
 ```
@@ -281,7 +281,7 @@ Identifier Member_Access*
 ### Calculation expression
 
 ```
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN (100 * 1.5) + 2 * (4 / 11.3)
     # The result must be 150.707964602
 END FUNCTION
@@ -292,7 +292,7 @@ END FUNCTION
 ```
 VARIABLE initialValue = 100
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN FirstMethod(initialValue) # This must return 0.
 END FUNCTION
 
@@ -307,7 +307,7 @@ END FUNCTION
 ### Selection sort algorithm
 
 ```
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arr[] = NEW [64, 34, 25, 12, 22, 11, 90, 123]
 
     VARIABLE i = 0
@@ -335,7 +335,7 @@ END FUNCTION
 ### Fibonacci series
 
 ```
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE result = Fibonacci(9)
     System.Console.WriteLine("Fib 9 = " + result)
     RETURN result
@@ -366,7 +366,7 @@ END FUNCTION
 ### Fibonacci series with recursivity
 
 ```
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE result = Fibonacci(9)
     System.Console.WriteLine("Fib 9 = " + result)
     RETURN result
@@ -395,7 +395,7 @@ END FUNCTION
 # In BaZic, the program wait that all the unwaited asynchronous call are done before considering the program finished.
 # Therefore, this program will takes approximately 3 sec to run.
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE var1 = Method1("Hello")
     VARIABLE var2 = MethodAsync("Hello Async", 3.0)
     VARIABLE var3 = AWAIT MethodAsync("Hello Await Async", 1.0)
@@ -419,7 +419,7 @@ END FUNCTION
 
 VARIABLE myVar[] = NEW ["value1", "val2"]
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     MyFunction(1, 2, NULL)
 END FUNCTION
 
@@ -466,7 +466,7 @@ The `BaZic code`, that provides the logic :
 BIND ListBox1_ItemsSource[] = NEW ["Value 1", "Value 2"]
 BIND TextBox1_Text = "Value to add"
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION
 
 EVENT FUNCTION Window1_Closed()

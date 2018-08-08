@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1
     VARIABLE var2 = ""Hello""
 END FUNCTION";

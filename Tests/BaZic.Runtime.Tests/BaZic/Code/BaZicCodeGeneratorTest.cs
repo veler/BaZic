@@ -36,7 +36,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code
 
 VARIABLE Foo
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE Bar[]
     DO WHILE Foo = Bar
         IF TRUE THEN
@@ -82,7 +82,7 @@ VARIABLE Foo
 
 BIND Button1_Content
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE Bar[]
     DO WHILE Foo = Bar
         IF TRUE THEN
@@ -127,7 +127,7 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     IF ((1 < 2) AND (3 < 4)) OR (NOT FALSE) THEN
         # If true
     ELSE
@@ -167,7 +167,7 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     TRY
         # Evaluation
     CATCH
@@ -195,7 +195,7 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE Foo[]
     RETURN Foo[0]
 END FUNCTION";
@@ -220,7 +220,7 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE Baz[] = NEW System.Array()
     VARIABLE Boo[] = NEW System.String()
 END FUNCTION";
@@ -239,7 +239,7 @@ END FUNCTION";
                                   new VariableDeclaration("integer").WithDefaultValue(new PrimitiveExpression(1)),
                                   new ReturnStatement(new InvokeCoreMethodExpression(new VariableReferenceExpression("integer"), "ToString", false).WithParameters(new PrimitiveExpression("X")))
                               ),
-                              new MethodDeclaration("Foo", true)
+                              new MethodDeclaration("Foo", true, true)
                               .WithParameters(new ParameterDeclaration("arg1", true), new ParameterDeclaration("arg2"))
                           );
 
@@ -248,13 +248,13 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     AWAIT Foo(1, 2 - 1)
     VARIABLE integer = 1
     RETURN integer.ToString(""X"")
 END FUNCTION
 
-ASYNC FUNCTION Foo(arg1[], arg2)
+EXTERN ASYNC FUNCTION Foo(arg1[], arg2)
 
 END FUNCTION";
 
@@ -286,7 +286,7 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE foo
     foo = 1
     foo = 1.1234
@@ -319,7 +319,7 @@ END FUNCTION";
             var expected =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE foo = ""Hello""
     RETURN foo.Length
 END FUNCTION";

@@ -72,7 +72,9 @@
                 <AssignOrCallExpected>Only assignment and call can be use as a statement here.</AssignOrCallExpected>
                 <AsyncEvent>An event function cannot be marked as asynchronous.</AsyncEvent>
                 <EventNoParameter>An event function must not have parameter.</EventNoParameter>
+                <ExternEntryPoint>The program's entry point must be 'extern'.</ExternEntryPoint>
                 <AsyncEntryPoint>The program's entry point can't be asynchronous.</AsyncEntryPoint>
+                <EventEntryPoint>The program's entry point can't be an event function.</EventEntryPoint>
                 <UniqueArgumentEntryPoint>The program's entry point must have one and only one argument.</UniqueArgumentEntryPoint>
                 <EntryPointArgumentArrayExpected>The program's entry point's argument must be an array.</EntryPointArgumentArrayExpected>
             </Statements>

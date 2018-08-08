@@ -24,7 +24,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code.Parser
             var inputCode =
 @"
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     MyFunction(1, 2, NULL)
 END FUNCTION
 
@@ -128,7 +128,7 @@ END FUNCTION
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     DO
 END FUNCTION";
 
@@ -144,7 +144,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     DO";
 
             var program = parser.Parse(inputCode);
@@ -159,7 +159,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     IF
 END FUNCTION";
 
@@ -175,7 +175,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     IF";
 
             var program = parser.Parse(inputCode);
@@ -190,7 +190,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     TRY
 END FUNCTION";
 
@@ -206,7 +206,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     TRY";
 
             var program = parser.Parse(inputCode);
@@ -221,7 +221,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     TRY
     CATCH";
 
@@ -237,7 +237,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     THROW NEW System.Exception(""Hello"")";
 
             var program = parser.Parse(inputCode);

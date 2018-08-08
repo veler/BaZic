@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1
 
     IF Not True THEN
@@ -100,7 +100,7 @@ END FUNCTION";
             parser = new BaZicParser();
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     IF ""Hello"" THEN
     END IF
 END FUNCTION";
@@ -117,7 +117,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1
 
     IF Not True THEN

@@ -958,9 +958,15 @@ namespace BaZic.Runtime.BaZic.Code
                 arguments.Add(GenerateParameterDeclaration(argument));
             }
 
+            var accessor = "internal";
+            if (method.IsExtern)
+            {
+                accessor = "public";
+            }
+
             if (method.IsAsync)
             {
-                return $"{oldIdent}internal async System.Threading.Tasks.Task<dynamic> {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                return $"{oldIdent}{accessor} async System.Threading.Tasks.Task<dynamic> {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
                        $"{indent}return await System.Threading.Tasks.Task.FromResult<object>(null);" + Environment.NewLine +
@@ -972,7 +978,7 @@ namespace BaZic.Runtime.BaZic.Code
                 if (_currentProgramHasUi)
                 {
                     return $"{oldIdent}[System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]" + Environment.NewLine +
-                           $"{oldIdent}public dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                           $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                            $"{oldIdent}{{" + Environment.NewLine +
                            $"{indent}try {{" + Environment.NewLine +
                            $"{statementsString}" + Environment.NewLine +
@@ -989,7 +995,7 @@ namespace BaZic.Runtime.BaZic.Code
                 }
 
                 return $"{oldIdent}[System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]" + Environment.NewLine + 
-                       $"{oldIdent}public dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                       $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{indent}try {{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
@@ -1019,7 +1025,7 @@ namespace BaZic.Runtime.BaZic.Code
                 }
             }
 
-            return $"{oldIdent}internal dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+            return $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                    $"{oldIdent}{{" + Environment.NewLine +
                    $"{statementsString}" + Environment.NewLine +
                    $"{indent}return null;" + Environment.NewLine +

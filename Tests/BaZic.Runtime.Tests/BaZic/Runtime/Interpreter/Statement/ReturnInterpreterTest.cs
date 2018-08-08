@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN NULL
     VARIABLE var1 = 123 # Should not be executed
 END FUNCTION";
@@ -62,7 +62,7 @@ END FUNCTION";
             parser = new BaZicParser();
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -102,7 +102,7 @@ END FUNCTION";
             parser = new BaZicParser();
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1
     IF var1 = NULL THEN
         var1 = 1

@@ -395,7 +395,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode = @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE var1 = AWAIT Method1(args[AWAIT Method2()])
 END FUNCTION";
             var program = parser.Parse(inputCode);
@@ -697,7 +697,7 @@ END FUNCTION
             var parser = new BaZicParser();
 
             var inputCode = @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE var1 = MyClass.MyProperty
 END FUNCTION";
             var program = parser.Parse(inputCode);
@@ -707,7 +707,7 @@ END FUNCTION";
 
 
             inputCode = @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE var2 = System.MyClass.MyProperty
     VARIABLE var3 = System.Core.MyClass.MyProperty
     VARIABLE var4 = System.Core.MyClass.MyProperty[0]

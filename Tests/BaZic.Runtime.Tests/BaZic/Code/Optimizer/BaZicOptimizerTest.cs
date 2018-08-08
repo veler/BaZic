@@ -97,7 +97,7 @@ END FUNCTION";
             var codeGenerator = new BaZicCodeGenerator();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     Method1()
     Method1()
 END FUNCTION
@@ -114,7 +114,7 @@ END FUNCTION";
             var expectedResult =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE RET_A
     _A:
     VARIABLE x = 1
@@ -163,7 +163,7 @@ END FUNCTION";
     RETURN arg1 + arg2
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Method1(1, 2)
     VARIABLE x = Method1(1, 2)
     VARIABLE y
@@ -181,7 +181,7 @@ FUNCTION Method1(arg1, arg2)
     RETURN arg1 + arg2
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arg1 = 1
     VARIABLE arg2 = 2
     VARIABLE RET_A
@@ -237,7 +237,7 @@ ASYNC FUNCTION Method2()
     VARIABLE x = 1
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Method1(Method1(NULL))
     Method2()
     AWAIT Method2()
@@ -257,7 +257,7 @@ ASYNC FUNCTION Method2()
     VARIABLE x = 1
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arg1 = Method1(NULL)
     VARIABLE RET_A
     _A:
@@ -277,7 +277,7 @@ END FUNCTION";
             var codeGenerator = new BaZicCodeGenerator();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN Method1(100)
 END FUNCTION
 
@@ -295,7 +295,7 @@ END FUNCTION";
             var expectedResult =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE RET_A
     VARIABLE num = 100
     VARIABLE RET_B
@@ -2322,7 +2322,7 @@ END FUNCTION";
             var inputCode =
 @"
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     MyFunction(1, 2, NULL)
 END FUNCTION
 
@@ -2368,7 +2368,7 @@ END FUNCTION
 
 VARIABLE myVar[] = NEW [""value1"", ""val2""]
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arg1 = 1
     VARIABLE arg2 = 2
     VARIABLE arg3[] = NULL
@@ -2432,7 +2432,7 @@ END FUNCTION";
 
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN Method1()
 END FUNCTION
 
@@ -2458,7 +2458,7 @@ END FUNCTION";
             var expectedResult =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE RET_A
     VARIABLE RET_B
     _B:

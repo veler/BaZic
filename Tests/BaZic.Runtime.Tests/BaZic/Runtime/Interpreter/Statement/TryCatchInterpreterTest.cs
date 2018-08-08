@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     TRY
         THROW new System.ArgumentException(""Hello World"")
     CATCH
@@ -41,7 +41,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     THROW new System.ArgumentException(""Hello World"")
     RETURN False
 END FUNCTION";
@@ -87,7 +87,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN Method1()
 END FUNCTION
 

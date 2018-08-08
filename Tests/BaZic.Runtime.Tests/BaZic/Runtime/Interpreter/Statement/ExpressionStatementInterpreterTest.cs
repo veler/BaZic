@@ -21,7 +21,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromMilliseconds(500.0))
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);

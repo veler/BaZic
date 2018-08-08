@@ -256,7 +256,7 @@ BIND ListBox1_ItemsSource[] = NEW [""Value 1"", ""Value 2""]
 BIND TextBox1_Text = ""Value to add""
 VARIABLE var1
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION
 
 EVENT FUNCTION Button1_Click()
@@ -817,7 +817,7 @@ namespace BaZicProgramReleaseMode
                                   new VariableDeclaration("integer").WithDefaultValue(new PrimitiveExpression(1)),
                                   new ReturnStatement(new InvokeCoreMethodExpression(new VariableReferenceExpression("integer"), "ToString", false).WithParameters(new PrimitiveExpression("X")))
                               ),
-                              new MethodDeclaration("Foo", true)
+                              new MethodDeclaration("Foo", true, true)
                               .WithParameters(new ParameterDeclaration("arg1", true), new ParameterDeclaration("arg2"))
                           );
 
@@ -844,7 +844,7 @@ namespace BaZicProgramReleaseMode
             return null;
         }
 
-        internal async System.Threading.Tasks.Task<dynamic> Foo(dynamic arg1, dynamic arg2)
+        public async System.Threading.Tasks.Task<dynamic> Foo(dynamic arg1, dynamic arg2)
         {
 
             return await System.Threading.Tasks.Task.FromResult<object>(null);

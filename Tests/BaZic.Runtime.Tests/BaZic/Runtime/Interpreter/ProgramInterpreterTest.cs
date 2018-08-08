@@ -29,10 +29,10 @@ END FUNCTION";
             Assert.IsInstanceOfType(interpreter.Error.Exception, typeof(MissingEntryPointMethodException));
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
             await interpreter.StartDebugAsync(true);

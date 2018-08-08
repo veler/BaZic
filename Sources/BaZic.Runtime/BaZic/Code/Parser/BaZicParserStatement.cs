@@ -76,6 +76,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
                     case TokenType.Async:
                     case TokenType.Event:
+                    case TokenType.Extern:
                     case TokenType.Function:
                         if (!methodOrBindDeclarationAllowed)
                         {
@@ -639,7 +640,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// Try to parse a method delcaration statement.
         /// 
         /// Corresponding grammar :
-        ///     ('ASYNC' | 'EVENT')? 'FUNCTION' Identifier '(' Parameter_List ')'
+        ///     'EXTERN'? ('ASYNC' | 'EVENT')? 'FUNCTION' Identifier '(' Parameter_List ')'
         ///         Statement_List
         ///     'END' 'FUNCTION'
         /// </summary>
@@ -648,6 +649,13 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         {
             var isAsync = false;
             var isEvent = false;
+            var isExtern = false;
+
+            if (CurrentToken.TokenType == TokenType.Extern)
+            {
+                isExtern = true;
+                DiscardToken();
+            }
 
             if (CurrentToken.TokenType == TokenType.Async)
             {
@@ -713,11 +721,20 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
             if (string.Compare(methodName, Consts.EntryPointMethodName, StringComparison.Ordinal) == 0) // The name is case sensitive.
             {
+                if (!isExtern)
+                {
+                    AddIssue(new BaZicParserException(identifierToken.Line, identifierToken.Column, identifierToken.StartOffset, identifierToken.ParsedLength, L.BaZic.Parser.Statements.ExternEntryPoint));
+                }
                 if (isAsync)
                 {
                     AddIssue(new BaZicParserException(identifierToken.Line, identifierToken.Column, identifierToken.StartOffset, identifierToken.ParsedLength, L.BaZic.Parser.Statements.AsyncEntryPoint));
                 }
-                else if (methodParameters.Length != 1)
+                if (isEvent)
+                {
+                    AddIssue(new BaZicParserException(identifierToken.Line, identifierToken.Column, identifierToken.StartOffset, identifierToken.ParsedLength, L.BaZic.Parser.Statements.EventEntryPoint));
+                }
+
+                if (methodParameters.Length != 1)
                 {
                     AddIssue(new BaZicParserException(identifierToken.Line, identifierToken.Column, identifierToken.StartOffset, identifierToken.ParsedLength, L.BaZic.Parser.Statements.UniqueArgumentEntryPoint));
                 }
@@ -741,7 +758,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 return entryPointDeclaration.WithBody(statements);
             }
 
-            var methodDeclaration = new MethodDeclaration(methodName, isAsync)
+            var methodDeclaration = new MethodDeclaration(methodName, isAsync, isExtern)
             {
                 Line = identifierToken.Line,
                 Column = identifierToken.Column,

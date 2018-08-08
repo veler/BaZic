@@ -21,7 +21,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Expression
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = ""Hello"".Length
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -62,7 +62,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = ""Hello"".length
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -79,7 +79,7 @@ END FUNCTION";
 
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN System.Windows.FontStyles.Italic
 END FUNCTION";
 
@@ -117,7 +117,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN System.Windows.FontStyles.Italic
 END FUNCTION";
 
@@ -162,7 +162,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE System
     RETURN System.Windows.FontStyles.Italic
 END FUNCTION";

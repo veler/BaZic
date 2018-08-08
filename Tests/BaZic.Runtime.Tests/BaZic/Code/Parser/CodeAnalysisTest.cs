@@ -160,7 +160,7 @@ END FUNCTION";
 @"FUNCTION Method1()
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Method2()
 END FUNCTION";
 
@@ -177,7 +177,7 @@ END FUNCTION";
 @"FUNCTION Method1()
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Method1(1)
 END FUNCTION";
 
@@ -191,7 +191,7 @@ END FUNCTION";
         {
             var parser = new BaZicParser();
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     AWAIT Method1()
     Method1()
 END FUNCTION
@@ -211,7 +211,7 @@ END FUNCTION";
         {
             var parser = new BaZicParser();
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     Method1(NULL)
 END FUNCTION
 
@@ -234,7 +234,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE x[] = NEW [1, 2, 3]
     VARIABLE y = x[0, 1]
     RETURN y
@@ -251,7 +251,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE x = 1
     VARIABLE y = x[0]
     RETURN y
@@ -268,7 +268,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE array[] = NEW [1, 2, 3]
     VARIABLE nonArray = array
     RETURN nonArray
@@ -285,7 +285,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE nonArray = 1
     VARIABLE array[] = nonArray
     RETURN array
@@ -302,7 +302,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE y = x
 END FUNCTION";
 
@@ -318,7 +318,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE x
     VARIABLE y[]
     y = x
@@ -337,7 +337,7 @@ END FUNCTION";
             var parser = new BaZicParser();
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE x
     VARIABLE y[]
     y = x

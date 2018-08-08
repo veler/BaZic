@@ -65,6 +65,7 @@ namespace BaZic.Runtime.BaZic.Code.Lexer
                 { "End",            new TokenDefinition(TokenType.End, "END") },
                 { "Event",          new TokenDefinition(TokenType.Event, "EVENT") },
                 { "Exception",      new TokenDefinition(TokenType.Exception, "EXCEPTION", expectSpaceAfter: false, keepOriginalValue: true) },
+                { "Extern",         new TokenDefinition(TokenType.Extern, "EXTERN") },
                 { "False",          new TokenDefinition(TokenType.False, "FALSE") },
                 { "Function",       new TokenDefinition(TokenType.Function, "FUNCTION") },
                 { "If",             new TokenDefinition(TokenType.If, "IF") },
@@ -142,7 +143,7 @@ namespace BaZic.Runtime.BaZic.Code.Lexer
                         break;
 
                     case 'E':
-                        token = DetectToken(i, previousTokenType, "Else", "End", "Event", "Exception");
+                        token = DetectToken(i, previousTokenType, "Else", "End", "Event", "Exception", "Extern");
                         break;
 
                     case 'F':

@@ -1,4 +1,4 @@
-﻿FUNCTION Main(args[])
+﻿EXTERN FUNCTION Main(args[])
     VARIABLE result = Fibonacci(9)
     System.Console.WriteLine("Fib 9 = " + result)
     RETURN result

@@ -23,7 +23,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 1
     VARIABLE Var1 = 2
     RETURN var1 + Var1
@@ -59,7 +59,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 0
 
     BREAKPOINT
@@ -220,7 +220,7 @@ END FUNCTION";
 @"
 VARIABLE globVar = ""Hello""
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN SimpleRecursivity(5)
 END FUNCTION
 
@@ -271,7 +271,7 @@ END FUNCTION";
 @"
 VARIABLE globVar = ""Hello""
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN SimpleRecursivity(5)
 END FUNCTION
 
@@ -308,7 +308,7 @@ END FUNCTION";
 @"
 VARIABLE globVar = ""Hello""
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN AWAIT SimpleRecursivity(5)
 END FUNCTION
 
@@ -357,7 +357,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = Localization.L.BaZic.AbstractSyntaxTree.InvalidNamespace
     RETURN var1
 END FUNCTION";

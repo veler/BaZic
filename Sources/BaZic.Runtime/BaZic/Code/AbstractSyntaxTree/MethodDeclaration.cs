@@ -33,6 +33,11 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public bool IsAsync { get; }
 
         /// <summary>
+        /// Gets whether the method can be call outside of the interpreter or Assembly.
+        /// </summary>
+        public bool IsExtern { get; }
+
+        /// <summary>
         /// Gets or sets the position in the code where the END FUNCTION keywords appears.
         /// </summary>
         public int EndOffset { get; set; }
@@ -55,11 +60,13 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// </summary>
         /// <param name="name">The name of the method</param>
         /// <param name="isAsync">Defines whether the method can be call asynchronously</param>
-        public MethodDeclaration(string name, bool isAsync)
+        /// <param name="isExtern">Defines whether the method can be call outside of the interpreter or Assembly.</param>
+        public MethodDeclaration(string name, bool isAsync, bool isExtern)
             : this()
         {
             Name = new MemberIdentifier(name);
             IsAsync = isAsync;
+            IsExtern = isExtern;
         }
 
         #endregion
@@ -94,7 +101,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// <returns>A new object that is a copy of this instance.</returns>
         public override object Clone()
         {
-            return new MethodDeclaration(Name.Identifier, IsAsync)
+            return new MethodDeclaration(Name.Identifier, IsAsync, IsExtern)
             {
                 Column = Column,
                 Id = Id,
