@@ -35,6 +35,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         internal Call DebugCallInfo { get; private set; }
 
+        /// <summary>
+        /// Gets whether the method is asynchrone and has been invoked without the await operator.
+        /// </summary>
+        internal bool AsyncMethodCalledWithoutAwait { get; private set; }
+
         #endregion
 
         #region Constructors & Destructors
@@ -128,6 +133,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     {
                         VerboseLog(L.BaZic.Runtime.Interpreters.MethodInterpreter.FormattedAsync(_invokeMethod.MethodName));
                     }
+                    AsyncMethodCalledWithoutAwait = true;
                     var task = RunAsync(argumentValues);
                     BaZicInterpreter.AddUnwaitedMethodInvocation(task);
                     return task;

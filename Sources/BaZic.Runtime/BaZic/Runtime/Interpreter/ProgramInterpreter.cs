@@ -235,14 +235,6 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     throw eventException;
                 }
             }
-            else
-            {
-                // Duplicated with above, but important because it is not in the same thread.
-                foreach (var variable in Variables)
-                {
-                    variable.Dispose();
-                }
-            }
         }
 
         /// <summary>

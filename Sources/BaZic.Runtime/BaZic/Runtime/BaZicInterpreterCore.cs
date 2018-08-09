@@ -316,6 +316,11 @@ namespace BaZic.Runtime.BaZic.Runtime
                             task.Dispose();
                         }
                         _unwaitedMethodInvocation.Clear();
+                        
+                        foreach (var variable in ProgramInterpreter.Variables)
+                        {
+                            variable.Dispose();
+                        }
 
                         if (State == BaZicInterpreterState.Running)
                         {

@@ -103,12 +103,22 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
 
             var debugInfo = new DebugInfo();
-
+            var stackDeep = 0;
             var parentMethodInterpreter = GetParentMethodInterpreter();
             while (parentMethodInterpreter != null)
             {
-                debugInfo.CallStack.Add(parentMethodInterpreter.DebugCallInfo);
-                parentMethodInterpreter = parentMethodInterpreter.GetParentMethodInterpreter(throwIfNotFound: false);
+                var parentOfParentMethodInterpreter = parentMethodInterpreter.GetParentMethodInterpreter(throwIfNotFound: false);
+                if (parentOfParentMethodInterpreter != null && parentOfParentMethodInterpreter.AsyncMethodCalledWithoutAwait && stackDeep > 0)
+                {
+                    debugInfo.CallStack.Add(null);
+                }
+                else
+                {
+                    debugInfo.CallStack.Add(parentMethodInterpreter.DebugCallInfo);
+                }
+
+                parentMethodInterpreter = parentOfParentMethodInterpreter;
+                stackDeep++;
             }
 
             debugInfo.GlobalVariables = BaZicInterpreter.ProgramInterpreter.Variables;

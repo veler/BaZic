@@ -294,6 +294,7 @@ END FUNCTION";
             var debugInfo = interpreter.DebugInfos;
 
             Assert.IsNotNull(debugInfo);
+            Assert.AreEqual("Hello", debugInfo.GlobalVariables.Single().Value);
             Assert.AreEqual(BaZicInterpreterState.Pause, interpreter.State);
             Assert.AreEqual(1, debugInfo.GlobalVariables.Count);
             Assert.AreEqual("SimpleRecursivity", debugInfo.CallStack.First().InvokeMethodExpression.MethodName.Identifier);
