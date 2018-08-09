@@ -316,7 +316,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                             task.Dispose();
                         }
                         _unwaitedMethodInvocation.Clear();
-                        
+
                         foreach (var variable in ProgramInterpreter.Variables)
                         {
                             variable.Dispose();
@@ -532,7 +532,16 @@ namespace BaZic.Runtime.BaZic.Runtime
         {
             CheckState(BaZicInterpreterState.Pause, BaZicInterpreterState.Running, BaZicInterpreterState.Preparing);
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
-            FreePauseModeWaiter();
+
+            if (DebugMode)
+            {
+                FreePauseModeWaiter();
+            }
+            else
+            {
+                _releaseModeRuntime.Stop();
+               // _assemblySandbox.Dispose();
+            }
 
             if (waitForMainInterpreterThread)
             {

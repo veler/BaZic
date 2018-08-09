@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
 using BaZic.Runtime.BaZic.Code;
@@ -23,6 +24,8 @@ namespace BaZic.Runtime.BaZic.Runtime
         private readonly BaZicInterpreterCore _baZicInterpreter;
         private readonly BaZicProgram _program;
         private readonly AssemblySandbox _assemblySandbox;
+
+        private Thread _currentThread;
 
         #endregion
 
@@ -104,6 +107,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="arguments">The arguments to pass to the program.</param>
         internal void Run(params object[] arguments)
         {
+            _currentThread = Thread.CurrentThread;
             _baZicInterpreter.CheckState(BaZicInterpreterState.Preparing);
 
             _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
@@ -120,6 +124,11 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.ExecutionEnded));
             }
+        }
+
+        internal void Stop()
+        {
+            _currentThread.Abort();
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using BaZic.Runtime.BaZic.Code.Parser;
 using BaZic.Runtime.BaZic.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
@@ -286,6 +287,41 @@ END FUNCTION";
 
 
             Assert.IsTrue(interpreter.GetStateChangedHistoryString().Contains("[Log] The user requests to stop the interpreter as soon as possible."));
+            await TestUtilities.TestAllRunningMode("", inputCode);
+        }
+
+        [TestMethod]
+        public async Task IterationInterpreterInfiniteLoopReleaseMode()
+        {
+            var parser = new BaZicParser();
+            var inputCode =
+@"EXTERN FUNCTION Main(args[])
+    VARIABLE file = NEW System.IO.FileStream(""LocalWebPage.html"", System.IO.FileMode.OpenOrCreate)
+    DO
+        # The file LocalWebPage.html must be protected in write as it's a busy resource.
+    LOOP WHILE True
+
+    RETURN 1
+END FUNCTION";
+            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            var t = interpreter.StartReleaseAsync(true);
+
+            await Task.Delay(10000);
+
+            try
+            {
+                File.ReadAllText("LocalWebPage.html"); // Must crash.
+                Assert.Fail();
+            }
+            catch (IOException)
+            {
+            }
+
+            await interpreter.Stop();
+
+            var fileContent = File.ReadAllText("LocalWebPage.html");
+            Assert.IsTrue(interpreter.State == BaZicInterpreterState.Stopped);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(fileContent));
         }
 
         [TestMethod]
