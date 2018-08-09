@@ -287,7 +287,6 @@ END FUNCTION";
 
 
             Assert.IsTrue(interpreter.GetStateChangedHistoryString().Contains("[Log] The user requests to stop the interpreter as soon as possible."));
-            await TestUtilities.TestAllRunningMode("", inputCode);
         }
 
         [TestMethod]

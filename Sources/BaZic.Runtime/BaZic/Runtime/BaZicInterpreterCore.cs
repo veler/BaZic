@@ -39,6 +39,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         private BaZicInterpreterStateChangedBridge _bridge;
 
         private AutoResetEvent _pauseModeWaiter;
+        private bool _ignoreException;
 
         #endregion
 
@@ -247,11 +248,18 @@ namespace BaZic.Runtime.BaZic.Runtime
                 }
                 catch (Exception exception)
                 {
-                    ChangeState(this, new UnexpectedException(exception));
-                }
+                    if (!_ignoreException)
+                    {
+                        ChangeState(this, new UnexpectedException(exception));
+                    }
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                    _ignoreException = false;
+                }
+                finally
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
             });
             _mainInterpreterThread.ContinueWith((task) =>
             {
@@ -333,10 +341,12 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     ChangeState(this, new UnexpectedException(exception));
                 }
-
-                ProgramInterpreter = null;
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                finally
+                {
+                    ProgramInterpreter = null;
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
             });
             _mainInterpreterThread.ContinueWith((task) =>
             {
@@ -536,16 +546,17 @@ namespace BaZic.Runtime.BaZic.Runtime
             if (DebugMode)
             {
                 FreePauseModeWaiter();
+
+                if (waitForMainInterpreterThread)
+                {
+                    await _mainInterpreterThread;
+                }
             }
             else
             {
+                _ignoreException = true;
                 _releaseModeRuntime.Stop();
-               // _assemblySandbox.Dispose();
-            }
-
-            if (waitForMainInterpreterThread)
-            {
-                await _mainInterpreterThread;
+                await Task.Delay(500); // Let the time to the _mainInterpreterThread to stop.
             }
 
             DebugInfos = null;
