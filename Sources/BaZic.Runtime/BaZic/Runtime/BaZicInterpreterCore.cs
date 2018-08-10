@@ -253,6 +253,28 @@ namespace BaZic.Runtime.BaZic.Runtime
                             directory.Create();
                         }
 
+                        foreach (var assembly in _assemblySandbox.GetAssemblies().Where(a => a.CopyToLocal))
+                        {
+                            if (File.Exists(assembly.Location))
+                            {
+                                File.Copy(assembly.Location, Path.Combine(directory.FullName, Path.GetFileName(assembly.Location)));
+
+                                var pdbFilePath = Path.Combine(Directory.GetParent(assembly.Location).FullName, Path.GetFileNameWithoutExtension(assembly.Location) + ".pdb");
+                                var xmlFilePath = Path.Combine(Directory.GetParent(assembly.Location).FullName, Path.GetFileNameWithoutExtension(assembly.Location) + ".xml");
+
+                                if (File.Exists(pdbFilePath))
+                                {
+                                    File.Copy(pdbFilePath, Path.Combine(directory.FullName, Path.GetFileName(pdbFilePath)));
+                                }
+
+                                if (File.Exists(xmlFilePath))
+                                {
+                                    File.Copy(xmlFilePath, Path.Combine(directory.FullName, Path.GetFileName(xmlFilePath)));
+                                }
+                            }
+
+                        }
+
                         using (var assemblyFileStream = new FileStream(outputFile.FullName, FileMode.Create))
                         using (var pdbFileStream = new FileStream(outputPdbFile.FullName, FileMode.Create))
                         {
@@ -286,7 +308,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 _releaseModeRuntime = new CompiledProgramRunner(this, Program, _assemblySandbox);
             }
 
-            return _releaseModeRuntime.Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
+            return _releaseModeRuntime.Build(outputType);
         }
 
         /// <summary>
@@ -653,6 +675,24 @@ namespace BaZic.Runtime.BaZic.Runtime
         }
 
         /// <summary>
+        /// Sets the program required dependencies.
+        /// </summary>
+        /// <param name="assemblies">The assemblies (can be a full name or a location).</param>
+        internal void SetDependencies(string[] assemblies)
+        {
+            Program.WithAssemblies(assemblies);
+        }
+
+        /// <summary>
+        /// Sets the program required dependencies.
+        /// </summary>
+        /// <param name="assemblies">The assemblies.</param>
+        internal void SetDependencies(AssemblyDetails[] assemblies)
+        {
+            Program.WithAssemblies(assemblies);
+        }
+
+        /// <summary>
         /// Ask the program to stop.
         /// </summary>
         /// <param name="waitForMainInterpreterThread">Defines whether the method should wait the end of the interpretation to finish.</param>
@@ -704,11 +744,11 @@ namespace BaZic.Runtime.BaZic.Runtime
             var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
 
             var assembliesPath = new List<String>();
-            assembliesPath.Add(Path.Combine(assemblyPath, "mscorlib.dll"));
-            assembliesPath.Add(Path.Combine(assemblyPath, "System.dll"));
-            assembliesPath.Add(Path.Combine(assemblyPath, "System.Core.dll"));
-            assembliesPath.Add(Path.Combine(assemblyPath, "System.Runtime.dll"));
-            assembliesPath.Add(Path.Combine(assemblyPath, "Microsoft.CSharp.dll"));
+            assembliesPath.Add("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+            assembliesPath.Add("System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+            assembliesPath.Add("System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+            assembliesPath.Add("System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+            assembliesPath.Add("Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
 
             if (Program is BaZicUiProgram)
             {
@@ -719,28 +759,28 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             foreach (var path in assembliesPath)
             {
-                if (!assemblies.Contains(path))
+                if (assemblies.All(a => string.CompareOrdinal(a.ToLocationOrFullName(), path) != 0))
                 {
-                    assemblies.Add(path);
+                    assemblies.Add(AssemblyDetails.GetAssemblyDetailsFromName(path));
                 }
             }
 
-            assemblyPath = string.Empty;
+            AssemblyDetails details = null;
             try
             {
                 for (int i = 0; i < assemblies.Count; i++)
                 {
-                    assemblyPath = assemblies[i];
-                    _assemblySandbox.LoadAssembly(assemblyPath, false);
+                    details = assemblies[i];
+                    _assemblySandbox.LoadAssembly(details, false);
                     if (Verbose)
                     {
-                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyLoaded(assemblyPath)));
+                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyLoaded(details.ToLocationOrFullName())));
                     }
                 }
             }
             catch (Exception exception)
             {
-                ChangeState(this, new LoadAssemblyException(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyFailedLoad(assemblyPath), assemblyPath, exception));
+                ChangeState(this, new LoadAssemblyException(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyFailedLoad(details.ToLocationOrFullName()), details.ToLocationOrFullName(), exception));
             }
         }
 

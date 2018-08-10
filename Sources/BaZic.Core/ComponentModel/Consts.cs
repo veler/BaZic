@@ -14,6 +14,16 @@ namespace BaZic.Core.ComponentModel
         /// </summary>
         public const string EntryPointMethodName = "Main";
 
+        // Assembly Properties
+        internal const string AssemblyPropertyVersion = "Version=";
+        internal const string AssemblyPropertyCulture = "Culture=";
+        internal const string AssemblyPropertyProcessorArchitecture = "processorArchitecture=";
+        internal const string AssemblyPropertyX86 = "x86";
+        internal const string AssemblyPropertyX64 = "AMD64";
+        internal const string AssemblyPropertyAnyCPU = "MSIL";
+        internal const string AssemblyPropertyPublicKeyToken = "PublicKeyToken=";
+        internal const string AssemblyPropertyCustom = "Custom=";
+
         // Reflection
 
         /// <summary>

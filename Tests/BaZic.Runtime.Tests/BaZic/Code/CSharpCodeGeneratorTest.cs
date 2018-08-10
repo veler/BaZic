@@ -42,7 +42,6 @@ namespace BaZicProgramReleaseMode
     {
         dynamic Foo = null;
 
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -82,6 +81,16 @@ namespace BaZicProgramReleaseMode
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name=""args""></param>
+        [System.STAThreadAttribute()]
+        static void Main(string[] args)
+        {
+            new Program().Main(args);
+        }
 
         /// <summary>
         /// Returns the result of a task. If the task does not return a result, this method will return null.
@@ -302,7 +311,6 @@ namespace BaZicProgramReleaseMode
             return null;
         }
 
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -338,6 +346,16 @@ namespace BaZicProgramReleaseMode
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name=""args""></param>
+        [System.STAThreadAttribute()]
+        static void Main(string[] args)
+        {
+            new Program().Main(args);
+        }
 
         /// <summary>
         /// Returns the result of a task. If the task does not return a result, this method will return null.
@@ -642,7 +660,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -705,7 +722,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -750,7 +766,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -789,7 +804,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -831,7 +845,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -885,7 +898,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {
@@ -932,7 +944,6 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
         public dynamic Main(dynamic args)
         {
             try {

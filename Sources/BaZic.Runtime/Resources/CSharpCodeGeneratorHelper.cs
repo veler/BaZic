@@ -16,6 +16,16 @@ namespace BaZicProgramReleaseMode
         #region Methods
 
         /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name="args"></param>
+        [System.STAThreadAttribute()]
+        static void Main(string[] args)
+        {
+            new Program().Main(args);
+        }
+
+        /// <summary>
         /// Returns the result of a task. If the task does not return a result, this method will return null.
         /// </summary>
         /// <param name="task">The task to run.</param>

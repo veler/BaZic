@@ -18,7 +18,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         #region Fields & Constants
 
         private readonly ResolveEventHandler AssemblyResolveEventHandler;
-        private readonly List<Assembly> _explicitLoadedAssemblies;
+        private readonly List<LoadedAssemblyDetails> _explicitLoadedAssemblies;
 
         private DirectoryInfo _assemblyResolutionDirectory = null;
         private Exception _exceptionThrown;
@@ -42,7 +42,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             Logger.Instance = logger as Logger;
             Localization.LocalizationHelper.SetCurrentCulture(culture as CultureInfo, false);
 
-            _explicitLoadedAssemblies = new List<Assembly>();
+            _explicitLoadedAssemblies = new List<LoadedAssemblyDetails>();
 
             AssemblyResolveEventHandler = (s, e) =>
             {
@@ -70,46 +70,58 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Attempt to load the specified Assembly from its full name or location on the hard drive.
         /// </summary>
-        /// <param name="assemblyPath">The assembly's full name or location on the hard drive</param>
+        /// <param name="assemblyDetails">The assembly's informations</param>
         /// <param name="forReflectionPurpose">Defines whether the assembly must be load for reflection only or also execution.</param>
         /// <returns>If succeeded, returns the loaded assembly.</returns>
-        internal void LoadAssembly(string assemblyPath, bool forReflectionPurpose)
+        internal void LoadAssembly(AssemblyDetails assemblyDetails, bool forReflectionPurpose)
         {
             var assemblies = GetAssembliesInternal();
+            var assemblyLoaded = false;
             Assembly assembly = null;
 
-            if (File.Exists(assemblyPath))
+            if (File.Exists(assemblyDetails.Location))
             {
-                assembly = assemblies.SingleOrDefault(asm => string.Compare(asm.Location, assemblyPath, StringComparison.OrdinalIgnoreCase) == 0);
+                assembly = assemblies.SingleOrDefault(asm => string.Compare(asm.Assembly.Location, assemblyDetails.Location, StringComparison.OrdinalIgnoreCase) == 0)?.Assembly;
                 if (assembly == null)
                 {
+                    assemblyLoaded = true;
                     if (forReflectionPurpose)
                     {
-                        assembly = Assembly.ReflectionOnlyLoadFrom(assemblyPath);
+                        assembly = Assembly.ReflectionOnlyLoadFrom(assemblyDetails.Location);
                     }
                     else
                     {
-                        assembly = Assembly.LoadFrom(assemblyPath);
+                        assembly = Assembly.LoadFrom(assemblyDetails.Location);
                     }
                 }
             }
             else
             {
-                assembly = assemblies.SingleOrDefault(asm => string.Compare(asm.FullName, assemblyPath, StringComparison.OrdinalIgnoreCase) == 0);
+                assembly = assemblies.SingleOrDefault(asm => string.Compare(asm.Assembly.FullName, assemblyDetails.FullName, StringComparison.OrdinalIgnoreCase) == 0)?.Assembly;
                 if (assembly == null)
                 {
+                    assemblyLoaded = true;
                     if (forReflectionPurpose)
                     {
-                        assembly = Assembly.ReflectionOnlyLoad(assemblyPath);
+                        assembly = Assembly.ReflectionOnlyLoad(assemblyDetails.FullName);
                     }
                     else
                     {
-                        assembly = Assembly.Load(assemblyPath);
+                        assembly = Assembly.Load(assemblyDetails.FullName);
                     }
+
+                    assemblyDetails.Location = assembly.Location;
                 }
             }
 
-            _explicitLoadedAssemblies.Add(assembly);
+            if (assemblyLoaded)
+            {
+                _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
+                {
+                    Assembly = assembly,
+                    Details = assemblyDetails
+                });
+            }
         }
 
         /// <summary>
@@ -119,7 +131,16 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>If succeeded, returns the loaded assembly.</returns>
         internal void LoadAssembly(byte[] assemblyByteArray)
         {
-            _explicitLoadedAssemblies.Add(Assembly.Load(assemblyByteArray));
+            var assembly = Assembly.Load(assemblyByteArray);
+
+            var details = AssemblyDetails.GetAssemblyDetailsFromName(assembly.FullName);
+            details.ProcessorArchitecture = assembly.GetName().ProcessorArchitecture;
+
+            _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
+            {
+                Assembly = assembly,
+                Details = details
+            });
         }
 
         /// <summary>
@@ -128,22 +149,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns the assemblies that have been loaded.</returns>
         internal ReadOnlyCollection<AssemblyDetails> GetAssemblies()
         {
-            var details = new List<AssemblyDetails>();
-
-            foreach (var assembly in GetAssembliesInternal())
-            {
-                details.Add(new AssemblyDetails
-                {
-                    Culture = assembly.GetName().CultureName,
-                    Version = assembly.GetName().Version.ToString(),
-                    FullName = assembly.FullName,
-                    Location = assembly.Location,
-                    Name = assembly.GetName().Name,
-                    ProcessorArchitecture = assembly.GetName().ProcessorArchitecture
-                });
-            }
-
-            return details.AsReadOnly();
+            return GetAssembliesInternal().Select(a => a.Details).ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -153,25 +159,25 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns the list of types. Returns null if the assembly is not found.</returns>
         internal ReadOnlyCollection<TypeDetails> GetTypes(AssemblyDetails assemblyDetails)
         {
-            var assemblies = GetAssembliesInternal();
+            var loadedAssemblies = GetAssembliesInternal();
 
-            var assembly = assemblies.FirstOrDefault(a => assemblyDetails.Name == a.GetName().Name && assemblyDetails.Version == a.GetName().Version.ToString() && (string.IsNullOrEmpty(assemblyDetails.Culture) ? "neutral" : assemblyDetails.Culture) == (string.IsNullOrEmpty(a.GetName().CultureName) ? "neutral" : a.GetName().CultureName));
+            var loadedAssembly = loadedAssemblies.FirstOrDefault(a => assemblyDetails.Name == a.Assembly.GetName().Name && assemblyDetails.Version == a.Assembly.GetName().Version.ToString() && (string.IsNullOrEmpty(assemblyDetails.Culture) ? "neutral" : assemblyDetails.Culture) == (string.IsNullOrEmpty(a.Assembly.GetName().CultureName) ? "neutral" : a.Assembly.GetName().CultureName));
 
-            if (assembly == null)
+            if (loadedAssembly == null)
             {
                 return null;
             }
 
-            if (string.IsNullOrWhiteSpace(assembly.Location))
+            if (string.IsNullOrWhiteSpace(loadedAssembly.Assembly.Location))
             {
                 _assemblyResolutionDirectory = null;
             }
             else
             {
-                _assemblyResolutionDirectory = new FileInfo(assembly.Location).Directory;
+                _assemblyResolutionDirectory = new FileInfo(loadedAssembly.Assembly.Location).Directory;
             }
 
-            var types = new ReadOnlyCollection<Type>(assembly.GetExportedTypes().ToList());
+            var types = new ReadOnlyCollection<Type>(loadedAssembly.Assembly.GetExportedTypes().ToList());
 
             var details = new List<TypeDetails>();
 
@@ -213,21 +219,21 @@ namespace BaZic.Core.ComponentModel.Assemblies
             }
             else
             {
-                var assemblies = GetAssembliesInternal();
+                var loadedAssemblies = GetAssembliesInternal();
 
                 var i = 0;
-                while (i < assemblies.Count && result == null)
+                while (i < loadedAssemblies.Count && result == null)
                 {
-                    var assembly = assemblies[i];
-                    if (string.IsNullOrWhiteSpace(assembly.Location))
+                    var loadedAssembly = loadedAssemblies[i];
+                    if (string.IsNullOrWhiteSpace(loadedAssembly.Assembly.Location))
                     {
                         _assemblyResolutionDirectory = null;
                     }
                     else
                     {
-                        _assemblyResolutionDirectory = new FileInfo(assembly.Location).Directory;
+                        _assemblyResolutionDirectory = new FileInfo(loadedAssembly.Assembly.Location).Directory;
                     }
-                    result = assembly.GetTypes().SingleOrDefault(type => string.Compare(type.FullName, fullName, StringComparison.Ordinal) == 0);
+                    result = loadedAssembly.Assembly.GetTypes().SingleOrDefault(type => string.Compare(type.FullName, fullName, StringComparison.Ordinal) == 0);
 
                     i++;
                 }
@@ -277,7 +283,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Gets the assemblies that have been explicitely loaded.
         /// </summary>
         /// <returns>Returns the assemblies that have been loaded.</returns>
-        private ReadOnlyCollection<Assembly> GetAssembliesInternal()
+        private ReadOnlyCollection<LoadedAssemblyDetails> GetAssembliesInternal()
         {
             lock (_explicitLoadedAssemblies)
             {
@@ -333,11 +339,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>ReflectionOnlyLoadFrom loaded dependant Assembly</returns>
         private Assembly OnReflectionOnlyResolve(ResolveEventArgs args, DirectoryInfo directory)
         {
-            var loadedAssembly = GetAssembliesInternal().FirstOrDefault(asm => string.Equals(asm.FullName, args.Name, StringComparison.OrdinalIgnoreCase));
+            var loadedAssembly = GetAssembliesInternal().FirstOrDefault(asm => string.Equals(asm.Assembly.FullName, args.Name, StringComparison.OrdinalIgnoreCase));
 
             if (loadedAssembly != null)
             {
-                return loadedAssembly;
+                return loadedAssembly.Assembly;
             }
 
             var assemblyName = new AssemblyName(args.Name);
@@ -349,13 +355,21 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 if (File.Exists(dependentAssemblyFilename))
                 {
                     var assembly = Assembly.ReflectionOnlyLoadFrom(dependentAssemblyFilename);
-                    _explicitLoadedAssemblies.Add(assembly);
+                    _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
+                    {
+                        Assembly = assembly,
+                        Details = AssemblyDetails.GetAssemblyDetailsFromName(dependentAssemblyFilename)
+                    });
                     return assembly;
                 }
             }
 
             var assembly2 = Assembly.ReflectionOnlyLoad(assemblyName.FullName);
-            _explicitLoadedAssemblies.Add(assembly2);
+            _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
+            {
+                Assembly = assembly2,
+                Details = AssemblyDetails.GetAssemblyDetailsFromName(assemblyName.FullName)
+            });
             return assembly2;
         }
 

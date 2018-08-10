@@ -977,8 +977,7 @@ namespace BaZic.Runtime.BaZic.Code
             {
                 if (_currentProgramHasUi)
                 {
-                    return $"{oldIdent}[System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]" + Environment.NewLine +
-                           $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                    return $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                            $"{oldIdent}{{" + Environment.NewLine +
                            $"{indent}try {{" + Environment.NewLine +
                            $"{statementsString}" + Environment.NewLine +
@@ -994,8 +993,7 @@ namespace BaZic.Runtime.BaZic.Code
                            $"{oldIdent}}}";
                 }
 
-                return $"{oldIdent}[System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]" + Environment.NewLine + 
-                       $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                return $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{indent}try {{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +

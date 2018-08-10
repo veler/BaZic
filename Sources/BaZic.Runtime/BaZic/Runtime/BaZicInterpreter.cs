@@ -197,10 +197,19 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Sets the program required dependencies.
         /// </summary>
-        /// <param name="assemblies">The assemblies.</param>
+        /// <param name="assemblies">The assemblies (can be a full name or a location).</param>
         public void SetDependencies(params string[] assemblies)
         {
-            _core.Program.WithAssemblies(assemblies);
+            _core.SetDependencies(assemblies);
+        }
+
+        /// <summary>
+        /// Sets the program required dependencies.
+        /// </summary>
+        /// <param name="assemblies">The assemblies.</param>
+        public void SetDependencies(params AssemblyDetails[] assemblies)
+        {
+            _core.SetDependencies(assemblies);
         }
 
         /// <summary>
@@ -250,7 +259,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         #endregion
 
         #region Handled Methods
-        
+
         private void Bridge_StateChanged(object sender, BaZicInterpreterStateChangeEventArgs e)
         {
             StateChanged?.Invoke(this, e);

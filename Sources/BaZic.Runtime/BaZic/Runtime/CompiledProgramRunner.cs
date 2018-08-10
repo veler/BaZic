@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
 using BaZic.Core.Enums;
@@ -90,12 +89,15 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             var assemblyName = Guid.NewGuid().ToString();
             var references = GetAssemblyReferences();
-            var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, new CSharpCompilationOptions(outputKind: outputKind, optimizationLevel: OptimizationLevel.Debug, platform: Platform.AnyCpu));
+            var options = new CSharpCompilationOptions(outputKind)
+                .WithAllowUnsafe(true)
+                .WithOptimizationLevel(OptimizationLevel.Debug)
+                .WithPlatform(Platform.AnyCpu);
+
+            var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, options);
 
             var assemblyStream = new MemoryStream();
             var pdbStream = new MemoryStream();
-
-            var d = cSharpCompilation.GetDiagnostics();
 
             var result = cSharpCompilation.Emit(peStream: assemblyStream, pdbStream: pdbStream);
             var errors = GetCompilationErrors(result);
