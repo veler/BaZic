@@ -1,11 +1,10 @@
-﻿using BaZic.Core.ComponentModel;
-using BaZic.Core.ComponentModel.Assemblies;
+﻿using BaZic.Core.ComponentModel.Assemblies;
+using BaZic.Core.Enums;
 using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.BaZic.Runtime
@@ -113,11 +112,26 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         #region Methods
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             OnDispose(true);
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// Compiles the program and save it on the hard drive or returns the build errors.
+        /// </summary>
+        /// <param name="outputType">Defines the type of assembly to generate.</param>
+        /// <param name="outputPath">The full path to the .exe or .dll file to create if the build succeed.</param>
+        /// <returns>Returns the build errors, or null if it succeed.</returns>
+        public async Task<AggregateException> Build(BaZicCompilerOutputType outputType, string outputPath)
+        {
+            var callback = new MarshaledResultSetter<AggregateException>();
+            _core.Build(callback, outputType, outputPath);
+            return await callback.Task;
         }
 
         /// <summary>

@@ -32,10 +32,13 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         private readonly List<BaZicInterpreterStateChangeEventArgs> _stateChangedHistory;
         private readonly List<Task> _unwaitedMethodInvocation;
+
         private AssemblySandbox _assemblySandbox;
         private object[] _programArguments;
-        private Task _mainInterpreterThread;
+        private Task _mainInterpreterTask;
+        private Thread _mainInterpreterThread;
         private CompiledProgramRunner _releaseModeRuntime;
+        private CompilerResult _compilerResult;
         private BaZicInterpreterStateChangedBridge _bridge;
 
         private AutoResetEvent _pauseModeWaiter;
@@ -193,6 +196,100 @@ namespace BaZic.Runtime.BaZic.Runtime
         }
 
         /// <summary>
+        /// Compiles the program in memory and save it on the hard drive or returns the build errors.
+        /// </summary>
+        /// <param name="callback">The cross-AppDomain task proxy.</param>
+        /// <param name="outputType">Defines the type of assembly to generate</param>
+        /// <param name="outputPath">The full path to the .exe or .dll file to create if the build succeed.</param>
+        /// <returns>Returns the build errors, or null if it succeed.</returns>
+        internal void Build(MarshaledResultSetter<AggregateException> callback, BaZicCompilerOutputType outputType, string outputPath)
+        {
+            Requires.NotNullOrWhiteSpace(outputPath, nameof(outputPath));
+
+            CheckState(BaZicInterpreterState.Ready, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
+
+            if (ProgramIsOptimized)
+            {
+                throw new InvalidOperationException(L.BaZic.Runtime.BaZicInterpreter.CannotRunOptimizedProgramInRelease);
+            }
+
+            AggregateException buildErrors = null;
+            var currentCulture = LocalizationHelper.GetCurrentCulture();
+
+            _mainInterpreterTask = Task.Run(() =>
+            {
+                LocalizationHelper.SetCurrentCulture(currentCulture, false);
+
+                var outputFile = new FileInfo(outputPath);
+                var directory = outputFile.Directory;
+
+                if (string.IsNullOrWhiteSpace(outputFile.Extension))
+                {
+                    if (outputType == BaZicCompilerOutputType.DynamicallyLinkedLibrary)
+                    {
+                        outputFile = new FileInfo(outputPath + ".dll");
+                    }
+                    else
+                    {
+                        outputFile = new FileInfo(outputPath + ".exe");
+                    }
+                }
+
+                var outputFileName = Path.GetFileNameWithoutExtension(outputPath);
+                var outputPdbFile = new FileInfo(Path.Combine(directory.FullName, outputFileName + ".pdb"));
+
+                using (var compileResult = Build(outputType))
+                {
+                    if (compileResult.BuildErrors != null)
+                    {
+                        buildErrors = compileResult.BuildErrors;
+                        return;
+                    }
+
+                    try
+                    {
+                        if (!directory.Exists)
+                        {
+                            directory.Create();
+                        }
+
+                        using (var assemblyFileStream = new FileStream(outputFile.FullName, FileMode.Create))
+                        using (var pdbFileStream = new FileStream(outputPdbFile.FullName, FileMode.Create))
+                        {
+                            compileResult.Assembly.WriteTo(assemblyFileStream);
+                            compileResult.Pdb.WriteTo(pdbFileStream);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        buildErrors = new AggregateException(new List<Exception> { exception });
+                    }
+                }
+            });
+            _mainInterpreterTask.ContinueWith((task) =>
+            {
+                callback.SetResult(buildErrors);
+            });
+        }
+
+        /// <summary>
+        /// Compiles the program in memory and returns either the generated assembly or the errors.
+        /// </summary>
+        /// <param name="outputType">Defines the type of assembly to generate</param>
+        /// <returns>Returns a <seealso cref="CompilerResult"/>.</returns>
+        private CompilerResult Build(BaZicCompilerOutputType outputType)
+        {
+            LoadAssemblies();
+
+            if (_releaseModeRuntime == null)
+            {
+                _releaseModeRuntime = new CompiledProgramRunner(this, Program, _assemblySandbox);
+            }
+
+            return _releaseModeRuntime.Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
+        }
+
+        /// <summary>
         /// Starts the interpreter in release mode. The program will be compiled (emitted) and run quickly. Breakpoint statements will be ignored.
         /// </summary>
         /// <param name="callback">The cross-AppDomain task proxy.</param>
@@ -215,8 +312,10 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             var currentCulture = LocalizationHelper.GetCurrentCulture();
 
-            _mainInterpreterThread = Task.Run(() =>
+            _mainInterpreterTask = Task.Run(() =>
             {
+                _mainInterpreterThread = Thread.CurrentThread;
+
                 LocalizationHelper.SetCurrentCulture(currentCulture, false);
                 RuntimeHelpers.EnsureSufficientExecutionStack();
                 GCSettings.LatencyMode = GCLatencyMode.LowLatency;
@@ -225,13 +324,22 @@ namespace BaZic.Runtime.BaZic.Runtime
 
                 try
                 {
-                    if (_releaseModeRuntime == null)
+                    if (_releaseModeRuntime == null || _compilerResult == null || _compilerResult.BuildErrors != null)
                     {
-                        LoadAssemblies();
                         if (State == BaZicInterpreterState.Preparing)
                         {
-                            _releaseModeRuntime = new CompiledProgramRunner(this, Program, _assemblySandbox);
-                            _releaseModeRuntime.Compile();
+                            LoadAssemblies();
+                            _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
+
+                            if (_compilerResult.BuildErrors != null)
+                            {
+                                ChangeState(this, new UnexpectedException(_compilerResult.BuildErrors));
+                            }
+                            else
+                            {
+                                _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
+                                _compilerResult.Dispose();
+                            }
                         }
                     }
 
@@ -261,7 +369,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     GC.WaitForPendingFinalizers();
                 }
             });
-            _mainInterpreterThread.ContinueWith((task) =>
+            _mainInterpreterTask.ContinueWith((task) =>
             {
                 callback.NotifyEndTask();
             });
@@ -285,7 +393,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             var currentCulture = LocalizationHelper.GetCurrentCulture();
 
-            _mainInterpreterThread = Task.Run(() =>
+            _mainInterpreterTask = Task.Run(() =>
             {
                 LocalizationHelper.SetCurrentCulture(currentCulture, false);
                 RuntimeHelpers.EnsureSufficientExecutionStack();
@@ -348,7 +456,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     GC.WaitForPendingFinalizers();
                 }
             });
-            _mainInterpreterThread.ContinueWith((task) =>
+            _mainInterpreterTask.ContinueWith((task) =>
             {
                 callback.NotifyEndTask();
             });
@@ -377,6 +485,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         internal void Pause()
         {
+            if (!DebugMode)
+            {
+                throw new InternalException("Unable to pause a program in release mode.");
+            }
+
             CheckState(BaZicInterpreterState.Running, BaZicInterpreterState.Preparing);
             _pauseModeWaiter = new AutoResetEvent(false);
             _pauseModeWaiter.Reset();
@@ -387,6 +500,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         internal void Resume()
         {
+            if (!DebugMode)
+            {
+                throw new InternalException("Unable to resume a program in release mode.");
+            }
+
             CheckState(BaZicInterpreterState.Pause);
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
             FreePauseModeWaiter();
@@ -549,13 +667,13 @@ namespace BaZic.Runtime.BaZic.Runtime
 
                 if (waitForMainInterpreterThread)
                 {
-                    await _mainInterpreterThread;
+                    await _mainInterpreterTask;
                 }
             }
             else
             {
                 _ignoreException = true;
-                _releaseModeRuntime.Stop();
+                _mainInterpreterThread.Abort();
                 await Task.Delay(500); // Let the time to the _mainInterpreterThread to stop.
             }
 
@@ -637,7 +755,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 if (!IsDisposed)
                 {
                     FreePauseModeWaiter();
-                    _mainInterpreterThread?.Dispose();
+                    _mainInterpreterTask?.Dispose();
                     _stateChangedHistory.Clear();
                     DebugInfos = null;
                 }

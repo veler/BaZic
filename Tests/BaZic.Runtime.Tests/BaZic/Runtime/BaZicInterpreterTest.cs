@@ -3,6 +3,8 @@ using BaZic.Runtime.BaZic.Code.Parser;
 using BaZic.Runtime.BaZic.Runtime;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -391,6 +393,32 @@ END FUNCTION";
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
+        }
+
+        [TestMethod]
+        public async Task BaZicCompile()
+        {
+            var inputCode =
+@"EXTERN FUNCTION Main(args[])
+    VARIABLE var1 = 1
+    VARIABLE Var1 = 2
+    VARIABLE result = var1 + Var1
+    System.Console.WriteLine(result.ToString())
+    RETURN result
+END FUNCTION";
+
+            using (var interpreter = new BaZicInterpreter(inputCode, string.Empty, false))
+            {
+                var tempFile = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".exe");
+                var errors = await interpreter.Build(Core.Enums.BaZicCompilerOutputType.ConsoleApp, tempFile);
+
+                Assert.IsNull(errors);
+                Assert.IsTrue(File.Exists(tempFile));
+                Assert.IsTrue(File.Exists(tempFile.Replace(".exe", ".pdb")));
+
+                File.Delete(tempFile);
+                File.Delete(tempFile.Replace(".exe", ".pdb"));
+            }
         }
     }
 }

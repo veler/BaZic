@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
+using BaZic.Core.Enums;
 using BaZic.Runtime.BaZic.Code;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.Localization;
@@ -24,8 +25,6 @@ namespace BaZic.Runtime.BaZic.Runtime
         private readonly BaZicInterpreterCore _baZicInterpreter;
         private readonly BaZicProgram _program;
         private readonly AssemblySandbox _assemblySandbox;
-
-        private Thread _currentThread;
 
         #endregion
 
@@ -63,7 +62,8 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Convert the BaZic program to CSharp code and build it in memory.
         /// </summary>
-        internal void Compile()
+        /// 
+        internal CompilerResult Build(BaZicCompilerOutputType outputType)
         {
             if (_baZicInterpreter.Verbose)
             {
@@ -78,27 +78,49 @@ namespace BaZic.Runtime.BaZic.Runtime
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.Compiling));
             }
 
-#if DEBUG
-            var optimizationlevel = OptimizationLevel.Debug;
-#else
-            var optimizationlevel = OptimizationLevel.Release;
-#endif
+            var outputKind = OutputKind.ConsoleApplication;
+            if (outputType == BaZicCompilerOutputType.WindowsApp)
+            {
+                outputKind = OutputKind.WindowsApplication;
+            }
+            else if (outputType == BaZicCompilerOutputType.DynamicallyLinkedLibrary)
+            {
+                outputKind = OutputKind.DynamicallyLinkedLibrary;
+            }
+
             var assemblyName = Guid.NewGuid().ToString();
             var references = GetAssemblyReferences();
-            var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, new CSharpCompilationOptions(outputKind: OutputKind.DynamicallyLinkedLibrary, optimizationLevel: optimizationlevel, platform: Platform.AnyCpu));
+            var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, new CSharpCompilationOptions(outputKind: outputKind, optimizationLevel: OptimizationLevel.Debug, platform: Platform.AnyCpu));
 
-            using (var memoryStream = new MemoryStream())
+            var assemblyStream = new MemoryStream();
+            var pdbStream = new MemoryStream();
+
+            var d = cSharpCompilation.GetDiagnostics();
+
+            var result = cSharpCompilation.Emit(peStream: assemblyStream, pdbStream: pdbStream);
+            var errors = GetCompilationErrors(result);
+
+            if (errors != null)
             {
-                var result = cSharpCompilation.Emit(memoryStream);
-                ThrowExceptionIfCompilationFailure(result);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                if (_baZicInterpreter.Verbose)
+                return new CompilerResult
                 {
-                    _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.BuiltSucceed));
-                }
-                _assemblySandbox.LoadAssembly(memoryStream);
+                    BuildErrors = errors
+                };
             }
+
+            assemblyStream.Seek(0, SeekOrigin.Begin);
+            pdbStream.Seek(0, SeekOrigin.Begin);
+
+            if (_baZicInterpreter.Verbose)
+            {
+                _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.BuiltSucceed));
+            }
+
+            return new CompilerResult
+            {
+                Assembly = assemblyStream,
+                Pdb = pdbStream
+            };
         }
 
         /// <summary>
@@ -107,7 +129,6 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="arguments">The arguments to pass to the program.</param>
         internal void Run(params object[] arguments)
         {
-            _currentThread = Thread.CurrentThread;
             _baZicInterpreter.CheckState(BaZicInterpreterState.Preparing);
 
             _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
@@ -124,11 +145,6 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.ExecutionEnded));
             }
-        }
-
-        internal void Stop()
-        {
-            _currentThread.Abort();
         }
 
         /// <summary>
@@ -153,18 +169,19 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Throw exceptions if the compilation failed.
         /// </summary>
         /// <param name="result">The result of the compilation.</param>
-        private void ThrowExceptionIfCompilationFailure(EmitResult result)
+        /// <returns>Returns an <see cref="AggregateException"/> or null if the build succeeded.</returns>
+        private AggregateException GetCompilationErrors(EmitResult result)
         {
             if (result.Success)
             {
-                return;
+                return null;
             }
 
             var compilationErrors = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error).ToList();
 
             if (!compilationErrors.Any())
             {
-                return;
+                return null;
             }
 
             var errorList = new List<Exception>();
@@ -175,7 +192,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                 var ErrorMessage = $"{errorNumber}: {errorDescription};";
                 errorList.Add(new Exception(L.BaZic.Runtime.CompiledProgramRunner.FormattedBuildFaild(errorNumber, errorDescription)));
             }
-            throw new AggregateException(errorList);
+
+            return new AggregateException(errorList);
         }
 
         #endregion

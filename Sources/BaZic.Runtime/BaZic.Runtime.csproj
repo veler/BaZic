@@ -236,6 +236,7 @@
     <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangedBridge.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangeEventArgs.cs" />
     <Compile Include="BaZic\Runtime\CompiledProgramRunner.cs" />
+    <Compile Include="BaZic\Runtime\CompilerResult.cs" />
     <Compile Include="BaZic\Runtime\Debugger\BlockState.cs" />
     <Compile Include="BaZic\Runtime\Debugger\Call.cs" />
     <Compile Include="BaZic\Runtime\Debugger\DebugInfo.cs" />
