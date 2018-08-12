@@ -244,6 +244,8 @@
                 <OneStateMinimum>At least one state is expected.</OneStateMinimum>
                 <AssemblyLoaded>Reference assembly '{assemblyPath}' loaded in the application domain.</AssemblyLoaded>
                 <AssemblyFailedLoad>Unable to load the required assembly '{assemblyPath}'.</AssemblyFailedLoad>
+                <CannotStartDebugAfterBuild>It is forbidden to start the program in debug mode when the program has been built in release mode.</CannotStartDebugAfterBuild>
+                <CannotBuildAfterStartDebug>It is forbidden to build the program in release mode when the program started in debug mode.</CannotBuildAfterStartDebug>
             </BaZicInterpreter>
             <BaZicInterpreterStateChangeEventArgs>
                 <StoppedWithErrorForbidden>You might want to stop the algorithm interpreter by throwing an error. Please do not use this constructor.</StoppedWithErrorForbidden>
@@ -258,6 +260,7 @@
                 <RunningProgram>Running the program.</RunningProgram>
                 <ExecutionEnded>The program ended.</ExecutionEnded>
                 <BuildFaild>Compilation failed : {errorNumber}: {errorDescription}</BuildFaild>
+                <InvokeMethod>Invoking method {methodName}.</InvokeMethod>
             </CompiledProgramRunner>
         </Runtime>
     </BaZic>

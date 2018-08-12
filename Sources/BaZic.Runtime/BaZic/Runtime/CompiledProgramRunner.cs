@@ -141,12 +141,23 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
 
             var argumentValues = new object[] { arguments };
-            ProgramResult = _assemblySandbox.CreateInstanceAndInvoke("BaZicProgramReleaseMode.Program", "Main", argumentValues);
+            ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
 
             if (_baZicInterpreter.Verbose)
             {
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.ExecutionEnded));
             }
+        }
+
+        /// <summary>
+        /// Invokes a public method in the program.
+        /// </summary>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="arguments">The arguments to pass to the program.</param>
+        /// <returns>Returns the result of the method.</returns>
+        internal object InvokeMethod(string methodName, params object[] arguments)
+        {
+            return _assemblySandbox.CreateInstanceAndInvoke("BaZicProgramReleaseMode.Program", methodName, arguments);
         }
 
         /// <summary>

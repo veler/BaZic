@@ -3,10 +3,8 @@ using BaZic.Core.Enums;
 using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger;
-using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.BaZic.Runtime
@@ -137,6 +135,17 @@ namespace BaZic.Runtime.BaZic.Runtime
         }
 
         /// <summary>
+        /// Compiles the program in memory and load it or returns the build errors.
+        /// </summary>
+        /// <returns>Returns the build errors, or null if it succeed.</returns>
+        public async Task<AggregateException> Build()
+        {
+            var callback = new MarshaledResultSetter<AggregateException>();
+            _core.Build(callback);
+            return await callback.Task;
+        }
+
+        /// <summary>
         /// Starts the interpreter in release mode. The program will be compiled (emitted) and run quickly. Breakpoint statements will be ignored.
         /// </summary>
         /// <param name="verbose">Defines if the verbose mode must be enabled or not.</param>
@@ -170,7 +179,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="awaitIfAsync">Await if the method is maked as asynchronous.</param>
         /// <param name="args">The arguments to pass to the method.</param>
         /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
-        public async Task<object> InvokeMethod(bool verbose, string methodName, bool awaitIfAsync, params Expression[] args)
+        public async Task<object> InvokeMethod(bool verbose, string methodName, bool awaitIfAsync, params object[] args)
         {
             var callback = new MarshaledResultSetter<object>();
             _core.InvokeMethod(callback, verbose, methodName, awaitIfAsync, args);

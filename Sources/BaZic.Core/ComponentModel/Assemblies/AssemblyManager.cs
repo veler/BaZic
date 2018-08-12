@@ -233,7 +233,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                     {
                         _assemblyResolutionDirectory = new FileInfo(loadedAssembly.Assembly.Location).Directory;
                     }
-                    result = loadedAssembly.Assembly.GetTypes().SingleOrDefault(type => string.Compare(type.FullName, fullName, StringComparison.Ordinal) == 0);
+                    result = loadedAssembly.Assembly.GetTypes().SingleOrDefault(type => type.IsPublic && string.Compare(type.FullName, fullName, StringComparison.Ordinal) == 0);
 
                     i++;
                 }
@@ -260,14 +260,14 @@ namespace BaZic.Core.ComponentModel.Assemblies
         {
             var type = GetTypeRef(fullName, string.Empty);
             var instance = type.Assembly.CreateInstance(type.FullName);
-            var method = type.GetRuntimeMethods().SingleOrDefault(m => string.Compare(m.Name, methodName, StringComparison.Ordinal) == 0);
+            var method = type.GetRuntimeMethods().SingleOrDefault(m => m.IsPublic && string.Compare(m.Name, methodName, StringComparison.Ordinal) == 0);
+
+            if (method == null)
+            {
+                throw new MissingMethodException($"Unable to find a method called '{methodName}'.");
+            }
 
             var methodResult = method.Invoke(instance, arguments);
-
-            if (_exceptionThrown != null)
-            {
-                throw _exceptionThrown;
-            }
             return methodResult;
         }
 
