@@ -39,10 +39,10 @@ namespace BaZic.Runtime.BaZic.Runtime
         private Thread _mainInterpreterThread;
         private CompiledProgramRunner _releaseModeRuntime;
         private CompilerResult _compilerResult;
-        private BaZicInterpreterStateChangedBridge _bridge;
 
         private AutoResetEvent _pauseModeWaiter;
         private bool _ignoreException;
+        private bool _externMethodInvoked;
 
         #endregion
 
@@ -99,7 +99,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Gets the current program interpreter.
         /// </summary>
-        internal ProgramInterpreter ProgramInterpreter { get; private set; }
+        internal ProgramInterpreter ProgramInterpreter { get; set; }
 
         /// <summary>
         /// Gets the list of debug information for every running thread in the program.
@@ -110,6 +110,17 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Gets the program actually used for running.
         /// </summary>
         internal BaZicProgram Program { get; }
+
+        /// <summary>
+        /// Gets a proxy used to get and listen to the interpreter state in a cross-AppDomain context.
+        /// </summary>
+        internal BaZicInterpreterStateChangedBridge StateBridgeProxy { get; private set; }
+
+        #endregion
+
+        #region Events
+
+        private event BaZicInterpreterStateEventHandler LocalStateChanged;
 
         #endregion
 
@@ -125,7 +136,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             Requires.NotNull(baZicInterpreterStateChangedBridge, nameof(baZicInterpreterStateChangedBridge));
             Requires.NotNull(assemblySandbox, nameof(assemblySandbox));
 
-            _bridge = baZicInterpreterStateChangedBridge;
+            StateBridgeProxy = baZicInterpreterStateChangedBridge;
             _stateChangedHistory = new List<BaZicInterpreterStateChangeEventArgs>();
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Ready));
 
@@ -213,6 +224,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                 throw new InvalidOperationException(L.BaZic.Runtime.BaZicInterpreter.CannotRunOptimizedProgramInRelease);
             }
 
+            ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
+
             AggregateException buildErrors = null;
             var currentCulture = LocalizationHelper.GetCurrentCulture();
 
@@ -243,6 +256,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     if (compileResult.BuildErrors != null)
                     {
                         buildErrors = compileResult.BuildErrors;
+                        ChangeState(this, new UnexpectedException(buildErrors));
                         return;
                     }
 
@@ -281,10 +295,13 @@ namespace BaZic.Runtime.BaZic.Runtime
                             compileResult.Assembly.WriteTo(assemblyFileStream);
                             compileResult.Pdb.WriteTo(pdbFileStream);
                         }
+
+                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
                     }
                     catch (Exception exception)
                     {
                         buildErrors = new AggregateException(new List<Exception> { exception });
+                        ChangeState(this, new UnexpectedException(exception));
                     }
                 }
             });
@@ -320,81 +337,40 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns an awaitable task that can wait the end of the program execution</returns>
         internal void StartRelease(MarshaledResultSetter callback, bool verbose, params object[] args)
         {
-            CheckState(BaZicInterpreterState.Ready, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
-
-            if (ProgramIsOptimized)
+            var action = new Action(() =>
             {
-                throw new InvalidOperationException(L.BaZic.Runtime.BaZicInterpreter.CannotRunOptimizedProgramInRelease);
-            }
-
-            _programArguments = args;
-            DebugMode = false;
-            Verbose = false;
-            DebugInfos = null;
-
-            var currentCulture = LocalizationHelper.GetCurrentCulture();
-
-            _mainInterpreterTask = Task.Run(() =>
-            {
-                _mainInterpreterThread = Thread.CurrentThread;
-
-                LocalizationHelper.SetCurrentCulture(currentCulture, false);
-                RuntimeHelpers.EnsureSufficientExecutionStack();
-                GCSettings.LatencyMode = GCLatencyMode.LowLatency;
-
-                ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Preparing));
-
-                try
+                if (_releaseModeRuntime == null || _compilerResult == null || _compilerResult.BuildErrors != null)
                 {
-                    if (_releaseModeRuntime == null || _compilerResult == null || _compilerResult.BuildErrors != null)
-                    {
-                        if (State == BaZicInterpreterState.Preparing)
-                        {
-                            LoadAssemblies();
-                            _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
-
-                            if (_compilerResult.BuildErrors != null)
-                            {
-                                ChangeState(this, new UnexpectedException(_compilerResult.BuildErrors));
-                            }
-                            else
-                            {
-                                _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
-                                _compilerResult.Dispose();
-                            }
-                        }
-                    }
-
                     if (State == BaZicInterpreterState.Preparing)
                     {
-                        _releaseModeRuntime.Run(_programArguments);
+                        LoadAssemblies();
+                        _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
 
-                        if (State == BaZicInterpreterState.Running)
+                        if (_compilerResult.BuildErrors != null)
                         {
-                            ProgramResult = _releaseModeRuntime.ProgramResult;
-                            Stop(false).ConfigureAwait(false).GetAwaiter().GetResult();
+                            ChangeState(this, new UnexpectedException(_compilerResult.BuildErrors));
+                        }
+                        else
+                        {
+                            _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
+                            _compilerResult.Dispose();
                         }
                     }
                 }
-                catch (Exception exception)
-                {
-                    if (!_ignoreException)
-                    {
-                        ChangeState(this, new UnexpectedException(exception));
-                    }
 
-                    _ignoreException = false;
-                }
-                finally
+                if (State == BaZicInterpreterState.Preparing)
                 {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
+                    _releaseModeRuntime.Run(_programArguments);
+
+                    if (State == BaZicInterpreterState.Running || State == BaZicInterpreterState.Idle)
+                    {
+                        ProgramResult = _releaseModeRuntime.ProgramResult;
+                        Stop(false).ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
                 }
             });
-            _mainInterpreterTask.ContinueWith((task) =>
-            {
-                callback.NotifyEndTask();
-            });
+
+            Start(callback, action, verbose, args);
         }
 
         /// <summary>
@@ -406,81 +382,122 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns an awaitable task that can wait the end of the program execution</returns>
         internal void StartDebug(MarshaledResultSetter callback, bool verbose, params object[] args)
         {
-            CheckState(BaZicInterpreterState.Ready, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
-
-            _programArguments = args;
             DebugMode = true;
-            Verbose = verbose;
-            DebugInfos = null;
 
-            var currentCulture = LocalizationHelper.GetCurrentCulture();
-
-            _mainInterpreterTask = Task.Run(() =>
+            var action = new Action(() =>
             {
-                LocalizationHelper.SetCurrentCulture(currentCulture, false);
-                RuntimeHelpers.EnsureSufficientExecutionStack();
-                GCSettings.LatencyMode = GCLatencyMode.LowLatency;
+                LoadAssemblies();
 
-                ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Preparing));
-
-                try
+                if (State == BaZicInterpreterState.Preparing)
                 {
-                    LoadAssemblies();
+                    ProgramInterpreter = new ProgramInterpreter(this, Program);
+                    ProgramInterpreter.Start(_programArguments);
 
-                    if (State == BaZicInterpreterState.Preparing)
+                    var waitThreads = true;
+                    do
                     {
-                        ProgramInterpreter = new ProgramInterpreter(this, Program);
-                        ProgramInterpreter.Start(_programArguments);
-
-                        var waitThreads = true;
-                        do
+                        Task[] threads = null;
+                        lock (_unwaitedMethodInvocation)
                         {
-                            Task[] threads = null;
-                            lock (_unwaitedMethodInvocation)
-                            {
-                                threads = _unwaitedMethodInvocation.ToArray();
-                            }
-
-                            Task.WhenAll(threads).ConfigureAwait(false).GetAwaiter().GetResult();
-
-                            lock (_unwaitedMethodInvocation)
-                            {
-                                waitThreads = _unwaitedMethodInvocation.Any(t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
-                            }
-                        } while (waitThreads);
-
-                        foreach (var task in _unwaitedMethodInvocation)
-                        {
-                            task.Dispose();
+                            threads = _unwaitedMethodInvocation.ToArray();
                         }
-                        _unwaitedMethodInvocation.Clear();
 
+                        Task.WhenAll(threads).ConfigureAwait(false).GetAwaiter().GetResult();
+
+                        lock (_unwaitedMethodInvocation)
+                        {
+                            waitThreads = _unwaitedMethodInvocation.Any(t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
+                        }
+                    } while (waitThreads);
+
+                    foreach (var task in _unwaitedMethodInvocation)
+                    {
+                        task.Dispose();
+                    }
+                    _unwaitedMethodInvocation.Clear();
+
+                    if (!_externMethodInvoked)
+                    {
                         foreach (var variable in ProgramInterpreter.Variables)
                         {
                             variable.Dispose();
                         }
 
-                        if (State == BaZicInterpreterState.Running)
+                        if (State == BaZicInterpreterState.Running || State == BaZicInterpreterState.Idle)
                         {
                             ProgramResult = ProgramInterpreter.ProgramResult;
                             Stop(false).ConfigureAwait(false).GetAwaiter().GetResult();
                         }
                     }
                 }
-                catch (Exception exception)
-                {
-                    ChangeState(this, new UnexpectedException(exception));
-                }
-                finally
-                {
-                    ProgramInterpreter = null;
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
             });
-            _mainInterpreterTask.ContinueWith((task) =>
+
+            Start(callback, action, verbose, args);
+        }
+
+        /// <summary>
+        /// Invoke a public method accessible from outside of the interpreter (EXTERN FUNCTION).
+        /// </summary>
+        /// <param name="callback">The cross-AppDomain task proxy.</param>
+        /// <param name="verbose">Defines if the verbose mode must be enabled or not.</param>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="awaitIfAsync">Await if the method is maked as asynchronous.</param>
+        /// <param name="args">The arguments to pass to the method.</param>
+        /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
+        internal async void InvokeMethod(MarshaledResultSetter<object> callback, bool verbose, string methodName, bool awaitIfAsync, Expression[] args)
+        {
+            // TODO : RELEASE MODE
+
+            DebugMode = true;
+            _externMethodInvoked = true;
+
+            if (State == BaZicInterpreterState.Ready || State == BaZicInterpreterState.Stopped || State == BaZicInterpreterState.StoppedWithError)
             {
-                callback.NotifyEndTask();
+                // Creates a new ProgramInterpreter.
+
+                var privateCallback = new MarshaledResultSetter();
+                var action = new Action(() =>
+                {
+                    LoadAssemblies();
+
+                    if (State == BaZicInterpreterState.Preparing)
+                    {
+                        ProgramInterpreter = new ProgramInterpreter(this, Program);
+                        ProgramInterpreter.InitializeGlobalState();
+                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                    }
+                });
+
+                Start(privateCallback, action, verbose, args);
+                await privateCallback.Task;
+            }
+            else if (State == BaZicInterpreterState.Preparing)
+            {
+                // Wait for running.
+                WaitForState(BaZicInterpreterState.Running);
+            }
+
+            if (State == BaZicInterpreterState.Running)
+            {
+                // Wait for having being idle.
+                WaitForState(BaZicInterpreterState.Idle);
+            }
+
+            CheckState(BaZicInterpreterState.Idle);
+
+            var currentCulture = LocalizationHelper.GetCurrentCulture();
+
+            var thread = Task.Run(() =>
+            {
+                LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                return ProgramInterpreter.InvokeMethod(methodName, awaitIfAsync, args);
+            });
+            AddUnwaitedMethodInvocation(thread);
+
+            var t = thread.ContinueWith((task) =>
+            {
+                callback.SetResult(task.Result);
+                _externMethodInvoked = false;
             });
         }
 
@@ -512,7 +529,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 throw new InternalException("Unable to pause a program in release mode.");
             }
 
-            CheckState(BaZicInterpreterState.Running, BaZicInterpreterState.Preparing);
+            CheckState(BaZicInterpreterState.Running, BaZicInterpreterState.Idle, BaZicInterpreterState.Preparing);
             _pauseModeWaiter = new AutoResetEvent(false);
             _pauseModeWaiter.Reset();
         }
@@ -617,7 +634,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                             Error = e.Error;
                             State = e.State;
                             _stateChangedHistory.Add(e);
-                            _bridge.RaiseStateChange(e);
+                            StateBridgeProxy.RaiseStateChange(e);
+                            LocalStateChanged?.Invoke(this, e);
                         }
                         break;
 
@@ -625,6 +643,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     case BaZicInterpreterState.Preparing:
                     case BaZicInterpreterState.Ready:
                     case BaZicInterpreterState.Running:
+                    case BaZicInterpreterState.Idle:
                     case BaZicInterpreterState.Stopped:
                         State = e.State;
                         break;
@@ -639,7 +658,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                 if (State != BaZicInterpreterState.StoppedWithError)
                 {
                     _stateChangedHistory.Add(e);
-                    _bridge.RaiseStateChange(e);
+                    StateBridgeProxy.RaiseStateChange(e);
+                    LocalStateChanged?.Invoke(this, e);
                 }
             }
         }
@@ -692,13 +712,61 @@ namespace BaZic.Runtime.BaZic.Runtime
             Program.WithAssemblies(assemblies);
         }
 
+        private void Start(MarshaledResultSetter callback, Action action, bool verbose, params object[] args)
+        {
+            CheckState(BaZicInterpreterState.Ready, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
+
+            ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Preparing));
+
+            _programArguments = args;
+            Verbose = verbose;
+            DebugInfos = null;
+
+            var currentCulture = LocalizationHelper.GetCurrentCulture();
+
+            _mainInterpreterTask = Task.Run(() =>
+            {
+                _mainInterpreterThread = Thread.CurrentThread;
+                LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                RuntimeHelpers.EnsureSufficientExecutionStack();
+                GCSettings.LatencyMode = GCLatencyMode.LowLatency;
+
+                try
+                {
+                    action();
+                }
+                catch (Exception exception)
+                {
+                    if (!_ignoreException)
+                    {
+                        ChangeState(this, new UnexpectedException(exception));
+                    }
+
+                    _ignoreException = false;
+                }
+                finally
+                {
+                    if (!_externMethodInvoked)
+                    {
+                        ProgramInterpreter = null;
+                    }
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+            });
+            _mainInterpreterTask.ContinueWith((task) =>
+            {
+                callback.NotifyEndTask();
+            });
+        }
+
         /// <summary>
         /// Ask the program to stop.
         /// </summary>
         /// <param name="waitForMainInterpreterThread">Defines whether the method should wait the end of the interpretation to finish.</param>
         private async Task Stop(bool waitForMainInterpreterThread)
         {
-            CheckState(BaZicInterpreterState.Pause, BaZicInterpreterState.Running, BaZicInterpreterState.Preparing);
+            CheckState(BaZicInterpreterState.Pause, BaZicInterpreterState.Running, BaZicInterpreterState.Idle, BaZicInterpreterState.Preparing);
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
 
             if (DebugMode)
@@ -781,6 +849,32 @@ namespace BaZic.Runtime.BaZic.Runtime
             catch (Exception exception)
             {
                 ChangeState(this, new LoadAssemblyException(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyFailedLoad(details.ToLocationOrFullName()), details.ToLocationOrFullName(), exception));
+            }
+        }
+
+        /// <summary>
+        /// Blocks the current execution flow until the specified <see cref="BaZicInterpreterState"/> is encounted.
+        /// </summary>
+        /// <param name="expectedState">The expected state</param>
+        private void WaitForState(BaZicInterpreterState expectedState)
+        {
+            using (var resetEvent = new AutoResetEvent(false))
+            {
+                resetEvent.Reset();
+
+                BaZicInterpreterStateEventHandler stateChanged = (s, e) =>
+                {
+                    if (e.State == expectedState)
+                    {
+                        resetEvent.Set();
+                    }
+                };
+
+                LocalStateChanged += stateChanged;
+
+                resetEvent.WaitOne();
+
+                LocalStateChanged -= stateChanged;
             }
         }
 

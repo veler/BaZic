@@ -53,6 +53,7 @@ END FUNCTION";
 [Log] The expression returned the value '5' (System.Int32).
 [Log] Variable 'var1' declared. Default value : 5 (System.Int32)
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
+[State] Idle
 [State] Stopped
 ";
 
@@ -154,6 +155,7 @@ END FUNCTION";
 [Log] Return : Italic (System.Windows.FontStyle)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : Italic (System.Windows.FontStyle)
+[State] Idle
 [State] Stopped
 ";
 

@@ -90,7 +90,9 @@ END FUNCTION
 [Log] Declaring bindings.
 [Log] Variable 'Button1_Content' declared. Default value : Hello (Button1.Content : )
 [Log] Showing user interface.
+[State] Idle
 [Log] An event has been raised from an interaction with the user interface.
+[State] Running
 [Log] Preparing to invoke the method 'Window1_Loaded'.
 [Log] Executing the argument values of the method.
 [Log] Invoking the synchronous method 'Window1_Loaded'.
@@ -137,6 +139,7 @@ END FUNCTION
 [Log] Return : True (System.Boolean)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Window1_Loaded'. Returned value : True (System.Boolean)
+[State] Idle
 [Log] The user requests to stop the interpreter as soon as possible.
 [State] Stopped
 ";

@@ -74,6 +74,7 @@ END FUNCTION";
 [Log] The expression returned the value 'Hello' (System.String).
 [Log] Variable 'var6' declared. Default value : Hello (System.String)
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
+[State] Idle
 [State] Stopped
 ";
 

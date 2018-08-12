@@ -173,6 +173,7 @@ END FUNCTION";
 [Log] Return : FOO (System.String)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : FOO (System.String)
+[State] Idle
 [State] Stopped
 ";
 

@@ -51,6 +51,7 @@ END FUNCTION";
 [Log] Return : {Null}
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
+[State] Idle
 [State] Stopped
 ";
 
@@ -90,6 +91,7 @@ END FUNCTION";
 [Log] Return : {Null}
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
+[State] Idle
 [State] Stopped
 ";
 
@@ -159,6 +161,7 @@ END FUNCTION # Should return 1";
 [Log] End of the execution of the condition 'var1 == {null}'.
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : 1 (System.Int32)
+[State] Idle
 [State] Stopped
 ";
 

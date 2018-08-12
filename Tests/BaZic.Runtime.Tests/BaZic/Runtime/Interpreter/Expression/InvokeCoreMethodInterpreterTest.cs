@@ -73,6 +73,7 @@ END FUNCTION";
 [Log] The expression returned the value '123' (System.Int32).
 [Log] Variable 'var3' declared. Default value : 123 (System.Int32)
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
+[State] Idle
 [State] Stopped
 ";
 
@@ -145,6 +146,7 @@ END FUNCTION";
 [Log] Return : <!DOCTYPE html> (System.String)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : <!DOCTYPE html> (System.String)
+[State] Idle
 [State] Stopped
 ";
 

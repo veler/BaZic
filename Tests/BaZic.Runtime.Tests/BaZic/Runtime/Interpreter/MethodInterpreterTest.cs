@@ -56,6 +56,7 @@ END FUNCTION";
 [Log] Return : Hello World (System.String)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : Hello World (System.String)
+[State] Idle
 [State] Stopped
 ";
 

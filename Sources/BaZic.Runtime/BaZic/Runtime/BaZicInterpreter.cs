@@ -3,8 +3,10 @@ using BaZic.Core.Enums;
 using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger;
+using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.BaZic.Runtime
@@ -158,6 +160,21 @@ namespace BaZic.Runtime.BaZic.Runtime
             var callback = new MarshaledResultSetter();
             _core.StartDebug(callback, verbose, args);
             await callback.Task;
+        }
+
+        /// <summary>
+        /// Invoke a public method accessible from outside of the interpreter (EXTERN FUNCTION).
+        /// </summary>
+        /// <param name="verbose">Defines if the verbose mode must be enabled or not.</param>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="awaitIfAsync">Await if the method is maked as asynchronous.</param>
+        /// <param name="args">The arguments to pass to the method.</param>
+        /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
+        public async Task<object> InvokeMethod(bool verbose, string methodName, bool awaitIfAsync, params Expression[] args)
+        {
+            var callback = new MarshaledResultSetter<object>();
+            _core.InvokeMethod(callback, verbose, methodName, awaitIfAsync, args);
+            return await callback.Task;
         }
 
         /// <summary>

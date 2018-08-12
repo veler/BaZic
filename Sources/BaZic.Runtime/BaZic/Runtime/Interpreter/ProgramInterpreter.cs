@@ -1,11 +1,13 @@
 ﻿using BaZic.Core.ComponentModel;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
+using BaZic.Runtime.BaZic.Runtime.Interpreter.Expression;
 using BaZic.Runtime.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Markup;
 
@@ -20,7 +22,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 
         private readonly BaZicProgram _program;
         private readonly BaZicUiProgram _uiProgram;
+
         private Action _closeUiAction;
+        private bool _globalStateInitialized;
 
         #endregion
 
@@ -76,15 +80,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         {
             BaZicInterpreter.CheckState(BaZicInterpreterState.Preparing);
 
-            if (BaZicInterpreter.Verbose)
-            {
-                VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.DeclaringGlobalVariable);
-            }
-
-            foreach (var variable in _program.GlobalVariables)
-            {
-                AddVariable(variable);
-            }
+            InitializeGlobalState();
 
             var entryPoint = GetEntryPointMethod();
 
@@ -101,9 +97,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
             var argsExpressions = new List<Code.AbstractSyntaxTree.Expression>();
-            foreach (var argument in args)
+            if (args != null)
             {
-                argsExpressions.Add(new PrimitiveExpression(argument));
+                foreach (var argument in args)
+                {
+                    argsExpressions.Add(new PrimitiveExpression(argument));
+                }
             }
 
             var entryPointInvocation = new InvokeMethodExpression(Consts.EntryPointMethodName, false).WithParameters(new ArrayCreationExpression().WithValues(argsExpressions.ToArray()));
@@ -156,6 +155,30 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                                 VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.EventRaised);
                             }
 
+                            if (BaZicInterpreter.State == BaZicInterpreterState.Running)
+                            {
+                                // Wait for having being idle.
+                                using (var resetEvent = new AutoResetEvent(false))
+                                {
+                                    resetEvent.Reset();
+
+                                    BaZicInterpreterStateEventHandler stateChanged = (s, e) =>
+                                    {
+                                        if (e.State == BaZicInterpreterState.Idle)
+                                        {
+                                            resetEvent.Set();
+                                        }
+                                    };
+
+                                    BaZicInterpreter.StateBridgeProxy.StateChanged += stateChanged;
+
+                                    resetEvent.WaitOne();
+
+                                    BaZicInterpreter.StateBridgeProxy.StateChanged -= stateChanged;
+                                }
+                            }
+
+                            BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
                             var eventMethodDeclaration = _uiProgram.Methods.Single(m => m.Id == uiEvent.MethodId);
                             var eventInvocation = new InvokeMethodExpression(eventMethodDeclaration.Name.Identifier, false);
                             var eventMethodInterpreter = new MethodInterpreter(BaZicInterpreter, this, eventMethodDeclaration, eventInvocation);
@@ -168,6 +191,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                             {
                                 eventMethodInterpreter.Invoke();
                             }
+
+                            BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
                         });
 
                         BaZicInterpreter.Reflection.SubscribeEvent(targetObject, uiEvent.ControlEventName, action);
@@ -205,6 +230,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 
                     try
                     {
+                        BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
                         UserInterface.Show();
                         System.Windows.Threading.Dispatcher.Run();
                     }
@@ -235,6 +261,10 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     throw eventException;
                 }
             }
+            else
+            {
+                BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+            }
         }
 
         /// <summary>
@@ -243,6 +273,48 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         internal void CloseUserInterface()
         {
             _closeUiAction?.Invoke();
+        }
+
+        /// <summary>
+        /// Invoke a public method accessible from outside of the interpreter (EXTERN FUNCTION).
+        /// </summary>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="awaitIfAsync">Await if the method is maked as asynchronous.</param>
+        /// <param name="args">The arguments to pass to the method.</param>
+        /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
+        internal object InvokeMethod(string methodName, bool awaitIfAsync, Code.AbstractSyntaxTree.Expression[] args)
+        {
+            InitializeGlobalState();
+
+            BaZicInterpreter.CheckState(BaZicInterpreterState.Running, BaZicInterpreterState.Idle);
+
+            var invokeExpression = new InvokeMethodExpression(methodName, awaitIfAsync).WithParameters(args);
+            var result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, true).Run();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Declares the global variables if needed.
+        /// </summary>
+        internal void InitializeGlobalState()
+        {
+            if (_globalStateInitialized)
+            {
+                return;
+            }
+
+            if (BaZicInterpreter.Verbose)
+            {
+                VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.DeclaringGlobalVariable);
+            }
+
+            foreach (var variable in _program.GlobalVariables)
+            {
+                AddVariable(variable);
+            }
+
+            _globalStateInitialized = true;
         }
 
         /// <summary>

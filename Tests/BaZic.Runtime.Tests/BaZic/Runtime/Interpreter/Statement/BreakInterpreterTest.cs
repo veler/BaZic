@@ -365,6 +365,7 @@ END FUNCTION";
 [Log] Return : 10 (System.Int32)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : 10 (System.Int32)
+[State] Idle
 [State] Stopped
 ";
 
@@ -762,6 +763,7 @@ END FUNCTION";
 [Log] Return : 10 (System.Int32)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : 10 (System.Int32)
+[State] Idle
 [State] Stopped
 ";
 

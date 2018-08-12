@@ -57,6 +57,7 @@ END FUNCTION";
 [Log] Return : False (System.Boolean)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : False (System.Boolean)
+[State] Idle
 [State] Stopped
 ";
 
