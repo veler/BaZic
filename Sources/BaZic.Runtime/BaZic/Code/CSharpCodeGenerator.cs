@@ -54,7 +54,7 @@ namespace BaZic.Runtime.BaZic.Code
             var globalVariables = new List<string>();
             foreach (var variable in syntaxTree.GlobalVariables)
             {
-                globalVariables.Add(indent + GenerateVariableDeclaration(variable));
+                globalVariables.Add(indent + GenerateVariableDeclaration(variable, true, true));
             }
 
             var globalVariablesString = string.Join(Environment.NewLine, globalVariables);
@@ -130,7 +130,7 @@ namespace BaZic.Runtime.BaZic.Code
                 var globalVariables = new List<string>();
                 foreach (var variable in syntaxTree.GlobalVariables)
                 {
-                    globalVariables.Add($"{indent}private {GenerateVariableDeclaration(variable)}");
+                    globalVariables.Add(indent + GenerateVariableDeclaration(variable, true, true));
                 }
 
                 globalVariablesString = string.Join(Environment.NewLine, globalVariables);
@@ -299,7 +299,7 @@ namespace BaZic.Runtime.BaZic.Code
                     return GenerateTryCatchStatement(tryCatch);
 
                 case VariableDeclaration variable:
-                    return GenerateVariableDeclaration(variable);
+                    return GenerateVariableDeclaration(variable, false, false);
 
                 case ReturnStatement @return:
                     return GenerateReturnStatement(@return);
@@ -860,16 +860,28 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates the code for a <see cref="VariableDeclaration"/>.
         /// </summary>
         /// <param name="statement">The statement</param>
+        /// <param name="isGlobal">Defines whether it is a global variable or not.</param>
+        /// <param name="isPrivate">Definew whether the variable is private.</param>
         /// <returns>A CSharp code</returns>
-        private string GenerateVariableDeclaration(VariableDeclaration statement)
+        private string GenerateVariableDeclaration(VariableDeclaration statement, bool isGlobal, bool isPrivate)
         {
+            var accessor = string.Empty;
+            if (isPrivate)
+            {
+                accessor += "private ";
+            }
+            if (isGlobal)
+            {
+                accessor += "static ";
+            }
+
             if (statement.DefaultValue == null)
             {
-                return $"dynamic {statement.Name} = null;";
+                return $"{accessor}dynamic {statement.Name} = null;";
             }
 
             var defaultValue = GenerateExpression(statement.DefaultValue);
-            return $"dynamic {statement.Name} = {defaultValue};";
+            return $"{accessor}dynamic {statement.Name} = {defaultValue};";
         }
 
         /// <summary>
