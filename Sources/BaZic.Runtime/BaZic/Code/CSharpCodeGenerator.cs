@@ -81,7 +81,7 @@ namespace BaZic.Runtime.BaZic.Code
                    $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
                    $"{{" + Environment.NewLine +
                    $"    [System.Serializable]" + Environment.NewLine +
-                   $"    public sealed class Program : System.MarshalByRefObject" + Environment.NewLine +
+                   $"    public static class Program" + Environment.NewLine +
                    $"    {{" + Environment.NewLine +
                    $"{globalVariablesString}" +
                    $"{methodsString}" + Environment.NewLine +
@@ -177,13 +177,13 @@ namespace BaZic.Runtime.BaZic.Code
                    $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
                    $"{{" + Environment.NewLine +
                    $"    [System.Serializable]" + Environment.NewLine +
-                   $"    public sealed class Program : System.MarshalByRefObject" + Environment.NewLine +
+                   $"    public static class Program" + Environment.NewLine +
                    $"    {{" + Environment.NewLine +
                    $"{globalVariablesString}" +
                    $"{bindingsString}" +
-                   $"        public Program()" + Environment.NewLine +
+                   $"        static Program()" + Environment.NewLine +
                    $"        {{" + Environment.NewLine +
-                   $"            ProgramUiHelper.CreateNewInstance();" + Environment.NewLine +
+                   $"            ProgramHelper.CreateNewInstance();" + Environment.NewLine +
                    $"        }}" + Environment.NewLine + Environment.NewLine +
                    $"{methodsString}" + Environment.NewLine +
                    $"    }}" + Environment.NewLine +
@@ -899,7 +899,7 @@ namespace BaZic.Runtime.BaZic.Code
                 _uiLoadingStatements.AppendLine($"            {statement.ControlName}_{statement.ControlPropertyName} = {defaultValue};");
             }
 
-            return $"private dynamic {statement.ControlName}_{statement.ControlPropertyName} {{ get {{ dynamic result = ProgramUiHelper.Instance.GetControl(\"{statement.ControlName}\").{statement.ControlPropertyName}; return result; }} set {{ ProgramUiHelper.Instance.GetControl(\"{statement.ControlName}\").{statement.ControlPropertyName} = value; }} }}";
+            return $"private static dynamic {statement.ControlName}_{statement.ControlPropertyName} {{ get {{ dynamic result = ProgramHelper.Instance.GetControl(\"{statement.ControlName}\")?.{statement.ControlPropertyName}; return result; }} set {{ ProgramHelper.Instance.GetControl(\"{statement.ControlName}\").{statement.ControlPropertyName} = value; }} }}";
         }
 
         /// <summary>
@@ -978,7 +978,7 @@ namespace BaZic.Runtime.BaZic.Code
 
             if (method.IsAsync)
             {
-                return $"{oldIdent}{accessor} async System.Threading.Tasks.Task<dynamic> {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                return $"{oldIdent}{accessor} static async System.Threading.Tasks.Task<dynamic> {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
                        $"{indent}return await System.Threading.Tasks.Task.FromResult<object>(null);" + Environment.NewLine +
@@ -989,15 +989,15 @@ namespace BaZic.Runtime.BaZic.Code
             {
                 if (_currentProgramHasUi)
                 {
-                    return $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                    return $"{oldIdent}{accessor} static dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                            $"{oldIdent}{{" + Environment.NewLine +
                            $"{indent}try {{" + Environment.NewLine +
                            $"{statementsString}" + Environment.NewLine +
-                           $"{indent}return ProgramHelper.RunOnStaThread(() => {{" + Environment.NewLine +
-                           $"{indent}ProgramUiHelper.Instance.LoadWindow();" + Environment.NewLine +
+                           $"{indent}//return ProgramHelper.RunOnStaThread(() => {{" + Environment.NewLine +
+                           $"{indent}ProgramHelper.Instance.LoadWindow();" + Environment.NewLine +
                            $"{_uiLoadingStatements}" +
-                           $"{indent}return ProgramUiHelper.Instance.ShowWindow();" + Environment.NewLine +
-                           $"{indent}}});" + Environment.NewLine +
+                           $"{indent}return ProgramHelper.Instance.ShowWindow();" + Environment.NewLine +
+                           $"{indent}//}});" + Environment.NewLine +
                            $"{indent}}} finally {{" + Environment.NewLine +
                            $"{indent}ProgramHelper.WaitAllUnwaitedThreads();" + Environment.NewLine +
                            $"{indent}}}" + Environment.NewLine +
@@ -1005,7 +1005,7 @@ namespace BaZic.Runtime.BaZic.Code
                            $"{oldIdent}}}";
                 }
 
-                return $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                return $"{oldIdent}{accessor} static dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{indent}try {{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
@@ -1027,15 +1027,15 @@ namespace BaZic.Runtime.BaZic.Code
                 if (control is Window && uiEvent.ControlEventName == nameof(Window.Closed))
                 {
                     // The detection could be better by checking that the ControlName corresponds to a Window.
-                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramUiHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ ProgramUiHelper.Instance.UiResult = {method.Name}(); }};");
+                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ ProgramHelper.Instance.UiResult = {method.Name}(); }};");
                 }
                 else
                 {
-                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramUiHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ {method.Name}(); }};");
+                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ {method.Name}(); }};");
                 }
             }
 
-            return $"{oldIdent}{accessor} dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+            return $"{oldIdent}{accessor} static dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                    $"{oldIdent}{{" + Environment.NewLine +
                    $"{statementsString}" + Environment.NewLine +
                    $"{indent}return null;" + Environment.NewLine +

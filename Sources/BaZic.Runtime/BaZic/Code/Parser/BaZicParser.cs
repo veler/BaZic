@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Markup;
+using System.Windows.Threading;
 
 namespace BaZic.Runtime.BaZic.Code.Parser
 {
@@ -112,61 +113,68 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 return new ParserResult(program, new AggregateException(_issues));
             }
 
-            try
+            ThreadHelper.RunOnStaThread(() =>
             {
-                _reflectionHelper = new FastReflection();
-
-                // Parse BaZic user interface code. (XAML)
-                _parsedXamlRoot = ParseXaml(xamlCode);
-
-                // Parse BaZic code.
-                _catchIndicator = 0;
-                _doLoopIndicator = 0;
-                _tokenStack.Clear();
-
-                for (var i = tokens.Count - 1; i >= 0; i--)
+                try
                 {
-                    _tokenStack.Push(tokens[i]);
-                }
 
-                if (_tokenStack.Peek().TokenType != TokenType.StartCode)
+                    _reflectionHelper = new FastReflection();
+
+                    // Parse BaZic user interface code. (XAML)
+                    _parsedXamlRoot = ParseXaml(xamlCode);
+
+                    // Parse BaZic code.
+                    _catchIndicator = 0;
+                    _doLoopIndicator = 0;
+                    _tokenStack.Clear();
+
+                    for (var i = tokens.Count - 1; i >= 0; i--)
+                    {
+                        _tokenStack.Push(tokens[i]);
+                    }
+
+                    if (_tokenStack.Peek().TokenType != TokenType.StartCode)
+                    {
+                        AddIssue(new BaZicParserException(L.BaZic.Parser.FormattedBadFirstToken(TokenType.StartCode)));
+                    }
+
+                    PreviousToken = _tokenStack.Pop();
+                    CurrentToken = _tokenStack.Pop();
+                    NextToken = _tokenStack.Pop();
+
+                    program = ParseProgram(xamlCode);
+
+                    if (optimize && _issues.OfType<BaZicParserException>().Count(issue => issue.Level == BaZicParserExceptionLevel.Error) == 0)
+                    {
+                        var optimizer = new BaZicOptimizer();
+                        program = optimizer.Optimize(program);
+                    }
+
+                    tokens.Clear();
+                }
+                catch (Exception exception)
                 {
-                    AddIssue(new BaZicParserException(L.BaZic.Parser.FormattedBadFirstToken(TokenType.StartCode)));
+                    _issues.Add(exception);
                 }
-
-                PreviousToken = _tokenStack.Pop();
-                CurrentToken = _tokenStack.Pop();
-                NextToken = _tokenStack.Pop();
-
-                program = ParseProgram(xamlCode);
-
-                if (optimize && _issues.OfType<BaZicParserException>().Count(issue => issue.Level == BaZicParserExceptionLevel.Error) == 0)
+                finally
                 {
-                    var optimizer = new BaZicOptimizer();
-                    program = optimizer.Optimize(program);
+                    _expectedExpressionGroupSeparator.Clear();
+                    _declaredVariables.Clear();
+                    _declaredParameterDeclaration.Clear();
+                    _declaredMethods.Clear();
+                    _declaredEvents.Clear();
+                    _methodInvocations.Clear();
+                    _catchIndicator = 0;
+                    _doLoopIndicator = 0;
+                    if (_parsedXamlRoot != null)
+                    {
+                        _parsedXamlRoot?.Close();
+                        _parsedXamlRoot = null;
+                    }
+                    _reflectionHelper.Dispose();
+                    _reflectionHelper = null;
                 }
-
-                tokens.Clear();
-            }
-            catch (Exception exception)
-            {
-                _issues.Add(exception);
-            }
-            finally
-            {
-                _expectedExpressionGroupSeparator.Clear();
-                _declaredVariables.Clear();
-                _declaredParameterDeclaration.Clear();
-                _declaredMethods.Clear();
-                _declaredEvents.Clear();
-                _methodInvocations.Clear();
-                _catchIndicator = 0;
-                _doLoopIndicator = 0;
-                _parsedXamlRoot?.Close();
-                _parsedXamlRoot = null;
-                _reflectionHelper.Dispose();
-                _reflectionHelper = null;
-            }
+            });
 
             return new ParserResult(program, new AggregateException(_issues));
         }

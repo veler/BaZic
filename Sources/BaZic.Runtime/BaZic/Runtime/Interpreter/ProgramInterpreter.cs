@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Markup;
+using System.Windows.Threading;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 {
@@ -25,6 +26,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 
         private Action _closeUiAction;
         private bool _globalStateInitialized;
+        private Dispatcher _uiDispatcher;
 
         #endregion
 
@@ -133,6 +135,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         return;
                     }
 
+                    _uiDispatcher = UserInterface.Dispatcher;
+
                     if (BaZicInterpreter.Verbose)
                     {
                         VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.DeclaringEvents);
@@ -230,9 +234,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 
                     try
                     {
-                        BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
                         UserInterface.Show();
-                        System.Windows.Threading.Dispatcher.Run();
+                        BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                        Dispatcher.Run();
                     }
                     catch (Exception exception)
                     {
@@ -288,8 +292,20 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 
             BaZicInterpreter.CheckState(BaZicInterpreterState.Running, BaZicInterpreterState.Idle);
 
+            object result = null;
             var invokeExpression = new InvokeMethodExpression(methodName, awaitIfAsync).WithParameters(args);
-            var result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, true).Run();
+
+            if (_uiDispatcher != null)
+            {
+                _uiDispatcher.Invoke(() =>
+                {
+                    result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, true).Run();
+                }, DispatcherPriority.Background);
+            }
+            else
+            {
+                result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, true).Run();
+            }
 
             return result;
         }

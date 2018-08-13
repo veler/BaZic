@@ -204,6 +204,20 @@ namespace BaZic.Core.ComponentModel.Reflection
         }
 
         /// <summary>
+        /// Invoke a static method of a class by using a fast reflection way.
+        /// </summary>
+        /// <param name="targetTypeFullName">The full name of the type that contains the static method.</param>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="arguments">The list of arguments to send to the method.</param>
+        /// <returns>Returns the value returned by the method. If it's a void, returns a <see cref="NotAssignable"/> value.</returns>
+        public object InvokeStaticMethod(string targetTypeFullName, string methodName, params object[] arguments)
+        {
+            var targetType = GetTypeRef(targetTypeFullName);
+
+            return InvokeStaticMethod(targetType, methodName, arguments);
+        }
+
+        /// <summary>
         /// Determines whether a property of an object has a getter and a setter.
         /// </summary>
         /// <param name="targetObject">The object that contains the property.</param>
@@ -260,6 +274,18 @@ namespace BaZic.Core.ComponentModel.Reflection
             return GetProperty(targetType, propertyName).Get(null);
         }
 
+
+        /// <summary>
+        /// Gets the value of a static property of a class by using a fast reflection way.
+        /// </summary>
+        /// <param name="targetTypeFullName">The full name of the type that contains the static property.</param>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <returns>Returns the value of the property.</returns>
+        public object GetStaticProperty(string targetTypeFullName, string propertyName)
+        {
+            var targetType = GetTypeRef(targetTypeFullName);
+            return GetStaticProperty(targetType, propertyName);
+        }
         /// <summary>
         /// Sets the value of a property of an object by using a fast reflection way.
         /// </summary>

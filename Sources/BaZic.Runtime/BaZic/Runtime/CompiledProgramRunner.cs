@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Threading;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
 using BaZic.Core.Enums;
@@ -141,7 +142,13 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
 
             var argumentValues = new object[] { arguments };
-            ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
+
+            _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+
+            //ThreadHelper.RunOnStaThread(() =>
+            //{
+                ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
+            //});
 
             if (_baZicInterpreter.Verbose)
             {
@@ -157,7 +164,18 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the result of the method.</returns>
         internal object InvokeMethod(string methodName, params object[] arguments)
         {
-            return _assemblySandbox.CreateInstanceAndInvoke("BaZicProgramReleaseMode.Program", methodName, arguments);
+            var dispatcher = _assemblySandbox.Reflection.GetStaticProperty("BaZicProgramReleaseMode.ProgramHelper", "UIDispatcher") as Dispatcher;
+            if (dispatcher == null)
+            {
+                return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
+            }
+            else
+            {
+                return dispatcher.Invoke(() =>
+                {
+                    return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
+                }, DispatcherPriority.Background);
+            }
         }
 
         /// <summary>

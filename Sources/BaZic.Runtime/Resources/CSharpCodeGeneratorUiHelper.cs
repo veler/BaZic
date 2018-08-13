@@ -5,7 +5,7 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal sealed class ProgramUiHelper
+    public partial class ProgramHelper
     {
         #region Fields & Constants
 
@@ -19,7 +19,7 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Gets the current instance of the helper.
         /// </summary>
-        internal static ProgramUiHelper Instance { get; private set; }
+        internal static ProgramHelper Instance { get; private set; }
 
         /// <summary>
         /// Sets the result of the user interface when the window is closing.
@@ -31,11 +31,11 @@ namespace BaZicProgramReleaseMode
         #region Methods
 
         /// <summary>
-        /// Creates a new static instance of <see cref="ProgramUiHelper"/>.
+        /// Creates a new static instance of <see cref="ProgramHelper"/>.
         /// </summary>
         internal static void CreateNewInstance()
         {
-            Instance = new ProgramUiHelper();
+            Instance = new ProgramHelper();
         }
 
         /// <summary>
@@ -44,6 +44,7 @@ namespace BaZicProgramReleaseMode
         internal void LoadWindow()
         {
             _userInterface = System.Windows.Markup.XamlReader.Parse(_xamlCode) as System.Windows.Window;
+            UIDispatcher = _userInterface.Dispatcher;
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace BaZicProgramReleaseMode
 
             _userInterface.Closed += (sender, e) =>
             {
-                _userInterface?.Dispatcher?.InvokeShutdown();
+                UIDispatcher?.InvokeShutdown();
             };
 
             try

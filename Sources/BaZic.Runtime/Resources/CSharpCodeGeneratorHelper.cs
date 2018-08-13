@@ -5,11 +5,20 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal static class ProgramHelper
+    public partial class ProgramHelper
     {
         #region Fields
 
         private readonly static System.Collections.Generic.List<System.Threading.Tasks.Task> _unwaitedMethodInvocation = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the Dispatcher of the UI thread.
+        /// </summary>
+        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
 
         #endregion
 
@@ -20,9 +29,9 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         /// <param name="args"></param>
         [System.STAThreadAttribute()]
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            new Program().Main(args);
+            Program.Main(args);
         }
 
         /// <summary>

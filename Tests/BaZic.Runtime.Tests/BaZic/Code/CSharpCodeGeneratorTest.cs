@@ -40,7 +40,7 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        dynamic Foo = null;
+        private static dynamic Foo = null;
 
         public dynamic Main(dynamic args)
         {
@@ -295,14 +295,14 @@ namespace BaZicProgramReleaseMode
     [System.Serializable]
     public sealed class Program : System.MarshalByRefObject
     {
-        private dynamic var1 = null;
+        private static dynamic var1 = null;
 
-        private dynamic ListBox1_ItemsSource { get { dynamic result = ProgramUiHelper.Instance.GetControl(""ListBox1"").ItemsSource; return result; } set { ProgramUiHelper.Instance.GetControl(""ListBox1"").ItemsSource = value; } }
-        private dynamic TextBox1_Text { get { dynamic result = ProgramUiHelper.Instance.GetControl(""TextBox1"").Text; return result; } set { ProgramUiHelper.Instance.GetControl(""TextBox1"").Text = value; } }
+        private dynamic ListBox1_ItemsSource { get { dynamic result = ProgramHelper.Instance.GetControl(""ListBox1"").ItemsSource; return result; } set { ProgramHelper.Instance.GetControl(""ListBox1"").ItemsSource = value; } }
+        private dynamic TextBox1_Text { get { dynamic result = ProgramHelper.Instance.GetControl(""TextBox1"").Text; return result; } set { ProgramHelper.Instance.GetControl(""TextBox1"").Text = value; } }
 
         public Program()
         {
-            ProgramUiHelper.CreateNewInstance();
+            ProgramHelper.CreateNewInstance();
         }
 
         internal dynamic Button1_Click()
@@ -316,11 +316,11 @@ namespace BaZicProgramReleaseMode
             try {
 
             return ProgramHelper.RunOnStaThread(() => {
-            ProgramUiHelper.Instance.LoadWindow();
+            ProgramHelper.Instance.LoadWindow();
             ListBox1_ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" };
             TextBox1_Text = ""Value to add"";
-            ((System.Windows.Controls.Button)ProgramUiHelper.Instance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
-            return ProgramUiHelper.Instance.ShowWindow();
+            ((System.Windows.Controls.Button)ProgramHelper.Instance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
+            return ProgramHelper.Instance.ShowWindow();
             });
             } finally {
             ProgramHelper.WaitAllUnwaitedThreads();
@@ -525,7 +525,7 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal sealed class ProgramUiHelper
+    internal sealed class ProgramHelper
     {
         #region Fields & Constants
 
@@ -539,7 +539,7 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Gets the current instance of the helper.
         /// </summary>
-        internal static ProgramUiHelper Instance { get; private set; }
+        internal static ProgramHelper Instance { get; private set; }
 
         /// <summary>
         /// Sets the result of the user interface when the window is closing.
@@ -551,11 +551,11 @@ namespace BaZicProgramReleaseMode
         #region Methods
 
         /// <summary>
-        /// Creates a new static instance of <see cref=""ProgramUiHelper""/>.
+        /// Creates a new static instance of <see cref=""ProgramHelper""/>.
         /// </summary>
         internal static void CreateNewInstance()
         {
-            Instance = new ProgramUiHelper();
+            Instance = new ProgramHelper();
         }
 
         /// <summary>

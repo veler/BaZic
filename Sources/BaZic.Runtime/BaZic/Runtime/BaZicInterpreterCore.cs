@@ -229,6 +229,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 throw new InvalidOperationException(L.BaZic.Runtime.BaZicInterpreter.CannotRunOptimizedProgramInRelease);
             }
 
+            Error = null;
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
             AggregateException buildErrors = null;
@@ -334,6 +335,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 throw new InvalidOperationException(L.BaZic.Runtime.BaZicInterpreter.CannotRunOptimizedProgramInRelease);
             }
 
+            Error = null;
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
             AggregateException buildErrors = null;
@@ -347,6 +349,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
                 if (_compilerResult.BuildErrors != null)
                 {
+                    buildErrors = _compilerResult.BuildErrors;
                     ChangeState(this, new UnexpectedException(_compilerResult.BuildErrors));
                 }
                 else
@@ -485,6 +488,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
         internal void InvokeMethod(MarshaledResultSetter<object> callback, bool verbose, string methodName, bool awaitIfAsync, object[] args)
         {
+            Error = null;
             if (_releaseModeForced)
             {
                 InvokeMethodRelease(callback, verbose, methodName, awaitIfAsync, args);
@@ -722,6 +726,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             _programArguments = args;
             Verbose = verbose;
             DebugInfos = null;
+            Error = null;
 
             var currentCulture = LocalizationHelper.GetCurrentCulture();
 
@@ -816,7 +821,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             else if (State == BaZicInterpreterState.Preparing)
             {
                 // Wait for running.
-                WaitForState(BaZicInterpreterState.Running);
+                WaitForState(BaZicInterpreterState.Running, BaZicInterpreterState.Idle);
             }
 
             if (State == BaZicInterpreterState.Running)
@@ -889,7 +894,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             if (State == BaZicInterpreterState.Preparing)
             {
                 // Wait for running.
-                WaitForState(BaZicInterpreterState.Running);
+                WaitForState(BaZicInterpreterState.Running, BaZicInterpreterState.Idle);
             }
 
             if (State == BaZicInterpreterState.Running)
@@ -905,50 +910,53 @@ namespace BaZic.Runtime.BaZic.Runtime
             var thread = Task.Run(() =>
             {
                 object result = null;
-                try
+                ThreadHelper.RunOnStaThread(() =>
                 {
-                    LocalizationHelper.SetCurrentCulture(currentCulture, false);
-
-                    ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
-
-                    if (Verbose)
+                    try
                     {
-                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.FormattedInvokeMethod(methodName)));
-                    }
+                        LocalizationHelper.SetCurrentCulture(currentCulture, false);
 
-                    result = _releaseModeRuntime.InvokeMethod(methodName, args);
+                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
-                    if (result != null && result is Task && awaitIfAsync)
-                    {
-                        var task = (Task)result;
-                        task.ConfigureAwait(false).GetAwaiter().GetResult();
-
-                        if (result.GetType().IsGenericType)
+                        if (Verbose)
                         {
-                            result = ((dynamic)task).Result;
+                            ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.FormattedInvokeMethod(methodName)));
                         }
-                        else
+
+                        result = _releaseModeRuntime.InvokeMethod(methodName, args);
+
+                        if (result != null && result is Task && awaitIfAsync)
                         {
-                            result = null;
-                        };
-                    }
+                            var task = (Task)result;
+                            task.ConfigureAwait(false).GetAwaiter().GetResult();
 
-                    ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
-                }
-                catch (Exception exception)
-                {
-                    if (!_ignoreException)
+                            if (result.GetType().IsGenericType)
+                            {
+                                result = ((dynamic)task).Result;
+                            }
+                            else
+                            {
+                                result = null;
+                            };
+                        }
+
+                        ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                    }
+                    catch (Exception exception)
                     {
-                        ChangeState(this, new UnexpectedException(exception));
-                    }
+                        if (!_ignoreException)
+                        {
+                            ChangeState(this, new UnexpectedException(exception));
+                        }
 
-                    _ignoreException = false;
-                }
-                finally
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
+                        _ignoreException = false;
+                    }
+                    finally
+                    {
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    }
+                });
 
                 return result;
             });
@@ -1020,12 +1028,12 @@ namespace BaZic.Runtime.BaZic.Runtime
             assembliesPath.Add("System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
             assembliesPath.Add("Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
 
-            if (Program is BaZicUiProgram)
-            {
-                assembliesPath.Add("PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-                assembliesPath.Add("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-                assembliesPath.Add("WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
-            }
+            //if (Program is BaZicUiProgram)
+            //{
+            assembliesPath.Add("PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+            assembliesPath.Add("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+            assembliesPath.Add("WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+            //}
 
             foreach (var path in assembliesPath)
             {
@@ -1057,18 +1065,28 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Blocks the current execution flow until the specified <see cref="BaZicInterpreterState"/> is encounted.
         /// </summary>
-        /// <param name="expectedState">The expected state</param>
-        private void WaitForState(BaZicInterpreterState expectedState)
+        /// <param name="expectedStates">The expected states</param>
+        private void WaitForState(params BaZicInterpreterState[] expectedStates)
         {
+            if (expectedStates.Length == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(expectedStates), L.BaZic.Runtime.BaZicInterpreter.OneStateMinimum);
+            }
+
             using (var resetEvent = new AutoResetEvent(false))
             {
                 resetEvent.Reset();
 
                 BaZicInterpreterStateEventHandler stateChanged = (s, e) =>
                 {
-                    if (e.State == expectedState || e.State == BaZicInterpreterState.Stopped || e.State == BaZicInterpreterState.StoppedWithError)
+                    var stateValidated = false;
+                    for (var i = 0; i < expectedStates.Length && !stateValidated; i++)
                     {
-                        resetEvent.Set();
+                        if (State == expectedStates[i] || e.State == BaZicInterpreterState.Stopped || e.State == BaZicInterpreterState.StoppedWithError)
+                        {
+                            stateValidated = true;
+                            resetEvent.Set();
+                        }
                     }
                 };
 
@@ -1090,6 +1108,11 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 if (!IsDisposed)
                 {
+                    if (State == BaZicInterpreterState.Running || State == BaZicInterpreterState.Idle)
+                    {
+                        Stop(true).ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+
                     FreePauseModeWaiter();
                     _mainInterpreterTask?.Dispose();
                     _stateChangedHistory.Clear();

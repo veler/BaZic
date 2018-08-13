@@ -160,7 +160,7 @@ END FUNCTION";
             var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
             Assert.AreEqual(null, result);
-            Assert.AreEqual("Unexpected and unmanaged error has been detected : Unable to find a method called 'Method1'.", interpreter.Error.Exception.Message);
+            Assert.AreEqual("Unexpected and unmanaged error has been detected : The method 'Method1' does not exist in the type 'BaZicProgramReleaseMode.Program'.", interpreter.Error.Exception.Message);
             Assert.AreEqual(BaZicInterpreterState.StoppedWithError, interpreter.State);
         }
 
@@ -264,7 +264,7 @@ END FUNCTION
 # The XAML will be provided separatly";
 
             var xamlCode = @"
-<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"" Opacity=""0"">
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"">
     <StackPanel>
         <Button Name=""Button1"" Content=""Hello""/>
     </StackPanel>
@@ -272,19 +272,13 @@ END FUNCTION
 
             using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
             {
+                var result = await interpreter.InvokeMethod(true, "Method1", true);
+
+                Assert.IsNull(result);
+                Assert.AreEqual("The variable 'Button1_Content' does not exist or is not accessible.", interpreter.Error.Exception.Message);
+
                 var t = interpreter.StartDebugAsync(true);
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
-
-                Assert.AreEqual(true, result);
-
                 result = await interpreter.InvokeMethod(true, "Method1", true);
-
-                Assert.AreEqual(false, result);
-            }
-
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
-            {
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
 
                 Assert.AreEqual(true, result);
             }
@@ -295,17 +289,14 @@ END FUNCTION
 
                 Assert.IsNull(errors);
 
+                var result = await interpreter.InvokeMethod(true, "Method1", true);
+
+                Assert.IsNull(result);
+                Assert.AreEqual("Object reference not set to an instance of an object.", interpreter.Error.Exception.InnerException.Message);
+
                 var t = interpreter.StartReleaseAsync(true);
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
-
-                Assert.AreEqual(true, result);
-            }
-
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
-            {
-                var errors = await interpreter.Build();
-
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
+                await Task.Delay(5000);
+                result = await interpreter.InvokeMethod(true, "Method1", true);
 
                 Assert.AreEqual(true, result);
             }
