@@ -72,23 +72,25 @@ namespace BaZic.Core.ComponentModel.Reflection
                 throw new ObjectDisposedException(nameof(FastInstantiateReflection));
             }
 
-            lock (this)
+            if (arguments == null || arguments.Length == 0)
             {
-                if (arguments == null || arguments.Length == 0)
-                {
-                    return _instantiateDefaultConstructor.Value.MakeGenericMethod(_createType).Invoke(this, null);
-                }
+                return _instantiateDefaultConstructor.Value.MakeGenericMethod(_createType).Invoke(this, null);
+            }
 
+            TypeCreatorDelegate constructor = null;
+
+            lock (_constructors)
+            {
                 var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
-                _constructors.TryGetValue(argumentTypes, out TypeCreatorDelegate constructor);
+                _constructors.TryGetValue(argumentTypes, out constructor);
                 if (constructor == null)
                 {
                     constructor = GetConstructorDelegate(argumentTypes);
                     _constructors.Add(argumentTypes, constructor);
                 }
-
-                return constructor(arguments);
             }
+
+            return constructor(arguments);
         }
 
         /// <summary>

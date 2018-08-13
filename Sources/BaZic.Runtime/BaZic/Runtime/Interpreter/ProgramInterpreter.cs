@@ -267,7 +267,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
             else
             {
-                BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                // BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
             }
         }
 
@@ -290,10 +290,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         {
             InitializeGlobalState();
 
-            BaZicInterpreter.CheckState(BaZicInterpreterState.Running, BaZicInterpreterState.Idle);
+            BaZicInterpreter.CheckState(BaZicInterpreterState.Idle, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
 
             object result = null;
             var invokeExpression = new InvokeMethodExpression(methodName, awaitIfAsync).WithParameters(args);
+
+            // TODO : Set Stop and Run state
 
             if (_uiDispatcher != null)
             {

@@ -104,6 +104,34 @@ namespace BaZic.Core.ComponentModel.Reflection
         }
 
         /// <summary>
+        /// Register an action to a event of a class.
+        /// </summary>
+        /// <param name="targetType">The type that contains the event.</param>
+        /// <param name="eventName">The name of the event in the <paramref name="targetType"/>.</param>
+        /// <param name="action">The action to run when the event is raised.</param>
+        public void SubscribeStaticEvent(Type targetType, string eventName, Action action)
+        {
+            if (IsDisposed)
+            {
+                throw new ObjectDisposedException(nameof(FastReflection));
+            }
+
+            _eventReflection.SubscribeStatic(targetType, eventName, action);
+        }
+
+        /// <summary>
+        /// Register an action to a event of a class.
+        /// </summary>
+        /// <param name="targetTypeFullName">The full name of the type that contains the event.</param>
+        /// <param name="eventName">The name of the event in the <paramref name="targetTypeFullName"/>.</param>
+        /// <param name="action">The action to run when the event is raised.</param>
+        public void SubscribeStaticEvent(string targetTypeFullName, string eventName, Action action)
+        {
+            var targetType = _assemblySandbox.GetTypeRef(targetTypeFullName);
+            SubscribeStaticEvent(targetType, eventName, action);
+        }
+
+        /// <summary>
         /// Unregister all the registered events.
         /// </summary>
         public void UnsubscribeAllEvents()
@@ -129,17 +157,19 @@ namespace BaZic.Core.ComponentModel.Reflection
                 throw new ObjectDisposedException(nameof(FastReflection));
             }
 
+            FastInstantiateReflection constructor = null;
+
             lock (_constructors)
             {
-                _constructors.TryGetValue(createType, out FastInstantiateReflection constructor);
+                _constructors.TryGetValue(createType, out constructor);
                 if (constructor == null)
                 {
                     constructor = new FastInstantiateReflection(createType);
                     _constructors.Add(createType, constructor);
                 }
-
-                return constructor.Instantiate(arguments);
             }
+
+            return constructor.Instantiate(arguments);
         }
 
         /// <summary>
@@ -159,18 +189,20 @@ namespace BaZic.Core.ComponentModel.Reflection
             Requires.NotNull(targetObject, nameof(targetObject));
             Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
 
+            FastMethodReflection method = null;
+
             var type = targetObject.GetType();
             lock (_methods)
             {
-                _methods.TryGetValue(type, out FastMethodReflection method);
+                _methods.TryGetValue(type, out method);
                 if (method == null)
                 {
                     method = new FastMethodReflection(type);
                     _methods.Add(type, method);
                 }
-
-                return method.Invoke(targetObject, methodName, arguments);
             }
+
+            return method.Invoke(targetObject, methodName, arguments);
         }
 
         /// <summary>
@@ -190,17 +222,19 @@ namespace BaZic.Core.ComponentModel.Reflection
             Requires.NotNull(targetType, nameof(targetType));
             Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
 
+            FastMethodReflection method = null;
+
             lock (_methods)
             {
-                _methods.TryGetValue(targetType, out FastMethodReflection method);
+                _methods.TryGetValue(targetType, out method);
                 if (method == null)
                 {
                     method = new FastMethodReflection(targetType);
                     _methods.Add(targetType, method);
                 }
-
-                return method.InvokeStatic(methodName, arguments);
             }
+
+            return method.InvokeStatic(methodName, arguments);
         }
 
         /// <summary>
@@ -327,6 +361,8 @@ namespace BaZic.Core.ComponentModel.Reflection
                 throw new ObjectDisposedException(nameof(FastReflection));
             }
 
+            FastPropertyReflection property = null;
+
             lock (_properties)
             {
                 _properties.TryGetValue(type, out Dictionary<string, FastPropertyReflection> typeProperties);
@@ -336,15 +372,15 @@ namespace BaZic.Core.ComponentModel.Reflection
                     _properties.Add(type, typeProperties);
                 }
 
-                typeProperties.TryGetValue(propertyName, out FastPropertyReflection property);
+                typeProperties.TryGetValue(propertyName, out property);
                 if (property == null)
                 {
                     property = new FastPropertyReflection(type, propertyName);
                     typeProperties.Add(propertyName, property);
                 }
-
-                return property;
             }
+
+            return property;
         }
 
         /// <summary>

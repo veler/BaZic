@@ -44,6 +44,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         private bool _ignoreException;
         private bool _externMethodInvoked;
         private bool _releaseModeForced;
+        private bool _releaseModeProgramStarted;
 
         #endregion
 
@@ -375,6 +376,8 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns an awaitable task that can wait the end of the program execution</returns>
         internal void StartRelease(MarshaledResultSetter callback, bool verbose, params object[] args)
         {
+            _releaseModeProgramStarted = true;
+
             var action = new Action(() =>
             {
                 if (_releaseModeRuntime == null || _compilerResult == null || _compilerResult.BuildErrors != null)
@@ -464,12 +467,12 @@ namespace BaZic.Runtime.BaZic.Runtime
                         {
                             variable.Dispose();
                         }
+                    }
 
-                        if (State == BaZicInterpreterState.Running || State == BaZicInterpreterState.Idle)
-                        {
-                            ProgramResult = ProgramInterpreter.ProgramResult;
-                            Stop(false).ConfigureAwait(false).GetAwaiter().GetResult();
-                        }
+                    if (State == BaZicInterpreterState.Running || State == BaZicInterpreterState.Idle)
+                    {
+                        ProgramResult = ProgramInterpreter.ProgramResult;
+                        Stop(false).ConfigureAwait(false).GetAwaiter().GetResult();
                     }
                 }
             });
@@ -489,7 +492,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         internal void InvokeMethod(MarshaledResultSetter<object> callback, bool verbose, string methodName, bool awaitIfAsync, object[] args)
         {
             Error = null;
-            if (_releaseModeForced)
+            if (_releaseModeForced || _releaseModeProgramStarted)
             {
                 InvokeMethodRelease(callback, verbose, methodName, awaitIfAsync, args);
             }
@@ -830,7 +833,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 WaitForState(BaZicInterpreterState.Idle);
             }
 
-            CheckState(BaZicInterpreterState.Idle);
+            CheckState(BaZicInterpreterState.Idle, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
 
             var currentCulture = LocalizationHelper.GetCurrentCulture();
 
@@ -988,10 +991,19 @@ namespace BaZic.Runtime.BaZic.Runtime
             else
             {
                 _ignoreException = true;
-                if (_mainInterpreterThread != null && _mainInterpreterThread.IsAlive)
+
+                if (Program is BaZicUiProgram)
                 {
-                    _mainInterpreterThread.Abort();
-                    await Task.Delay(500); // Let the time to the _mainInterpreterThread to stop.
+                    Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.ProgramHelper", "RequestCloseUserInterface");
+                    await _mainInterpreterTask;
+                }
+                else
+                {
+                    if (_mainInterpreterThread != null && _mainInterpreterThread.IsAlive)
+                    {
+                        _mainInterpreterThread.Abort();
+                        await Task.Delay(500); // Let the time to the _mainInterpreterThread to stop.
+                    }
                 }
             }
 

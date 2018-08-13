@@ -78,28 +78,28 @@ namespace BaZic.Core.ComponentModel.Reflection
 
             Requires.NotNull(instance, nameof(instance));
 
-            lock (this)
+            if (instance.GetType() != _baseType)
             {
-                if (instance.GetType() != _baseType)
-                {
-                    throw new BadTypeException(L.Reflection.FastMethodReflection.FormattedBadInstanceType(_baseType.FullName));
-                }
+                throw new BadTypeException(L.Reflection.FastMethodReflection.FormattedBadInstanceType(_baseType.FullName));
+            }
 
-                Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
+            Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
 
-                var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
+            var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
 
-                var methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
+            var methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
 
+            lock (_methods)
+            {
                 if (methodInfo == null)
                 {
                     var method = GetMethodDelegate(methodName, argumentTypes);
                     _methods.Add(method.Item1, method.Item2);
                     methodInfo = method.Item1;
                 }
-
-                return _methods[methodInfo](instance, arguments);
             }
+
+            return _methods[methodInfo](instance, arguments);
         }
 
         /// <summary>
@@ -117,21 +117,21 @@ namespace BaZic.Core.ComponentModel.Reflection
 
             Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
 
-            lock (this)
+            var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
+
+            var methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
+
+            lock (_methods)
             {
-                var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
-
-                var methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
-
                 if (methodInfo == null)
                 {
                     var method = GetMethodDelegate(methodName, argumentTypes);
                     _methods.Add(method.Item1, method.Item2);
                     methodInfo = method.Item1;
                 }
-
-                return _methods[methodInfo](null, arguments);
             }
+
+            return _methods[methodInfo](null, arguments);
         }
 
         /// <summary>

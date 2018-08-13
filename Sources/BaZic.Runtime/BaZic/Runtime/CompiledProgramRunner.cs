@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
@@ -143,12 +144,23 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             var argumentValues = new object[] { arguments };
 
-            _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+            if (_program is BaZicUiProgram)
+            {
+                ThreadHelper.RunOnStaThread(() =>
+                {
+                    _baZicInterpreter.Reflection.SubscribeStaticEvent("BaZicProgramReleaseMode.ProgramHelper", "IdleStateOccured", () =>
+                    {
+                        _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle)); // Go to Idle mode.
+                    });
 
-            //ThreadHelper.RunOnStaThread(() =>
-            //{
+                    ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
+                });
+            }
+            else
+            {
+                _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle)); // Go to Idle mode.
                 ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
-            //});
+            }
 
             if (_baZicInterpreter.Verbose)
             {

@@ -28,6 +28,15 @@ namespace BaZicProgramReleaseMode
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Raised when the Idle state can be set in the BaZicInterpreter.
+        /// </summary>
+        public static event System.EventHandler IdleStateOccured;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -36,6 +45,28 @@ namespace BaZicProgramReleaseMode
         internal static void CreateNewInstance()
         {
             Instance = new ProgramHelper();
+        }
+
+        /// <summary>
+        /// Close the UI.
+        /// </summary>
+        public static void RequestCloseUserInterface()
+        {
+            Instance.CloseUserInterface();
+        }
+
+        /// <summary>
+        /// Close the UI.
+        /// </summary>
+        internal void CloseUserInterface()
+        {
+            if (_userInterface != null)
+            {
+                _userInterface.Dispatcher.Invoke(() =>
+                {
+                    _userInterface?.Close();
+                });
+            }
         }
 
         /// <summary>
@@ -58,6 +89,11 @@ namespace BaZicProgramReleaseMode
             _userInterface.Closed += (sender, e) =>
             {
                 UIDispatcher?.InvokeShutdown();
+            };
+
+            _userInterface.Loaded += (sender, e) =>
+            {
+                IdleStateOccured?.Invoke(this, e);
             };
 
             try

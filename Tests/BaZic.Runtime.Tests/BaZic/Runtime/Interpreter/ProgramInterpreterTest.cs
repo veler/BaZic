@@ -285,6 +285,14 @@ END FUNCTION
 
             using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
             {
+                var t = interpreter.StartReleaseAsync(true);
+                var result = await interpreter.InvokeMethod(true, "Method1", true);
+
+                Assert.AreEqual(true, result);
+            }
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            {
                 var errors = await interpreter.Build();
 
                 Assert.IsNull(errors);
@@ -295,7 +303,6 @@ END FUNCTION
                 Assert.AreEqual("Object reference not set to an instance of an object.", interpreter.Error.Exception.InnerException.Message);
 
                 var t = interpreter.StartReleaseAsync(true);
-                await Task.Delay(5000);
                 result = await interpreter.InvokeMethod(true, "Method1", true);
 
                 Assert.AreEqual(true, result);
@@ -371,6 +378,207 @@ END FUNCTION";
                 result = await interpreter.InvokeMethod(true, "Method1", true);
 
                 Assert.AreEqual(3, result);
+            }
+        }
+
+        [TestMethod]
+        public async Task ProgramInterpreterInvokeExternMethod10()
+        {
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"
+VARIABLE globVar = 1
+
+EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EXTERN FUNCTION Method1()
+    DO WHILE TRUE
+    LOOP
+END FUNCTION";
+
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var t = interpreter.StartDebugAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var t = interpreter.StartReleaseAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+        }
+
+        [TestMethod]
+        public async Task ProgramInterpreterInvokeExternMethod11()
+        {
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"
+VARIABLE globVar = 1
+
+EXTERN FUNCTION Main(args[])
+    DO WHILE TRUE
+    LOOP
+END FUNCTION
+
+EXTERN FUNCTION Method1()
+    RETURN TRUE
+END FUNCTION";
+
+
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var t = interpreter.StartDebugAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var t = interpreter.StartReleaseAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+        }
+
+        [TestMethod]
+        public async Task ProgramInterpreterInvokeExternMethod12()
+        {
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"
+VARIABLE globVar = 1
+
+EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EXTERN FUNCTION Method1()
+    DO WHILE TRUE
+    LOOP
+END FUNCTION";
+
+            var xamlCode = @"
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"">
+    <StackPanel>
+        <Button Name=""Button1"" Content=""Hello""/>
+    </StackPanel>
+</Window>";
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            {
+                var t = interpreter.StartDebugAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            {
+                var t = interpreter.StartReleaseAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+        }
+
+        [TestMethod]
+        public async Task ProgramInterpreterInvokeExternMethod13()
+        {
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"
+VARIABLE globVar = 1
+
+EXTERN FUNCTION Main(args[])
+    DO WHILE TRUE
+    LOOP
+END FUNCTION
+
+EXTERN FUNCTION Method1()
+    RETURN TRUE
+END FUNCTION";
+
+            var xamlCode = @"
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"">
+    <StackPanel>
+        <Button Name=""Button1"" Content=""Hello""/>
+    </StackPanel>
+</Window>";
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            {
+                var t = interpreter.StartDebugAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            {
+                var t = interpreter.StartReleaseAsync(true);
+                t = interpreter.InvokeMethod(true, "Method1", true);
+
+                await Task.Delay(3000);
+
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
             }
         }
     }
