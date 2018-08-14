@@ -52,7 +52,7 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         public static void RequestCloseUserInterface()
         {
-            Instance.CloseUserInterface();
+            Instance?.CloseUserInterface();
         }
 
         /// <summary>
@@ -60,13 +60,10 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         internal void CloseUserInterface()
         {
-            if (_userInterface != null)
+            _userInterface?.Dispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new System.Action(() =>
             {
-                _userInterface.Dispatcher.Invoke(() =>
-                {
-                    _userInterface?.Close();
-                });
-            }
+                _userInterface?.Close();
+            }));
         }
 
         /// <summary>

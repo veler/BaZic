@@ -1,4 +1,5 @@
 ﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
+using System;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -7,8 +8,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
     /// </summary>
     internal sealed class VariableDeclarationInterpreter : StatementInterpreter<VariableDeclaration>
     {
-        internal VariableDeclarationInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, VariableDeclaration statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal VariableDeclarationInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, VariableDeclaration statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 

@@ -45,6 +45,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         protected BaZicInterpreterCore BaZicInterpreter { get; }
 
         /// <summary>
+        /// Gets a GUID that defines in which callstack is linked
+        /// </summary>
+        internal Guid ExecutionFlowId { get; }
+
+        /// <summary>
         /// Gets the list of variable in memory.
         /// </summary>
         internal IReadOnlyList<Variable> Variables => _variables.AsReadOnly();
@@ -58,10 +63,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         /// <param name="baZicInterpreter">The main interpreter.</param>
         /// <param name="parentInterpreter">The parent interpreter.</param>
-        protected Interpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter)
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
+        protected Interpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, Guid executionFlowId)
         {
             BaZicInterpreter = baZicInterpreter;
             ParentInterpreter = parentInterpreter;
+            ExecutionFlowId = executionFlowId;
         }
 
         #endregion
@@ -354,11 +361,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     break;
 
                 case InvokeCoreMethodExpression invokeCoreMethod:
-                    expressionResult = new InvokeCoreMethodInterpreter(BaZicInterpreter, this, invokeCoreMethod).Run();
+                    expressionResult = new InvokeCoreMethodInterpreter(BaZicInterpreter, this, invokeCoreMethod, ExecutionFlowId).Run();
                     break;
 
                 case InvokeMethodExpression invokeMethod:
-                    expressionResult = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeMethod).Run();
+                    expressionResult = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeMethod, ExecutionFlowId).Run();
                     break;
 
                 case NotOperatorExpression notOperator:

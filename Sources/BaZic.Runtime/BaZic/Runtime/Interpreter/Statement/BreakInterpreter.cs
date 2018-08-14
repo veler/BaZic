@@ -1,6 +1,7 @@
 ﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using BaZic.Runtime.Localization;
+using System;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -9,8 +10,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
     /// </summary>
     internal sealed class BreakInterpreter : StatementInterpreter<BreakStatement>
     {
-        internal BreakInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, BreakStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal BreakInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, BreakStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 

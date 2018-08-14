@@ -1,4 +1,5 @@
 ﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
+using System;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -12,8 +13,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         /// </summary>
         internal bool ConditionValidated { get; private set; }
 
-        internal LabelConditionInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, LabelConditionStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal LabelConditionInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, LabelConditionStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 

@@ -1,4 +1,5 @@
 ﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
+using System;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -7,8 +8,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
     /// </summary>
     internal sealed class ExpressionStatementInterpreter : StatementInterpreter<ExpressionStatement>
     {
-        internal ExpressionStatementInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, ExpressionStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal ExpressionStatementInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, ExpressionStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 

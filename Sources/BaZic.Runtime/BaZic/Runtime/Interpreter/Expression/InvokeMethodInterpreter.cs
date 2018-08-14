@@ -12,10 +12,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
     internal sealed class InvokeMethodInterpreter : ExpressionInterpreter<InvokeMethodExpression>
     {
         private readonly bool _failIfNotExtern;
+        private readonly Guid _executionFlowId;
 
-        internal InvokeMethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, InvokeMethodExpression expression, bool failIfNotExtern = false)
+        internal InvokeMethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, InvokeMethodExpression expression, Guid executionFlowId, bool failIfNotExtern = false)
             : base(baZicInterpreter, parentInterpreter, expression)
         {
+            _executionFlowId = executionFlowId;
             _failIfNotExtern = failIfNotExtern;
         }
 
@@ -50,7 +52,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
                 }
             }
 
-            var methodInterpreter = new MethodInterpreter(BaZicInterpreter, ParentInterpreter, declarations.Single(), Expression);
+            var methodInterpreter = new MethodInterpreter(BaZicInterpreter, ParentInterpreter, declarations.Single(), Expression, _executionFlowId);
             return methodInterpreter.Invoke();
         }
     }

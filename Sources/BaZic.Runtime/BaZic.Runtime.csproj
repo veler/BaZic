@@ -260,6 +260,7 @@
     <Compile Include="BaZic\Runtime\Debugger\Exceptions\UiException.cs" />
     <Compile Include="BaZic\Runtime\Debugger\Exceptions\UnexpectedException.cs" />
     <Compile Include="BaZic\Runtime\Debugger\Exceptions\VariableNotFoundException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\RunningStateManager.cs" />
     <Compile Include="BaZic\Runtime\Debugger\ValueInfo.cs" />
     <Compile Include="BaZic\Runtime\Interpreter\BlockInterpreter.cs" />
     <Compile Include="BaZic\Runtime\Interpreter\Expression\ArrayCreationInterpreter.cs" />

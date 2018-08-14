@@ -24,10 +24,12 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter
             var inputCode =
 @"FUNCTION Method1()
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
-            await interpreter.StartDebugAsync(true);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                await interpreter.StartDebugAsync(true);
 
-            Assert.IsInstanceOfType(interpreter.Error.Exception, typeof(MissingEntryPointMethodException));
+                Assert.IsInstanceOfType(interpreter.Error.Exception, typeof(MissingEntryPointMethodException));
+            }
 
             inputCode =
 @"EXTERN FUNCTION Main(args[])
@@ -35,10 +37,12 @@ END FUNCTION
 
 EXTERN FUNCTION Main(args[])
 END FUNCTION";
-            interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
-            await interpreter.StartDebugAsync(true);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program))
+            {
+                await interpreter.StartDebugAsync(true);
 
-            Assert.IsInstanceOfType(interpreter.Error.Exception, typeof(SeveralEntryPointMethodException));
+                Assert.IsInstanceOfType(interpreter.Error.Exception, typeof(SeveralEntryPointMethodException));
+            }
         }
 
         [TestMethod]
@@ -53,12 +57,13 @@ END FUNCTION
 EXTERN FUNCTION Method1(arg)
     RETURN arg
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
-
-            Assert.AreEqual(123, result);
-            Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(123, result);
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -73,13 +78,14 @@ END FUNCTION
 FUNCTION Method1(arg)
     RETURN arg
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
-
-            Assert.AreEqual(null, result);
-            Assert.AreEqual("Unable to find a method called 'Method1'.", interpreter.Error.Exception.Message);
-            Assert.AreEqual(BaZicInterpreterState.StoppedWithError, interpreter.State);
+                Assert.AreEqual(null, result);
+                Assert.AreEqual("Unable to find a method called 'Method1'.", interpreter.Error.Exception.Message);
+                Assert.AreEqual(BaZicInterpreterState.StoppedWithError, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -100,17 +106,22 @@ ASYNC FUNCTION MethodAsync(value, timeToWait)
     VARIABLE var1 = AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(timeToWait))
     RETURN value
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var t = interpreter.StartDebugAsync(true);
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            var t = interpreter.StartDebugAsync(true);
-            var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
+                Assert.AreEqual(123, result);
 
-            Assert.AreEqual(123, result);
-            Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                // Idle is expected because InvokeMethod waits that the main
+                // thread (used by Main()) is free before running. So the async
+                // function is complete before reaching this assert.
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
 
-            await interpreter.Stop();
+                await interpreter.Stop();
 
-            Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -125,17 +136,18 @@ END FUNCTION
 EXTERN FUNCTION Method1(arg)
     RETURN arg
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
+                var errors = await interpreter.Build();
 
-            var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
-            var errors = await interpreter.Build();
+                Assert.IsNull(errors);
 
-            Assert.IsNull(errors);
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
-
-            Assert.AreEqual(123, result);
-            Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(123, result);
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -150,18 +162,19 @@ END FUNCTION
 FUNCTION Method1(arg)
     RETURN arg
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
+                var errors = await interpreter.Build();
 
-            var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
-            var errors = await interpreter.Build();
+                Assert.IsNull(errors);
 
-            Assert.IsNull(errors);
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
-
-            Assert.AreEqual(null, result);
-            Assert.AreEqual("Unexpected and unmanaged error has been detected : The method 'Method1' does not exist in the type 'BaZicProgramReleaseMode.Program'.", interpreter.Error.Exception.Message);
-            Assert.AreEqual(BaZicInterpreterState.StoppedWithError, interpreter.State);
+                Assert.AreEqual(null, result);
+                Assert.AreEqual("Unexpected and unmanaged error has been detected : The method 'Method1' does not exist in the type 'BaZicProgramReleaseMode.Program'.", interpreter.Error.Exception.Message);
+                Assert.AreEqual(BaZicInterpreterState.StoppedWithError, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -182,21 +195,44 @@ ASYNC FUNCTION MethodAsync(value, timeToWait)
     VARIABLE var1 = AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(timeToWait))
     RETURN value
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
 
-            var errors = await interpreter.Build();
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var errors = await interpreter.Build();
 
-            Assert.IsNull(errors);
+                Assert.IsNull(errors);
 
-            var t = interpreter.StartReleaseAsync(true);
-            var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
+                var t = interpreter.StartReleaseAsync(true);
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            Assert.AreEqual(123, result);
-            Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(123, result);
 
-            await interpreter.Stop();
+                // Idle is expected because InvokeMethod waits that the main
+                // thread (used by Main()) is free before running. So the async
+                // function is complete before reaching this assert.
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
 
-            Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var t = interpreter.StartReleaseAsync(true);
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
+
+                Assert.AreEqual(123, result);
+
+                // Idle is expected because InvokeMethod waits that the main
+                // thread (used by Main()) is free before running. So the async
+                // function is complete before reaching this assert.
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+
+                await interpreter.Stop();
+
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -212,26 +248,27 @@ EXTERN ASYNC FUNCTION Method1(arg)
     VARIABLE var1 = AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(3.0))
     RETURN arg
 END FUNCTION";
-            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var errors = await interpreter.Build();
 
-            var errors = await interpreter.Build();
+                Assert.IsNull(errors);
 
-            Assert.IsNull(errors);
+                var t = interpreter.StartReleaseAsync(true);
+                var result = (Task)interpreter.InvokeMethod(true, "Method1", true, 123);
 
-            var t = interpreter.StartReleaseAsync(true);
-            var result = (Task)interpreter.InvokeMethod(true, "Method1", true, 123);
+                Assert.AreEqual(TaskStatus.WaitingForActivation, result.Status);
 
-            Assert.AreEqual(TaskStatus.WaitingForActivation, result.Status);
+                await Task.Delay(5000);
 
-            await Task.Delay(5000);
+                Assert.AreEqual(TaskStatus.RanToCompletion, result.Status);
+                Assert.AreEqual(123, ((dynamic)result).Result);
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
 
-            Assert.AreEqual(TaskStatus.RanToCompletion, result.Status);
-            Assert.AreEqual(123, ((dynamic)result).Result);
-            Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                await interpreter.Stop();
 
-            await interpreter.Stop();
-
-            Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
         }
 
         [TestMethod]
@@ -417,9 +454,9 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(3000);
+                await Task.Delay(5000);
 
-                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
@@ -453,7 +490,7 @@ END FUNCTION";
 
                 await Task.Delay(3000);
 
-                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
@@ -465,9 +502,9 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(3000);
+                await Task.Delay(5000);
 
-                Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
@@ -506,7 +543,7 @@ END FUNCTION";
 
                 await Task.Delay(3000);
 
-                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
@@ -518,9 +555,9 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(3000);
+                await Task.Delay(5000);
 
-                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
@@ -560,7 +597,7 @@ END FUNCTION";
 
                 await Task.Delay(3000);
 
-                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
@@ -572,13 +609,34 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(3000);
+                await Task.Delay(5000);
 
-                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
+                Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
                 await interpreter.Stop();
 
                 Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.State);
+            }
+        }
+
+        [TestMethod]
+        public async Task ProgramInterpreterInvokeExternMethod14()
+        {
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EXTERN ASYNC FUNCTION Method1(arg)
+    RETURN arg
+END FUNCTION";
+            using (var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program))
+            {
+                var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
+
+                Assert.AreEqual(123, result);
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
             }
         }
     }

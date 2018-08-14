@@ -24,9 +24,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         private readonly BaZicProgram _program;
         private readonly BaZicUiProgram _uiProgram;
 
-        private Action _closeUiAction;
         private bool _globalStateInitialized;
         private Dispatcher _uiDispatcher;
+        private Thread _uiThread;
 
         #endregion
 
@@ -61,8 +61,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         /// <param name="baZicInterpreter">The main interpreter.</param>
         /// <param name="program">The <see cref="BaZicProgram"/> to interpret.</param>
-        internal ProgramInterpreter(BaZicInterpreterCore baZicInterpreter, BaZicProgram program)
-            : base(baZicInterpreter, null)
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
+        internal ProgramInterpreter(BaZicInterpreterCore baZicInterpreter, BaZicProgram program, Guid executionFlowId)
+            : base(baZicInterpreter, null, executionFlowId)
         {
             Requires.NotNull(program, nameof(program));
             _program = program;
@@ -108,7 +109,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
 
             var entryPointInvocation = new InvokeMethodExpression(Consts.EntryPointMethodName, false).WithParameters(new ArrayCreationExpression().WithValues(argsExpressions.ToArray()));
-            var entryPointInterpreter = new MethodInterpreter(BaZicInterpreter, this, entryPoint, entryPointInvocation);
+            var entryPointInterpreter = new MethodInterpreter(BaZicInterpreter, this, entryPoint, entryPointInvocation, ExecutionFlowId);
             ProgramResult = entryPointInterpreter.Invoke();
 
             if (IsAborted)
@@ -127,6 +128,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.LoadingUi);
                     }
 
+                    _uiThread = Thread.CurrentThread;
                     UserInterface = XamlReader.Parse(_uiProgram.Xaml) as Window;
 
                     if (UserInterface == null)
@@ -185,7 +187,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                             BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
                             var eventMethodDeclaration = _uiProgram.Methods.Single(m => m.Id == uiEvent.MethodId);
                             var eventInvocation = new InvokeMethodExpression(eventMethodDeclaration.Name.Identifier, false);
-                            var eventMethodInterpreter = new MethodInterpreter(BaZicInterpreter, this, eventMethodDeclaration, eventInvocation);
+                            var eventMethodInterpreter = new MethodInterpreter(BaZicInterpreter, this, eventMethodDeclaration, eventInvocation, ExecutionFlowId);
 
                             if (targetObject is Window && uiEvent.ControlEventName == nameof(Window.Closed))
                             {
@@ -196,7 +198,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                                 eventMethodInterpreter.Invoke();
                             }
 
-                            BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                            BaZicInterpreter.RunningStateManager.UpdateState();
                         });
 
                         BaZicInterpreter.Reflection.SubscribeEvent(targetObject, uiEvent.ControlEventName, action);
@@ -217,23 +219,17 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.ShowUi);
                     }
 
-                    UserInterface.Closed += (sender, e) =>
-                    {
-                        if (BaZicInterpreter.Verbose)
-                        {
-                            VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.CloseUi);
-                        }
-                        UserInterface?.Dispatcher?.InvokeShutdown();
-                    };
-
-                    _closeUiAction = () =>
-                    {
-                        _closeUiAction = null;
-                        UserInterface?.Dispatcher?.InvokeShutdown();
-                    };
-
                     try
                     {
+                        UserInterface.Closed += (sender, e) =>
+                        {
+                            if (BaZicInterpreter.Verbose)
+                            {
+                                VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.CloseUi);
+                            }
+                            UserInterface?.Dispatcher?.InvokeShutdown();
+                        };
+
                         UserInterface.Show();
                         BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
                         Dispatcher.Run();
@@ -276,17 +272,24 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         internal void CloseUserInterface()
         {
-            _closeUiAction?.Invoke();
+            if (_uiDispatcher != null)
+            {
+                _uiDispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    UserInterface?.Close();
+                }));
+            }
         }
 
         /// <summary>
         /// Invoke a public method accessible from outside of the interpreter (EXTERN FUNCTION).
         /// </summary>
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="awaitIfAsync">Await if the method is maked as asynchronous.</param>
         /// <param name="args">The arguments to pass to the method.</param>
         /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
-        internal object InvokeMethod(string methodName, bool awaitIfAsync, Code.AbstractSyntaxTree.Expression[] args)
+        internal object InvokeMethod(Guid executionFlowId, string methodName, bool awaitIfAsync, Code.AbstractSyntaxTree.Expression[] args)
         {
             InitializeGlobalState();
 
@@ -295,18 +298,18 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             object result = null;
             var invokeExpression = new InvokeMethodExpression(methodName, awaitIfAsync).WithParameters(args);
 
-            // TODO : Set Stop and Run state
+            BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
             if (_uiDispatcher != null)
             {
                 _uiDispatcher.Invoke(() =>
                 {
-                    result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, true).Run();
+                    result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, executionFlowId, true).Run();
                 }, DispatcherPriority.Background);
             }
             else
             {
-                result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, true).Run();
+                result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, executionFlowId, true).Run();
             }
 
             return result;

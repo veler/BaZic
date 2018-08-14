@@ -15,8 +15,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         /// </summary>
         internal BlockState ChildBlockState { get; private set; }
 
-        internal TryCatchInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, TryCatchStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal TryCatchInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, TryCatchStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 
@@ -26,7 +26,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
             try
             {
                 // Execute statements
-                var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ParentInterpreter.State.IsInIteration, ParentInterpreter.CaughtException, Statement.TryStatements);
+                var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ExecutionFlowId, ParentInterpreter.State.IsInIteration, ParentInterpreter.CaughtException, Statement.TryStatements);
                 block.Run();
                 ChildBlockState = block.State;
             }
@@ -38,7 +38,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
                 }
 
                 // Execute statements
-                var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ParentInterpreter.State.IsInIteration, exception, Statement.CatchStatements);
+                var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ExecutionFlowId, ParentInterpreter.State.IsInIteration, exception, Statement.CatchStatements);
                 block.Run();
                 ChildBlockState = block.State;
             }

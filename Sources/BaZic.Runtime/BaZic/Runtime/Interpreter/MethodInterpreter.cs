@@ -51,8 +51,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// <param name="parentInterpreter">The parent interpreter.</param>
         /// <param name="methodDeclaration">The declaration of the method to interpret.</param>
         /// <param name="invokeMethod">The expression that performs the invocation.</param>
-        internal MethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, MethodDeclaration methodDeclaration, InvokeMethodExpression invokeMethod)
-            : base(baZicInterpreter, parentInterpreter)
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
+        internal MethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, MethodDeclaration methodDeclaration, InvokeMethodExpression invokeMethod, Guid executionFlowId)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId)
         {
             Requires.NotNull(methodDeclaration, nameof(methodDeclaration));
             Requires.NotNull(invokeMethod, nameof(invokeMethod));
@@ -135,7 +136,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     }
                     AsyncMethodCalledWithoutAwait = true;
                     var task = RunAsync(argumentValues);
-                    BaZicInterpreter.AddUnwaitedMethodInvocation(task);
+                    BaZicInterpreter.RunningStateManager.AddUnwaitedMethodInvocation(ExecutionFlowId, task);
                     return task;
                 }
             }
@@ -229,7 +230,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
 
             // Execute statements
-            var block = new BlockInterpreter(BaZicInterpreter, this, false, null, _methodDeclaration.Statements);
+            var block = new BlockInterpreter(BaZicInterpreter, this, ExecutionFlowId, false, null, _methodDeclaration.Statements);
             block.Run();
 
             if (BaZicInterpreter.Verbose)

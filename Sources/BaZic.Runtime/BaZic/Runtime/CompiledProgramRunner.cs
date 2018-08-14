@@ -158,7 +158,6 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
             else
             {
-                _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle)); // Go to Idle mode.
                 ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
             }
 
