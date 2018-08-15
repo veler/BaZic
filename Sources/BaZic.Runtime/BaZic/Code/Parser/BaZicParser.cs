@@ -117,7 +117,6 @@ namespace BaZic.Runtime.BaZic.Code.Parser
             {
                 try
                 {
-
                     _reflectionHelper = new FastReflection();
 
                     // Parse BaZic user interface code. (XAML)

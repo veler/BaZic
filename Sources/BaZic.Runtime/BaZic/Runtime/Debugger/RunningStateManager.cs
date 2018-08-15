@@ -9,6 +9,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
     /// <summary>
     /// Helps to manage the state of the interpreter.
     /// </summary>
+    [Serializable]
     internal sealed class RunningStateManager
     {
         #region Fields & Constants
@@ -100,35 +101,41 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
         /// <param name="executionFlowId">A GUID that defines which callstack must be waited.<param>
         internal void WaitUnwaitedMethodInvocation(Guid executionFlowId)
         {
-            var tasks = _unwaitedMethodInvocation[executionFlowId];
-
-            if (tasks == null)
+            lock (_unwaitedMethodInvocation)
             {
-                return;
-            }
+                var tasks = _unwaitedMethodInvocation[executionFlowId];
 
-            var waitThreads = true;
-            do
-            {
-                Task[] threads = null;
-                lock (tasks)
+                if (tasks == null)
                 {
-                    threads = tasks.ToArray();
+                    return;
                 }
 
-                Task.WhenAll(threads).ConfigureAwait(false).GetAwaiter().GetResult();
+                var waitThreads = true;
+                do
+                {
+                    Task[] threads = null;
+                    lock (tasks)
+                    {
+                        threads = tasks.ToArray();
+                    }
+
+                    Task.WhenAll(threads).ConfigureAwait(false).GetAwaiter().GetResult();
+
+                    lock (tasks)
+                    {
+                        waitThreads = tasks.Any(t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
+                    }
+                } while (waitThreads);
 
                 lock (tasks)
                 {
-                    waitThreads = tasks.Any(t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
+                    foreach (var task in tasks)
+                    {
+                        task.Dispose();
+                    }
+                    tasks.Clear();
                 }
-            } while (waitThreads);
-
-            foreach (var task in tasks)
-            {
-                task.Dispose();
             }
-            tasks.Clear();
         }
 
         /// <summary>

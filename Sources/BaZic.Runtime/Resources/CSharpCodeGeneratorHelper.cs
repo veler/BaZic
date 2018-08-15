@@ -79,7 +79,8 @@ namespace BaZicProgramReleaseMode
         /// Runs an action on STA thread.
         /// </summary>
         /// <param name="func">The function to run.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func)
+        /// <param name="isBackground">Defines whether the thread is a background thread.</param>
+        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
         {
             dynamic result = null;
             var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
@@ -87,6 +88,7 @@ namespace BaZicProgramReleaseMode
                 result = func();
             }));
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.IsBackground = isBackground;
             thread.Start();
             thread.Join();
             return result;

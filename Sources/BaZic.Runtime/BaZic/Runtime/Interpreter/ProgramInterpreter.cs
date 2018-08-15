@@ -17,6 +17,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
     /// <summary>
     /// Provide a sets of method to interpret a BaZic program.
     /// </summary>
+    [Serializable]
     internal sealed class ProgramInterpreter : Interpreter
     {
         #region Fields & Constants
@@ -25,7 +26,6 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         private readonly BaZicUiProgram _uiProgram;
 
         private bool _globalStateInitialized;
-        private Dispatcher _uiDispatcher;
         private Thread _uiThread;
 
         #endregion
@@ -46,6 +46,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// Gets the user interface if the interpreted program is a <see cref="BaZicUiProgram"/>.
         /// </summary>
         internal Window UserInterface { get; private set; }
+
+        /// <summary>
+        /// Gets the dispatcher of the UI.
+        /// </summary>
+        internal Dispatcher UIDispatcher { get; private set; }
 
         /// <summary>
         /// Gets the result of the Main method or the result of the Window.Closed event from the user interface.
@@ -137,7 +142,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         return;
                     }
 
-                    _uiDispatcher = UserInterface.Dispatcher;
+                    UIDispatcher = UserInterface.Dispatcher;
 
                     if (BaZicInterpreter.Verbose)
                     {
@@ -161,28 +166,28 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                                 VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.EventRaised);
                             }
 
-                            if (BaZicInterpreter.State == BaZicInterpreterState.Running)
-                            {
-                                // Wait for having being idle.
-                                using (var resetEvent = new AutoResetEvent(false))
-                                {
-                                    resetEvent.Reset();
+                            //if (BaZicInterpreter.State == BaZicInterpreterState.Running)
+                            //{
+                            //    // Wait for having being idle.
+                            //    using (var resetEvent = new AutoResetEvent(false))
+                            //    {
+                            //        resetEvent.Reset();
 
-                                    BaZicInterpreterStateEventHandler stateChanged = (s, e) =>
-                                    {
-                                        if (e.State == BaZicInterpreterState.Idle)
-                                        {
-                                            resetEvent.Set();
-                                        }
-                                    };
+                            //        BaZicInterpreterStateEventHandler stateChanged = (s, e) =>
+                            //        {
+                            //            if (e.State == BaZicInterpreterState.Idle)
+                            //            {
+                            //                resetEvent.Set();
+                            //            }
+                            //        };
 
-                                    BaZicInterpreter.StateBridgeProxy.StateChanged += stateChanged;
+                            //        BaZicInterpreter.StateBridgeProxy.StateChanged += stateChanged;
 
-                                    resetEvent.WaitOne();
+                            //        resetEvent.WaitOne();
 
-                                    BaZicInterpreter.StateBridgeProxy.StateChanged -= stateChanged;
-                                }
-                            }
+                            //        BaZicInterpreter.StateBridgeProxy.StateChanged -= stateChanged;
+                            //    }
+                            //}
 
                             BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
                             var eventMethodDeclaration = _uiProgram.Methods.Single(m => m.Id == uiEvent.MethodId);
@@ -272,13 +277,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         internal void CloseUserInterface()
         {
-            if (_uiDispatcher != null)
+            UIDispatcher?.Invoke(() =>
             {
-                _uiDispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() =>
-                {
-                    UserInterface?.Close();
-                }));
-            }
+                UserInterface?.Close();
+            }, DispatcherPriority.Send);
+            UIDispatcher = null;
         }
 
         /// <summary>
@@ -295,24 +298,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
 
             BaZicInterpreter.CheckState(BaZicInterpreterState.Idle, BaZicInterpreterState.Stopped, BaZicInterpreterState.StoppedWithError);
 
-            object result = null;
             var invokeExpression = new InvokeMethodExpression(methodName, awaitIfAsync).WithParameters(args);
 
             BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
-            if (_uiDispatcher != null)
-            {
-                _uiDispatcher.Invoke(() =>
-                {
-                    result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, executionFlowId, true).Run();
-                }, DispatcherPriority.Background);
-            }
-            else
-            {
-                result = new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, executionFlowId, true).Run();
-            }
-
-            return result;
+            return new InvokeMethodInterpreter(BaZicInterpreter, this, invokeExpression, executionFlowId, true).Run();
         }
 
         /// <summary>

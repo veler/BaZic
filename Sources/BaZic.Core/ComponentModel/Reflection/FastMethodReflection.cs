@@ -87,10 +87,11 @@ namespace BaZic.Core.ComponentModel.Reflection
 
             var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
 
-            var methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
-
+            MethodInfo methodInfo = null;
             lock (_methods)
             {
+                methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
+
                 if (methodInfo == null)
                 {
                     var method = GetMethodDelegate(methodName, argumentTypes);
@@ -119,10 +120,11 @@ namespace BaZic.Core.ComponentModel.Reflection
 
             var argumentTypes = arguments.Select(arg => arg.GetType()).ToArray();
 
-            var methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
-
+            MethodInfo methodInfo = null;
             lock (_methods)
             {
+                methodInfo = _methods.Select(met => met.Key).SingleOrDefault(met => string.Compare(met.Name, methodName, StringComparison.Ordinal) == 0 && met.GetParameters().Select(p => p.ParameterType).ToArray().SequenceEqual(argumentTypes, new TypeAssignableComparer()));
+
                 if (methodInfo == null)
                 {
                     var method = GetMethodDelegate(methodName, argumentTypes);

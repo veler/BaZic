@@ -14,6 +14,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
     [Serializable]
     public class Variable : Core.ComponentModel.IDisposable
     {
+        #region Fields & Constants
+
+        protected bool _isDisposing;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -133,6 +139,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
         {
             if (disposing)
             {
+                _isDisposing = disposing;
                 if (!IsDisposed)
                 {
                     Value = null; // Once this is set to null and that that the destructor of this class is called, the garbage collector will automatically Dispose the resource if it is disposable.

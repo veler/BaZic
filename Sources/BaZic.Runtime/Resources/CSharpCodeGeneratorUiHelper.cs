@@ -9,8 +9,9 @@ namespace BaZicProgramReleaseMode
     {
         #region Fields & Constants
 
-        private string _xamlCode = "{XAMLCode}";
         private System.Windows.Window _userInterface;
+
+        private string _xamlCode = "{XAMLCode}";
 
         #endregion
 
@@ -60,10 +61,11 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         internal void CloseUserInterface()
         {
-            _userInterface?.Dispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new System.Action(() =>
+            UIDispatcher?.Invoke(() =>
             {
                 _userInterface?.Close();
-            }));
+                System.Windows.Threading.Dispatcher.CurrentDispatcher?.InvokeShutdown();
+            }, System.Windows.Threading.DispatcherPriority.Send);
         }
 
         /// <summary>

@@ -142,7 +142,7 @@ namespace BaZic.Runtime.BaZic.Code
                 var bindings = new List<string>();
                 foreach (var binding in syntaxTree.UiBindings)
                 {
-                    bindings.Add(indent + GenerateBindingDeclaration(binding));
+                    bindings.Add(GenerateBindingDeclaration(binding, indent));
                 }
 
                 bindingsString = string.Join(Environment.NewLine, bindings);
@@ -888,8 +888,9 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates the code for a <see cref="BindingDeclaration"/>.
         /// </summary>
         /// <param name="statement">The statement</param>
+        /// <param name="indent">The indentation</param>
         /// <returns>A CSharp code</returns>
-        private string GenerateBindingDeclaration(BindingDeclaration statement)
+        private string GenerateBindingDeclaration(BindingDeclaration statement, string indent)
         {
             var arrayMarkup = statement.Variable.IsArray ? "[]" : string.Empty;
 
@@ -899,7 +900,21 @@ namespace BaZic.Runtime.BaZic.Code
                 _uiLoadingStatements.AppendLine($"            {statement.ControlName}_{statement.ControlPropertyName} = {defaultValue};");
             }
 
-            return $"private static dynamic {statement.ControlName}_{statement.ControlPropertyName} {{ get {{ dynamic result = ProgramHelper.Instance.GetControl(\"{statement.ControlName}\")?.{statement.ControlPropertyName}; return result; }} set {{ ProgramHelper.Instance.GetControl(\"{statement.ControlName}\").{statement.ControlPropertyName} = value; }} }}";
+            return $@"{indent}private static dynamic {statement.ControlName}_{statement.ControlPropertyName}
+{indent}{{ 
+{indent}    get {{
+{indent}        dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {{
+{indent}            return ProgramHelper.Instance.GetControl(""{statement.ControlName}"")?.{statement.ControlPropertyName};
+{indent}        }}, System.Windows.Threading.DispatcherPriority.Background);
+{indent}        return result;
+{indent}    }}
+{indent}    set
+{indent}    {{
+{indent}        ProgramHelper.UIDispatcher.Invoke(() => {{
+{indent}            ProgramHelper.Instance.GetControl(""{statement.ControlName}"").{statement.ControlPropertyName} = value;
+{indent}        }}, System.Windows.Threading.DispatcherPriority.Background);
+{indent}    }}
+{indent}}}";
         }
 
         /// <summary>

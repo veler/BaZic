@@ -35,11 +35,27 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
         {
             get
             {
-                return _baZicInterpreter.Reflection.GetProperty(_control, PropertyName);
+                if (_isDisposing)
+                {
+                    return null;
+                }
+
+                return _baZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
+                {
+                    return _baZicInterpreter.Reflection.GetProperty(_control, PropertyName);
+                }, System.Windows.Threading.DispatcherPriority.Background);
             }
             protected set
             {
-                _baZicInterpreter.Reflection.SetProperty(_control, PropertyName, value);
+                if (_isDisposing)
+                {
+                    return;
+                }
+
+                _baZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
+                {
+                    _baZicInterpreter.Reflection.SetProperty(_control, PropertyName, value);
+                }, System.Windows.Threading.DispatcherPriority.Background);
             }
         }
 

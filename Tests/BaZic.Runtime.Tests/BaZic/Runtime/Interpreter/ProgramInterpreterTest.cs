@@ -184,7 +184,7 @@ END FUNCTION";
 
             var inputCode =
 @"EXTERN FUNCTION Main(args[])
-    AWAIT MethodAsync(345, 5.0)
+    AWAIT MethodAsync(345, 2.0)
 END FUNCTION
 
 EXTERN FUNCTION Method1(arg)
@@ -322,14 +322,6 @@ END FUNCTION
 
             using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
             {
-                var t = interpreter.StartReleaseAsync(true);
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
-
-                Assert.AreEqual(true, result);
-            }
-
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
-            {
                 var errors = await interpreter.Build();
 
                 Assert.IsNull(errors);
@@ -341,6 +333,14 @@ END FUNCTION
 
                 var t = interpreter.StartReleaseAsync(true);
                 result = await interpreter.InvokeMethod(true, "Method1", true);
+
+                Assert.AreEqual(true, result);
+            }
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            {
+                var t = interpreter.StartReleaseAsync(true);
+                var result = await interpreter.InvokeMethod(true, "Method1", true);
 
                 Assert.AreEqual(true, result);
             }
@@ -454,7 +454,7 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(5000);
+                await Task.Delay(10000);
 
                 Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
@@ -502,7 +502,7 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(5000);
+                await Task.Delay(10000);
 
                 Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
@@ -552,10 +552,14 @@ END FUNCTION";
 
             using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
             {
+                var errors = await interpreter.Build();
+
+                Assert.IsNull(errors);
+
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(5000);
+                await Task.Delay(10000);
 
                 Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 
@@ -609,7 +613,7 @@ END FUNCTION";
                 var t = interpreter.StartReleaseAsync(true);
                 t = interpreter.InvokeMethod(true, "Method1", true);
 
-                await Task.Delay(5000);
+                await Task.Delay(10000);
 
                 Assert.AreEqual(BaZicInterpreterState.Running, interpreter.State);
 

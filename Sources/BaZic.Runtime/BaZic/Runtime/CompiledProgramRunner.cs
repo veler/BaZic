@@ -175,18 +175,19 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the result of the method.</returns>
         internal object InvokeMethod(string methodName, params object[] arguments)
         {
-            var dispatcher = _assemblySandbox.Reflection.GetStaticProperty("BaZicProgramReleaseMode.ProgramHelper", "UIDispatcher") as Dispatcher;
-            if (dispatcher == null)
-            {
-                return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
-            }
-            else
-            {
-                return dispatcher.Invoke(() =>
-                {
-                    return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
-                }, DispatcherPriority.Background);
-            }
+            return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
+            //var dispatcher = _assemblySandbox.Reflection.GetStaticProperty("BaZicProgramReleaseMode.ProgramHelper", "UIDispatcher") as Dispatcher;
+            //if (dispatcher == null)
+            //{
+            //    return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
+            //}
+            //else
+            //{
+            //    return dispatcher.Invoke(() =>
+            //    {
+            //        return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments); ;
+            //    }, DispatcherPriority.Background);
+            //}
         }
 
         /// <summary>

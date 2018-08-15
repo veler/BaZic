@@ -19,6 +19,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace BaZic.Runtime.BaZic.Runtime
 {
@@ -466,15 +467,15 @@ namespace BaZic.Runtime.BaZic.Runtime
                     {
                         ProgramResult = ProgramInterpreter.ProgramResult;
                         FreePauseModeWaiter();
-                        RunningStateManager.UpdateState();
                     }
                 }
             });
 
-            callback.ContinueWith(null, () =>
+            callback.ContinueWith(() =>
             {
                 RunningStateManager.SetIsRunningMainFunction(false);
-            });
+                RunningStateManager.UpdateState();
+            }, null);
 
             Start(callback, action, verbose, args);
         }
@@ -514,11 +515,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                 ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.BaZicInterpreter.StopRequested));
             }
 
-            Task.Run(async () =>
-            {
-                await Stop(true);
-                callback.NotifyEndTask();
-            });
+            Stop(true);
+            callback.NotifyEndTask();
         }
 
         /// <summary>
@@ -621,12 +619,14 @@ namespace BaZic.Runtime.BaZic.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void ChangeState(object source, BaZicInterpreterStateChangeEventArgs e)
         {
+            if (e.State == BaZicInterpreterState.StoppedWithError || e.State == BaZicInterpreterState.Stopped)
+            {
+                ProgramInterpreter?.CloseUserInterface();
+            }
+
             lock (_stateChangedHistory)
             {
-                if (e.State == BaZicInterpreterState.StoppedWithError || e.State == BaZicInterpreterState.Stopped)
-                {
-                    ProgramInterpreter?.CloseUserInterface();
-                }
+                var oldState = State;
 
                 switch (e.State)
                 {
@@ -657,7 +657,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                         throw new ArgumentOutOfRangeException(nameof(e.State));
                 }
 
-                if (State != BaZicInterpreterState.StoppedWithError)
+                if (State != BaZicInterpreterState.StoppedWithError && (e.State == BaZicInterpreterState.Log || e.State == BaZicInterpreterState.Ready || State != oldState))
                 {
                     _stateChangedHistory.Add(e);
                     StateBridgeProxy.RaiseStateChange(e);
@@ -978,10 +978,8 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Ask the program to stop.
         /// </summary>
         /// <param name="waitForMainInterpreterThread">Defines whether the method should wait the end of the interpretation to finish.</param>
-        private async Task Stop(bool waitForMainInterpreterThread)
+        private void Stop(bool waitForMainInterpreterThread)
         {
-            CheckState(BaZicInterpreterState.Pause, BaZicInterpreterState.Running, BaZicInterpreterState.Idle, BaZicInterpreterState.Preparing);
-
             _forceStop = true;
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
 
@@ -991,7 +989,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
                 if (waitForMainInterpreterThread)
                 {
-                    _mainInterpreterTask.Wait(1000);
+                    _mainInterpreterTask?.Wait(1000);
                     RunningStateManager.WaitAllUnwaitedMethodInvocation();
                 }
 
@@ -1009,16 +1007,16 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 _ignoreException = true;
 
-                if (Program is BaZicUiProgram)
+                if (Program != null && Program is BaZicUiProgram)
                 {
                     Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.ProgramHelper", "RequestCloseUserInterface");
-                    _mainInterpreterTask.Wait(1000);
+                    _mainInterpreterTask?.Wait(1000);
                 }
 
                 if (_mainInterpreterThread != null && _mainInterpreterThread.IsAlive)
                 {
                     _mainInterpreterThread.Abort();
-                    await Task.Delay(500); // Let the time to the _mainInterpreterThread to stop.
+                    Task.Delay(500).ConfigureAwait(false).GetAwaiter().GetResult(); // Let the time to the _mainInterpreterThread to stop.
                 }
             }
 
@@ -1135,7 +1133,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     if (State == BaZicInterpreterState.Running || State == BaZicInterpreterState.Idle || (_mainInterpreterTask != null && _mainInterpreterTask.Status == TaskStatus.Running))
                     {
-                        Stop(true).ConfigureAwait(false).GetAwaiter().GetResult();
+                        Stop(true);
                     }
 
                     FreePauseModeWaiter();
