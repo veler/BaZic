@@ -192,7 +192,7 @@ END FUNCTION
 
 ASYNC FUNCTION CloseAfter3sec()
     AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(3.0))
-    // TODO Add something like Window1.Close()
+    # TODO Add something like Window1.Close()
 END FUNCTION
 
 # The XAML will be provided separatly";
@@ -208,7 +208,7 @@ END FUNCTION
 
 
             var interpreter = new BaZicInterpreter(bazicProgram);
-            await interpreter.StartDebugAsync(true);
+            interpreter.StartDebugAsync(true);
 
             var expect = @"[State] Ready
 [State] Preparing

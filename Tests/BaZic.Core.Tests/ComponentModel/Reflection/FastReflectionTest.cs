@@ -76,7 +76,28 @@ namespace BaZic.Core.Tests.ComponentModel.Reflection
             var fastReflection = new FastReflection();
 
             fastReflection.SetStaticProperty(typeof(MockValue), nameof(MockValue.StaticFoo), 123);
-            Assert.AreEqual(123, fastReflection.GetStaticProperty(typeof(MockValue), nameof(MockValue.StaticFoo)));
+            Assert.AreEqual(123, fastReflection.GetStaticPropertyOrEnum(typeof(MockValue), nameof(MockValue.StaticFoo)));
+        }
+
+        [TestMethod]
+        public void FastReflectionEnum()
+        {
+            var fastReflection = new FastReflection();
+
+            Assert.AreEqual(System.IO.FileMode.CreateNew, fastReflection.GetStaticPropertyOrEnum(typeof(System.IO.FileMode), nameof(System.IO.FileMode.CreateNew)));
+
+            try
+            {
+                fastReflection.GetStaticPropertyOrEnum(typeof(System.IO.FileMode), "Hello");
+                Assert.Fail();
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (Exception)
+            {
+                Assert.Fail();
+            }
         }
 
         [TestMethod]

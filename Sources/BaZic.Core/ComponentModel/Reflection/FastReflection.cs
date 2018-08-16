@@ -295,17 +295,22 @@ namespace BaZic.Core.ComponentModel.Reflection
         }
 
         /// <summary>
-        /// Gets the value of a static property of a class by using a fast reflection way.
+        /// Gets the value of a static property of a class or a enum value by using a fast reflection way.
         /// </summary>
-        /// <param name="targetType">The type that contains the static property.</param>
-        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="targetType">The enumeration or the type that contains the static property.</param>
+        /// <param name="propertyOrEnumName">The name of the property or the enumeration.</param>
         /// <returns>Returns the value of the property.</returns>
-        public object GetStaticProperty(Type targetType, string propertyName)
+        public object GetStaticPropertyOrEnum(Type targetType, string propertyOrEnumName)
         {
             Requires.NotNull(targetType, nameof(targetType));
-            Requires.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
+            Requires.NotNullOrWhiteSpace(propertyOrEnumName, nameof(propertyOrEnumName));
 
-            return GetProperty(targetType, propertyName).Get(null);
+            if (targetType.IsEnum)
+            {
+                return Enum.Parse(targetType, propertyOrEnumName);
+            }
+
+            return GetProperty(targetType, propertyOrEnumName).Get(null);
         }
 
 
@@ -315,10 +320,10 @@ namespace BaZic.Core.ComponentModel.Reflection
         /// <param name="targetTypeFullName">The full name of the type that contains the static property.</param>
         /// <param name="propertyName">The name of the property.</param>
         /// <returns>Returns the value of the property.</returns>
-        public object GetStaticProperty(string targetTypeFullName, string propertyName)
+        public object GetStaticPropertyOrEnum(string targetTypeFullName, string propertyName)
         {
             var targetType = GetTypeRef(targetTypeFullName);
-            return GetStaticProperty(targetType, propertyName);
+            return GetStaticPropertyOrEnum(targetType, propertyName);
         }
         /// <summary>
         /// Sets the value of a property of an object by using a fast reflection way.

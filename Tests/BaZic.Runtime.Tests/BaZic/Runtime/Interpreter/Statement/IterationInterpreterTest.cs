@@ -276,6 +276,7 @@ END FUNCTION";
 
             var inputCode =
 @"EXTERN FUNCTION Main(args[])
+    VARIABLE file = NEW System.IO.FileStream(""LocalWebPage.html"", System.IO.FileMode.OpenOrCreate)
     DO
     LOOP WHILE True
 
@@ -286,10 +287,25 @@ END FUNCTION";
 
             await Task.Delay(3000);
 
+            try
+            {
+                File.ReadAllText("LocalWebPage.html"); // Must crash.
+                Assert.Fail();
+            }
+            catch (IOException)
+            {
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+
             await interpreter.Stop();
 
-
+            var fileContent = File.ReadAllText("LocalWebPage.html");
             Assert.IsTrue(interpreter.GetStateChangedHistoryString().Contains("[Log] The user requests to stop the interpreter as soon as possible."));
+            Assert.IsTrue(interpreter.State == BaZicInterpreterState.Stopped);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(fileContent));
         }
 
         [TestMethod]
@@ -317,6 +333,10 @@ END FUNCTION";
             }
             catch (IOException)
             {
+            }
+            catch
+            {
+                Assert.Fail();
             }
 
             await interpreter.Stop();
