@@ -166,29 +166,6 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                                 VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.EventRaised);
                             }
 
-                            //if (BaZicInterpreter.State == BaZicInterpreterState.Running)
-                            //{
-                            //    // Wait for having being idle.
-                            //    using (var resetEvent = new AutoResetEvent(false))
-                            //    {
-                            //        resetEvent.Reset();
-
-                            //        BaZicInterpreterStateEventHandler stateChanged = (s, e) =>
-                            //        {
-                            //            if (e.State == BaZicInterpreterState.Idle)
-                            //            {
-                            //                resetEvent.Set();
-                            //            }
-                            //        };
-
-                            //        BaZicInterpreter.StateBridgeProxy.StateChanged += stateChanged;
-
-                            //        resetEvent.WaitOne();
-
-                            //        BaZicInterpreter.StateBridgeProxy.StateChanged -= stateChanged;
-                            //    }
-                            //}
-
                             BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
                             var eventMethodDeclaration = _uiProgram.Methods.Single(m => m.Id == uiEvent.MethodId);
                             var eventInvocation = new InvokeMethodExpression(eventMethodDeclaration.Name.Identifier, false);
@@ -203,6 +180,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                                 eventMethodInterpreter.Invoke();
                             }
 
+                            BaZicInterpreter.RunningStateManager.SetIsRunningMainFunction(false); // In all cases, at this point, the main function is done. The UI is running. Idle state must be able to be setted.
                             BaZicInterpreter.RunningStateManager.UpdateState();
                         });
 

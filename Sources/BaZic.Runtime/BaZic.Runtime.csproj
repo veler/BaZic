@@ -233,7 +233,6 @@
     <Compile Include="BaZic\Runtime\BaZicInterpreter.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterCore.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterState.cs" />
-    <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangedBridge.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangeEventArgs.cs" />
     <Compile Include="BaZic\Runtime\CompiledProgramRunner.cs" />
     <Compile Include="BaZic\Runtime\CompilerResult.cs" />

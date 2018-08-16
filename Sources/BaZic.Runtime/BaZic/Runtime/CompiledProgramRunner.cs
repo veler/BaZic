@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
 using BaZic.Core.Enums;

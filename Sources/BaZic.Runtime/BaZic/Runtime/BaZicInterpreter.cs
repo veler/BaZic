@@ -19,7 +19,6 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         private readonly AssemblySandbox _assemblySandbox;
         private readonly BaZicInterpreterCore _core;
-        private readonly BaZicInterpreterStateChangedBridge _bridge;
 
         #endregion
 
@@ -71,7 +70,6 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         private BaZicInterpreter()
         {
-            _bridge = new BaZicInterpreterStateChangedBridge();
             _assemblySandbox = new AssemblySandbox();
         }
 
@@ -84,7 +82,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         public BaZicInterpreter(string inputCode, string xamlCode, bool optimize = false)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_bridge, _assemblySandbox, inputCode, xamlCode, optimize);
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_assemblySandbox, inputCode, xamlCode, optimize);
             Initialize();
         }
 
@@ -95,7 +93,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         public BaZicInterpreter(BaZicProgram program)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_bridge, _assemblySandbox, program);
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_assemblySandbox, program);
             Initialize();
         }
 
@@ -252,7 +250,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         private void Initialize()
         {
-            _bridge.StateChanged += Bridge_StateChanged;
+            _core.StateChanged += BaZicInterpreterCore_StateChanged;
         }
 
         /// <summary>
@@ -286,7 +284,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         #region Handled Methods
 
-        private void Bridge_StateChanged(object sender, BaZicInterpreterStateChangeEventArgs e)
+        private void BaZicInterpreterCore_StateChanged(object sender, BaZicInterpreterStateChangeEventArgs e)
         {
             StateChanged?.Invoke(this, e);
         }

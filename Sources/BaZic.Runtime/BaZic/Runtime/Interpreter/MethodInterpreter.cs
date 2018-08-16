@@ -233,7 +233,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             var block = new BlockInterpreter(BaZicInterpreter, this, ExecutionFlowId, false, null, _methodDeclaration.Statements);
             block.Run();
 
-            if (BaZicInterpreter.Verbose)
+            if (BaZicInterpreter.Verbose && !IsAborted)
             {
                 VerboseLog(L.BaZic.Runtime.Interpreters.MethodInterpreter.FormattedEndExecution(_invokeMethod.MethodName, ReturnedValue, ValueInfo.GetValueInfo(ReturnedValue)));
             }

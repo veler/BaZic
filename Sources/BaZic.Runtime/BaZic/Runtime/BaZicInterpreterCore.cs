@@ -19,7 +19,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace BaZic.Runtime.BaZic.Runtime
 {
@@ -113,11 +112,6 @@ namespace BaZic.Runtime.BaZic.Runtime
         internal BaZicProgram Program { get; }
 
         /// <summary>
-        /// Gets a proxy used to get and listen to the interpreter state in a cross-AppDomain context.
-        /// </summary>
-        internal BaZicInterpreterStateChangedBridge StateBridgeProxy { get; private set; }
-
-        /// <summary>
         /// Gets the running state manager.
         /// </summary>
         internal RunningStateManager RunningStateManager { get; }
@@ -126,7 +120,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         #region Events
 
-        private event BaZicInterpreterStateEventHandler LocalStateChanged;
+        internal event BaZicInterpreterStateEventHandler StateChanged;
 
         #endregion
 
@@ -135,14 +129,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="BaZicInterpreterCore"/> class.
         /// </summary>
-        /// <param name="baZicInterpreterStateChangedBridge">The state changed bridge.</param>
         /// <param name="assemblySandbox">The assembly sandbox.</param>
-        private BaZicInterpreterCore(BaZicInterpreterStateChangedBridge baZicInterpreterStateChangedBridge, AssemblySandbox assemblySandbox)
+        private BaZicInterpreterCore(AssemblySandbox assemblySandbox)
         {
-            Requires.NotNull(baZicInterpreterStateChangedBridge, nameof(baZicInterpreterStateChangedBridge));
             Requires.NotNull(assemblySandbox, nameof(assemblySandbox));
 
-            StateBridgeProxy = baZicInterpreterStateChangedBridge;
             _stateChangedHistory = new List<BaZicInterpreterStateChangeEventArgs>();
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Ready));
 
@@ -154,13 +145,12 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="BaZicInterpreterCore"/> class.
         /// </summary>
-        /// <param name="baZicInterpreterStateChangedBridge">The state changed bridge.</param>
         /// <param name="assemblySandbox">The assembly sandbox.</param>
         /// <param name="inputCode">The BaZic code to interpret.</param>
         /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
-        private BaZicInterpreterCore(BaZicInterpreterStateChangedBridge baZicInterpreterStateChangedBridge, AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimize = false)
-            : this(baZicInterpreterStateChangedBridge, assemblySandbox)
+        private BaZicInterpreterCore(AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimize = false)
+            : this(assemblySandbox)
         {
             var parser = new BaZicParser();
             var parsingResult = parser.Parse(inputCode, xamlCode, optimize);
@@ -176,11 +166,10 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="BaZicInterpreterCore"/> class.
         /// </summary>
-        /// <param name="baZicInterpreterStateChangedBridge">The state changed bridge.</param>
         /// <param name="assemblySandbox">The assembly sandbox.</param>
         /// <param name="program">The <see cref="BaZicProgram"/> to interpret.</param>
-        private BaZicInterpreterCore(BaZicInterpreterStateChangedBridge baZicInterpreterStateChangedBridge, AssemblySandbox assemblySandbox, BaZicProgram program)
-            : this(baZicInterpreterStateChangedBridge, assemblySandbox)
+        private BaZicInterpreterCore(AssemblySandbox assemblySandbox, BaZicProgram program)
+            : this(assemblySandbox)
         {
             Requires.NotNull(program, nameof(program));
 
@@ -616,7 +605,6 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         /// <param name="source">The source from where we changed the state (an interpreter usually).</param>
         /// <param name="e">The new state.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void ChangeState(object source, BaZicInterpreterStateChangeEventArgs e)
         {
             if (e.State == BaZicInterpreterState.StoppedWithError || e.State == BaZicInterpreterState.Stopped)
@@ -635,9 +623,6 @@ namespace BaZic.Runtime.BaZic.Runtime
                         {
                             Error = e.Error;
                             State = e.State;
-                            _stateChangedHistory.Add(e);
-                            StateBridgeProxy.RaiseStateChange(e);
-                            LocalStateChanged?.Invoke(this, e);
                         }
                         break;
 
@@ -653,15 +638,15 @@ namespace BaZic.Runtime.BaZic.Runtime
                     case BaZicInterpreterState.Log:
                         Logger.Instance.Debug($"BaZic Interpreter : {e.LogMessage}");
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException(nameof(e.State));
                 }
 
-                if (State != BaZicInterpreterState.StoppedWithError && (e.State == BaZicInterpreterState.Log || e.State == BaZicInterpreterState.Ready || State != oldState))
+                if (e.State == BaZicInterpreterState.Log || e.State == BaZicInterpreterState.Ready || State != oldState)
                 {
                     _stateChangedHistory.Add(e);
-                    StateBridgeProxy.RaiseStateChange(e);
-                    LocalStateChanged?.Invoke(this, e);
+                    StateChanged?.Invoke(this, e);
                 }
             }
         }
@@ -1113,11 +1098,11 @@ namespace BaZic.Runtime.BaZic.Runtime
                     }
                 };
 
-                LocalStateChanged += stateChanged;
+                StateChanged += stateChanged;
 
                 resetEvent.WaitOne();
 
-                LocalStateChanged -= stateChanged;
+                StateChanged -= stateChanged;
             }
         }
 

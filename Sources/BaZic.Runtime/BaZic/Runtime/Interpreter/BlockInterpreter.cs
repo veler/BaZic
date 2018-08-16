@@ -266,7 +266,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     break;
             }
 
-            if (BaZicInterpreter.Verbose && (State.ExitMethod || State.ExitIteration || State.ExitBlockBecauseOfLabelJump || IsAborted))
+            if (BaZicInterpreter.Verbose && (State.ExitMethod || State.ExitIteration || State.ExitBlockBecauseOfLabelJump))
             {
                 VerboseLog(L.BaZic.Runtime.Interpreters.BlockInterpreter.ExitingBlock);
             }

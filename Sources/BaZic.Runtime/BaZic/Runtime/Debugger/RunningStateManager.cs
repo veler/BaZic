@@ -9,7 +9,6 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
     /// <summary>
     /// Helps to manage the state of the interpreter.
     /// </summary>
-    [Serializable]
     internal sealed class RunningStateManager
     {
         #region Fields & Constants
@@ -89,9 +88,10 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
         internal void AddUnwaitedMethodInvocation(Guid executionFlowId, Task task)
         {
             Requires.NotNull(task, nameof(task));
-            lock (_unwaitedMethodInvocation)
+            var tasks = _unwaitedMethodInvocation[executionFlowId];
+            lock (tasks)
             {
-                _unwaitedMethodInvocation[executionFlowId].Add(task);
+                tasks.Add(task);
             }
         }
 
@@ -101,40 +101,43 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
         /// <param name="executionFlowId">A GUID that defines which callstack must be waited.<param>
         internal void WaitUnwaitedMethodInvocation(Guid executionFlowId)
         {
-            lock (_unwaitedMethodInvocation)
+            var tasks = _unwaitedMethodInvocation[executionFlowId];
+
+            if (tasks == null)
             {
-                var tasks = _unwaitedMethodInvocation[executionFlowId];
+                return;
+            }
 
-                if (tasks == null)
-                {
-                    return;
-                }
+            var waitThreads = false;
+            do
+            {
+                waitThreads = false;
 
-                var waitThreads = true;
-                do
-                {
-                    Task[] threads = null;
-                    lock (tasks)
-                    {
-                        threads = tasks.ToArray();
-                    }
-
-                    Task.WhenAll(threads).ConfigureAwait(false).GetAwaiter().GetResult();
-
-                    lock (tasks)
-                    {
-                        waitThreads = tasks.Any(t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
-                    }
-                } while (waitThreads);
-
+                Task[] tasksToWait;
                 lock (tasks)
                 {
-                    foreach (var task in tasks)
-                    {
-                        task.Dispose();
-                    }
-                    tasks.Clear();
+                    tasksToWait = new Task[tasks.Count];
+                    tasks.CopyTo(tasksToWait);
                 }
+
+                Task.WhenAll(tasksToWait).ConfigureAwait(false).GetAwaiter().GetResult();
+
+                var i = tasksToWait.Length;
+                while (i < tasks.Count && !waitThreads)
+                {
+                    var t = tasks[i];
+                    waitThreads = !t.IsCanceled && !t.IsCompleted && !t.IsFaulted;
+                    i++;
+                }
+            } while (waitThreads);
+
+            lock (tasks)
+            {
+                foreach (var task in tasks)
+                {
+                    task.Dispose();
+                }
+                tasks.Clear();
             }
         }
 
@@ -144,12 +147,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
         /// <param name="executionFlowId">A GUID that defines which callstack must be waited.<param>
         internal void WaitAllUnwaitedMethodInvocation()
         {
-            lock (_unwaitedMethodInvocation)
+            foreach (var executionFlow in _unwaitedMethodInvocation)
             {
-                foreach (var executionFlow in _unwaitedMethodInvocation)
-                {
-                    WaitUnwaitedMethodInvocation(executionFlow.Key);
-                }
+                WaitUnwaitedMethodInvocation(executionFlow.Key);
             }
         }
 
