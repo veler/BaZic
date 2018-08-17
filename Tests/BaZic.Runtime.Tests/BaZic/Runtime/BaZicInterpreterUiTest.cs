@@ -90,9 +90,7 @@ END FUNCTION
 [Log] Declaring bindings.
 [Log] Variable 'Button1_Content' declared. Default value : Hello (Button1.Content : )
 [Log] Showing user interface.
-[State] Idle
 [Log] An event has been raised from an interaction with the user interface.
-[State] Running
 [Log] Preparing to invoke the method 'Window1_Loaded'.
 [Log] Executing the argument values of the method.
 [Log] Invoking the synchronous method 'Window1_Loaded'.

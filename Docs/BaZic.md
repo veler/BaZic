@@ -31,6 +31,10 @@ No. It is not supported (yet?).
 The entry point of a BaZic program must be a synchronous declared function called ```Main``` and taking a single array argument ```args[]```.
 The ```args[]``` argument can receive an array of .NET Framework objects.
 
+## Does a BaZic's function can be called even if the program is not running?
+
+Yes. Like in the case of a compiled DLL, you can call any method marked as ```EXTERN```.
+
 ## Does a BaZic program can have a UI (user interface)?
 
 Yes. A BaZic program is allowed to get one single window for the user interface. The UI is described thanks to [XAML](https://www.microsoft.com/en-us/download/details.aspx?id=19600) code.
@@ -511,6 +515,6 @@ Therefore, a `EVENT FUNCTION` name must always have the following syntax : `Cont
 Those kind of function must **never** take any argument.
 An event function **cannot* be `ASYNC`.
 
-##### Special case with the Closed evenf of the Window
+##### Special case with the Closed event of the Window
 
 The value returned by the function binded to the ```Closed``` event of the program's ```Window``` will be considered as the program's result.

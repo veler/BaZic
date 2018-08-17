@@ -216,7 +216,6 @@ END FUNCTION";
 [State] Pause
 [Log] The user requests to stop the interpreter as soon as possible.
 [State] Stopped
-[Log] End of the execution of the method 'Main'. Returned value :  ({Null})
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());

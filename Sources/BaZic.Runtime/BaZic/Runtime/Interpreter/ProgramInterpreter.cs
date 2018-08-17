@@ -244,10 +244,6 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     throw eventException;
                 }
             }
-            else
-            {
-                // BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
-            }
         }
 
         /// <summary>
