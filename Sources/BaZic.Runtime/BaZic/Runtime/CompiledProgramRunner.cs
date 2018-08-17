@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
+using BaZic.Core.Enums;
 using BaZic.Runtime.BaZic.Code;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.Localization;
@@ -60,7 +61,8 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Convert the BaZic program to CSharp code and build it in memory.
         /// </summary>
-        internal void Compile()
+        /// 
+        internal CompilerResult Build(BaZicCompilerOutputType outputType)
         {
             if (_baZicInterpreter.Verbose)
             {
@@ -75,27 +77,52 @@ namespace BaZic.Runtime.BaZic.Runtime
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.Compiling));
             }
 
-#if DEBUG
-            var optimizationlevel = OptimizationLevel.Debug;
-#else
-            var optimizationlevel = OptimizationLevel.Release;
-#endif
+            var outputKind = OutputKind.ConsoleApplication;
+            if (outputType == BaZicCompilerOutputType.WindowsApp)
+            {
+                outputKind = OutputKind.WindowsApplication;
+            }
+            else if (outputType == BaZicCompilerOutputType.DynamicallyLinkedLibrary)
+            {
+                outputKind = OutputKind.DynamicallyLinkedLibrary;
+            }
+
             var assemblyName = Guid.NewGuid().ToString();
             var references = GetAssemblyReferences();
-            var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, new CSharpCompilationOptions(outputKind: OutputKind.DynamicallyLinkedLibrary, optimizationLevel: optimizationlevel, platform: Platform.AnyCpu));
+            var options = new CSharpCompilationOptions(outputKind)
+                .WithAllowUnsafe(true)
+                .WithOptimizationLevel(OptimizationLevel.Debug)
+                .WithPlatform(Platform.AnyCpu);
 
-            using (var memoryStream = new MemoryStream())
+            var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, options);
+
+            var assemblyStream = new MemoryStream();
+            var pdbStream = new MemoryStream();
+
+            var result = cSharpCompilation.Emit(peStream: assemblyStream, pdbStream: pdbStream);
+            var errors = GetCompilationErrors(result);
+
+            if (errors != null)
             {
-                var result = cSharpCompilation.Emit(memoryStream);
-                ThrowExceptionIfCompilationFailure(result);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                if (_baZicInterpreter.Verbose)
+                return new CompilerResult
                 {
-                    _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.BuiltSucceed));
-                }
-                _assemblySandbox.LoadAssembly(memoryStream);
+                    BuildErrors = errors
+                };
             }
+
+            assemblyStream.Seek(0, SeekOrigin.Begin);
+            pdbStream.Seek(0, SeekOrigin.Begin);
+
+            if (_baZicInterpreter.Verbose)
+            {
+                _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.BuiltSucceed));
+            }
+
+            return new CompilerResult
+            {
+                Assembly = assemblyStream,
+                Pdb = pdbStream
+            };
         }
 
         /// <summary>
@@ -114,12 +141,51 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
 
             var argumentValues = new object[] { arguments };
-            ProgramResult = _assemblySandbox.CreateInstanceAndInvoke("BaZicProgramReleaseMode.Program", "Main", argumentValues);
+
+            if (_program is BaZicUiProgram)
+            {
+                ThreadHelper.RunOnStaThread(() =>
+                {
+                    _baZicInterpreter.Reflection.SubscribeStaticEvent("BaZicProgramReleaseMode.ProgramHelper", "IdleStateOccured", () =>
+                    {
+                        _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle)); // Go to Idle mode.
+                    });
+
+                    ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
+                });
+            }
+            else
+            {
+                ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
+            }
 
             if (_baZicInterpreter.Verbose)
             {
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.ExecutionEnded));
             }
+        }
+
+        /// <summary>
+        /// Invokes a public method in the program.
+        /// </summary>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="arguments">The arguments to pass to the program.</param>
+        /// <returns>Returns the result of the method.</returns>
+        internal object InvokeMethod(string methodName, params object[] arguments)
+        {
+            return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
+            //var dispatcher = _assemblySandbox.Reflection.GetStaticProperty("BaZicProgramReleaseMode.ProgramHelper", "UIDispatcher") as Dispatcher;
+            //if (dispatcher == null)
+            //{
+            //    return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
+            //}
+            //else
+            //{
+            //    return dispatcher.Invoke(() =>
+            //    {
+            //        return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments); ;
+            //    }, DispatcherPriority.Background);
+            //}
         }
 
         /// <summary>
@@ -144,18 +210,19 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Throw exceptions if the compilation failed.
         /// </summary>
         /// <param name="result">The result of the compilation.</param>
-        private void ThrowExceptionIfCompilationFailure(EmitResult result)
+        /// <returns>Returns an <see cref="AggregateException"/> or null if the build succeeded.</returns>
+        private AggregateException GetCompilationErrors(EmitResult result)
         {
             if (result.Success)
             {
-                return;
+                return null;
             }
 
             var compilationErrors = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error).ToList();
 
             if (!compilationErrors.Any())
             {
-                return;
+                return null;
             }
 
             var errorList = new List<Exception>();
@@ -166,7 +233,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                 var ErrorMessage = $"{errorNumber}: {errorDescription};";
                 errorList.Add(new Exception(L.BaZic.Runtime.CompiledProgramRunner.FormattedBuildFaild(errorNumber, errorDescription)));
             }
-            throw new AggregateException(errorList);
+
+            return new AggregateException(errorList);
         }
 
         #endregion

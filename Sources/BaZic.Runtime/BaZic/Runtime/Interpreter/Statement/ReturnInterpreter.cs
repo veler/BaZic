@@ -1,6 +1,7 @@
 ﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger;
 using BaZic.Runtime.Localization;
+using System;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -9,8 +10,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
     /// </summary>
     internal sealed class ReturnInterpreter : StatementInterpreter<ReturnStatement>
     {
-        internal ReturnInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, ReturnStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal ReturnInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, ReturnStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 

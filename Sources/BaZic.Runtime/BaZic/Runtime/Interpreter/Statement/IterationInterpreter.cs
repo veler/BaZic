@@ -1,5 +1,6 @@
 ﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger;
+using System;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -13,8 +14,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         /// </summary>
         internal BlockState ChildBlockState { get; private set; }
 
-        internal IterationInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, IterationStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal IterationInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, IterationStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 
@@ -36,7 +37,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
             }
 
             // Execute statements
-            var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, true, ParentInterpreter.CaughtException, Statement.Statements);
+            var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ExecutionFlowId, true, ParentInterpreter.CaughtException, Statement.Statements);
             block.Run();
             ChildBlockState = block.State;
 

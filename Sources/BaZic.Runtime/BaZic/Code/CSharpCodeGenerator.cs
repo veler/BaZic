@@ -54,7 +54,7 @@ namespace BaZic.Runtime.BaZic.Code
             var globalVariables = new List<string>();
             foreach (var variable in syntaxTree.GlobalVariables)
             {
-                globalVariables.Add(indent + GenerateVariableDeclaration(variable));
+                globalVariables.Add(indent + GenerateVariableDeclaration(variable, true, true));
             }
 
             var globalVariablesString = string.Join(Environment.NewLine, globalVariables);
@@ -81,7 +81,7 @@ namespace BaZic.Runtime.BaZic.Code
                    $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
                    $"{{" + Environment.NewLine +
                    $"    [System.Serializable]" + Environment.NewLine +
-                   $"    public sealed class Program : System.MarshalByRefObject" + Environment.NewLine +
+                   $"    public static class Program" + Environment.NewLine +
                    $"    {{" + Environment.NewLine +
                    $"{globalVariablesString}" +
                    $"{methodsString}" + Environment.NewLine +
@@ -130,7 +130,7 @@ namespace BaZic.Runtime.BaZic.Code
                 var globalVariables = new List<string>();
                 foreach (var variable in syntaxTree.GlobalVariables)
                 {
-                    globalVariables.Add($"{indent}private {GenerateVariableDeclaration(variable)}");
+                    globalVariables.Add(indent + GenerateVariableDeclaration(variable, true, true));
                 }
 
                 globalVariablesString = string.Join(Environment.NewLine, globalVariables);
@@ -142,7 +142,7 @@ namespace BaZic.Runtime.BaZic.Code
                 var bindings = new List<string>();
                 foreach (var binding in syntaxTree.UiBindings)
                 {
-                    bindings.Add(indent + GenerateBindingDeclaration(binding));
+                    bindings.Add(GenerateBindingDeclaration(binding, indent));
                 }
 
                 bindingsString = string.Join(Environment.NewLine, bindings);
@@ -177,13 +177,13 @@ namespace BaZic.Runtime.BaZic.Code
                    $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
                    $"{{" + Environment.NewLine +
                    $"    [System.Serializable]" + Environment.NewLine +
-                   $"    public sealed class Program : System.MarshalByRefObject" + Environment.NewLine +
+                   $"    public static class Program" + Environment.NewLine +
                    $"    {{" + Environment.NewLine +
                    $"{globalVariablesString}" +
                    $"{bindingsString}" +
-                   $"        public Program()" + Environment.NewLine +
+                   $"        static Program()" + Environment.NewLine +
                    $"        {{" + Environment.NewLine +
-                   $"            ProgramUiHelper.CreateNewInstance();" + Environment.NewLine +
+                   $"            ProgramHelper.CreateNewInstance();" + Environment.NewLine +
                    $"        }}" + Environment.NewLine + Environment.NewLine +
                    $"{methodsString}" + Environment.NewLine +
                    $"    }}" + Environment.NewLine +
@@ -299,7 +299,7 @@ namespace BaZic.Runtime.BaZic.Code
                     return GenerateTryCatchStatement(tryCatch);
 
                 case VariableDeclaration variable:
-                    return GenerateVariableDeclaration(variable);
+                    return GenerateVariableDeclaration(variable, false, false);
 
                 case ReturnStatement @return:
                     return GenerateReturnStatement(@return);
@@ -860,24 +860,37 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates the code for a <see cref="VariableDeclaration"/>.
         /// </summary>
         /// <param name="statement">The statement</param>
+        /// <param name="isGlobal">Defines whether it is a global variable or not.</param>
+        /// <param name="isPrivate">Definew whether the variable is private.</param>
         /// <returns>A CSharp code</returns>
-        private string GenerateVariableDeclaration(VariableDeclaration statement)
+        private string GenerateVariableDeclaration(VariableDeclaration statement, bool isGlobal, bool isPrivate)
         {
+            var accessor = string.Empty;
+            if (isPrivate)
+            {
+                accessor += "private ";
+            }
+            if (isGlobal)
+            {
+                accessor += "static ";
+            }
+
             if (statement.DefaultValue == null)
             {
-                return $"dynamic {statement.Name} = null;";
+                return $"{accessor}dynamic {statement.Name} = null;";
             }
 
             var defaultValue = GenerateExpression(statement.DefaultValue);
-            return $"dynamic {statement.Name} = {defaultValue};";
+            return $"{accessor}dynamic {statement.Name} = {defaultValue};";
         }
 
         /// <summary>
         /// Generates the code for a <see cref="BindingDeclaration"/>.
         /// </summary>
         /// <param name="statement">The statement</param>
+        /// <param name="indent">The indentation</param>
         /// <returns>A CSharp code</returns>
-        private string GenerateBindingDeclaration(BindingDeclaration statement)
+        private string GenerateBindingDeclaration(BindingDeclaration statement, string indent)
         {
             var arrayMarkup = statement.Variable.IsArray ? "[]" : string.Empty;
 
@@ -887,7 +900,21 @@ namespace BaZic.Runtime.BaZic.Code
                 _uiLoadingStatements.AppendLine($"            {statement.ControlName}_{statement.ControlPropertyName} = {defaultValue};");
             }
 
-            return $"private dynamic {statement.ControlName}_{statement.ControlPropertyName} {{ get {{ dynamic result = ProgramUiHelper.Instance.GetControl(\"{statement.ControlName}\").{statement.ControlPropertyName}; return result; }} set {{ ProgramUiHelper.Instance.GetControl(\"{statement.ControlName}\").{statement.ControlPropertyName} = value; }} }}";
+            return $@"{indent}private static dynamic {statement.ControlName}_{statement.ControlPropertyName}
+{indent}{{ 
+{indent}    get {{
+{indent}        dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {{
+{indent}            return ProgramHelper.Instance.GetControl(""{statement.ControlName}"")?.{statement.ControlPropertyName};
+{indent}        }}, System.Windows.Threading.DispatcherPriority.Background);
+{indent}        return result;
+{indent}    }}
+{indent}    set
+{indent}    {{
+{indent}        ProgramHelper.UIDispatcher.Invoke(() => {{
+{indent}            ProgramHelper.Instance.GetControl(""{statement.ControlName}"").{statement.ControlPropertyName} = value;
+{indent}        }}, System.Windows.Threading.DispatcherPriority.Background);
+{indent}    }}
+{indent}}}";
         }
 
         /// <summary>
@@ -958,9 +985,15 @@ namespace BaZic.Runtime.BaZic.Code
                 arguments.Add(GenerateParameterDeclaration(argument));
             }
 
+            var accessor = "internal";
+            if (method.IsExtern)
+            {
+                accessor = "public";
+            }
+
             if (method.IsAsync)
             {
-                return $"{oldIdent}internal async System.Threading.Tasks.Task<dynamic> {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                return $"{oldIdent}{accessor} static async System.Threading.Tasks.Task<dynamic> {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
                        $"{indent}return await System.Threading.Tasks.Task.FromResult<object>(null);" + Environment.NewLine +
@@ -971,16 +1004,15 @@ namespace BaZic.Runtime.BaZic.Code
             {
                 if (_currentProgramHasUi)
                 {
-                    return $"{oldIdent}[System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]" + Environment.NewLine +
-                           $"{oldIdent}public dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                    return $"{oldIdent}{accessor} static dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                            $"{oldIdent}{{" + Environment.NewLine +
                            $"{indent}try {{" + Environment.NewLine +
                            $"{statementsString}" + Environment.NewLine +
-                           $"{indent}return ProgramHelper.RunOnStaThread(() => {{" + Environment.NewLine +
-                           $"{indent}ProgramUiHelper.Instance.LoadWindow();" + Environment.NewLine +
+                           $"{indent}//return ProgramHelper.RunOnStaThread(() => {{" + Environment.NewLine +
+                           $"{indent}ProgramHelper.Instance.LoadWindow();" + Environment.NewLine +
                            $"{_uiLoadingStatements}" +
-                           $"{indent}return ProgramUiHelper.Instance.ShowWindow();" + Environment.NewLine +
-                           $"{indent}}});" + Environment.NewLine +
+                           $"{indent}return ProgramHelper.Instance.ShowWindow();" + Environment.NewLine +
+                           $"{indent}//}});" + Environment.NewLine +
                            $"{indent}}} finally {{" + Environment.NewLine +
                            $"{indent}ProgramHelper.WaitAllUnwaitedThreads();" + Environment.NewLine +
                            $"{indent}}}" + Environment.NewLine +
@@ -988,8 +1020,7 @@ namespace BaZic.Runtime.BaZic.Code
                            $"{oldIdent}}}";
                 }
 
-                return $"{oldIdent}[System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]" + Environment.NewLine + 
-                       $"{oldIdent}public dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+                return $"{oldIdent}{accessor} static dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                        $"{oldIdent}{{" + Environment.NewLine +
                        $"{indent}try {{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
@@ -1011,15 +1042,15 @@ namespace BaZic.Runtime.BaZic.Code
                 if (control is Window && uiEvent.ControlEventName == nameof(Window.Closed))
                 {
                     // The detection could be better by checking that the ControlName corresponds to a Window.
-                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramUiHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ ProgramUiHelper.Instance.UiResult = {method.Name}(); }};");
+                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ ProgramHelper.Instance.UiResult = {method.Name}(); }};");
                 }
                 else
                 {
-                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramUiHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ {method.Name}(); }};");
+                    _uiLoadingStatements.AppendLine($"            (({control.GetType().FullName})ProgramHelper.Instance.GetControl(\"{uiEvent.ControlName}\")).{uiEvent.ControlEventName} += (sender, e) => {{ {method.Name}(); }};");
                 }
             }
 
-            return $"{oldIdent}internal dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+            return $"{oldIdent}{accessor} static dynamic {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                    $"{oldIdent}{{" + Environment.NewLine +
                    $"{statementsString}" + Environment.NewLine +
                    $"{indent}return null;" + Environment.NewLine +

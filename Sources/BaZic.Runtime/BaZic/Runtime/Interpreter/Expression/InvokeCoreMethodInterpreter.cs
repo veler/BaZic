@@ -12,9 +12,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
     /// </summary>
     internal sealed class InvokeCoreMethodInterpreter : ExpressionInterpreter<InvokeCoreMethodExpression>
     {
-        internal InvokeCoreMethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, InvokeCoreMethodExpression expression)
+        private readonly Guid _executionFlowId;
+
+        internal InvokeCoreMethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, InvokeCoreMethodExpression expression, Guid executionFlowId)
             : base(baZicInterpreter, parentInterpreter, expression)
         {
+            _executionFlowId = executionFlowId;
         }
 
         /// <inheritdoc/>
@@ -99,7 +102,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
             else if (result != null && typeof(Task).IsAssignableFrom(result.GetType()))
             {
                 var task = (Task)result;
-                BaZicInterpreter.AddUnwaitedMethodInvocation(task);
+                BaZicInterpreter.RunningStateManager.AddUnwaitedMethodInvocation(_executionFlowId, task);
             }
 
             return result;

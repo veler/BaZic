@@ -47,6 +47,32 @@ namespace BaZic.Core.ComponentModel.Reflection
         }
 
         /// <summary>
+        /// Register an action to a static event of a class.
+        /// </summary>
+        /// <param name="targetType">The object that contains the event.</param>
+        /// <param name="eventName">The name of the event in the <paramref name="targetType"/>.</param>
+        /// <param name="action">The action to run when the event is raised.</param>
+        internal void SubscribeStatic(Type targetType, string eventName, Action action)
+        {
+            Requires.NotNull(targetType, nameof(targetType));
+            Requires.NotNullOrWhiteSpace(eventName, nameof(eventName));
+
+            var eventInfo = targetType.GetEvent(eventName, Consts.LimitedBindingFlags);
+
+            if (eventInfo == null)
+            {
+                throw new MemberAccessException(L.Reflection.FormattedEventReflectionAccess(eventName, targetType.FullName));
+            }
+
+            var raiseDelegate = GetEventMethodDelegate(eventInfo, action);
+
+            var eventItem = new Tuple<object, EventInfo, Delegate>(null, eventInfo, raiseDelegate);
+            _events.Add(eventItem);
+
+            eventItem.Item2.AddEventHandler(eventItem.Item1, eventItem.Item3);
+        }
+
+        /// <summary>
         /// Unregister all the registered events.
         /// </summary>
         internal void UnsubscribeAll()

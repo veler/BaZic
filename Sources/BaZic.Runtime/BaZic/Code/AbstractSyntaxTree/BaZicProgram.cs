@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BaZic.Core.ComponentModel.Assemblies;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,9 +24,9 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public IReadOnlyList<MethodDeclaration> Methods { get; private set; }
 
         /// <summary>
-        /// Gets the list of required assemblies (FullName or Path) to interpret the program.
+        /// Gets the list of required assemblies to interpret or build the program.
         /// </summary>
-        public IReadOnlyList<string> Assemblies { get; private set; }
+        public IReadOnlyList<AssemblyDetails> Assemblies { get; private set; }
 
         /// <summary>
         /// Gets whether the program passed into the optimizer.
@@ -43,7 +44,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         {
             GlobalVariables = new List<VariableDeclaration>().AsReadOnly();
             Methods = new List<MethodDeclaration>().AsReadOnly();
-            Assemblies = new List<string>().AsReadOnly();
+            Assemblies = new List<AssemblyDetails>().AsReadOnly();
         }
 
         /// <summary>
@@ -89,7 +90,25 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// <returns>The current program</returns>
         public BaZicProgram WithAssemblies(params string[] assemblies)
         {
-            Assemblies = new List<string>(assemblies).AsReadOnly();
+            var assembliesDetails = new List<AssemblyDetails>();
+
+            foreach (var assembly in assemblies)
+            {
+                assembliesDetails.Add(AssemblyDetails.GetAssemblyDetailsFromName(assembly));
+            }
+
+            Assemblies = assembliesDetails.AsReadOnly();
+            return this;
+        }
+
+        /// <summary>
+        /// Set program required assemblies.
+        /// </summary>
+        /// <param name="assemblies">The assembly details</param>
+        /// <returns>The current program</returns>
+        public BaZicProgram WithAssemblies(params AssemblyDetails[] assemblies)
+        {
+            Assemblies = new List<AssemblyDetails>(assemblies).AsReadOnly();
             return this;
         }
 

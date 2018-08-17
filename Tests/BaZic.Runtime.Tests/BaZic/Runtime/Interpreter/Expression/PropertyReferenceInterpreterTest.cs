@@ -21,7 +21,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Expression
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = ""Hello"".Length
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -29,11 +29,14 @@ END FUNCTION";
 
             var expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -53,7 +56,7 @@ END FUNCTION";
 [Log] The expression returned the value '5' (System.Int32).
 [Log] Variable 'var1' declared. Default value : 5 (System.Int32)
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
-[State] Stopped
+[State] Idle
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
@@ -62,7 +65,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = ""Hello"".length
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -79,8 +82,8 @@ END FUNCTION";
 
 
             var inputCode =
-@"FUNCTION Main(args[])
-    RETURN System.Windows.FontStyles.Italic
+@"EXTERN FUNCTION Main(args[])
+    RETURN System.Xml.Serialization.XmlDeserializationEvents.OnUnknownNode
 END FUNCTION";
 
             var program = parser.Parse(inputCode, true).Program;
@@ -89,11 +92,14 @@ END FUNCTION";
 
             var expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -107,9 +113,9 @@ END FUNCTION";
 [Log] Registering labels.
 [Log] Executing a statement of type 'ReturnStatement'.
 [Log] Executing an expression of type 'PropertyReferenceExpression'.
-[Log] Getting the property 'System.Windows.FontStyles.Italic'.
+[Log] Getting the property 'System.Xml.Serialization.XmlDeserializationEvents.OnUnknownNode'.
 [Log] Executing an expression of type 'ClassReferenceExpression'.
-[Error] Unexpected and unmanaged error has been detected : Unable to load the type 'System.Windows.FontStyles'. Does an assembly is missing?
+[Error] Unexpected and unmanaged error has been detected : Unable to load the type 'System.Xml.Serialization.XmlDeserializationEvents'. Does an assembly is missing?
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
@@ -117,23 +123,26 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
-    RETURN System.Windows.FontStyles.Italic
+@"EXTERN FUNCTION Main(args[])
+    RETURN System.Windows.Forms.Cursors.HSplit
 END FUNCTION";
 
             program = parser.Parse(inputCode, true).Program;
-            program.WithAssemblies("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+            program.WithAssemblies("System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
             interpreter = new BaZicInterpreter(program);
             await interpreter.StartDebugAsync(true);
 
             expectedLogs = @"[State] Ready
 [State] Preparing
+[Log] Reference assembly 'System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -147,14 +156,14 @@ END FUNCTION";
 [Log] Registering labels.
 [Log] Executing a statement of type 'ReturnStatement'.
 [Log] Executing an expression of type 'PropertyReferenceExpression'.
-[Log] Getting the property 'System.Windows.FontStyles.Italic'.
+[Log] Getting the property 'System.Windows.Forms.Cursors.HSplit'.
 [Log] Executing an expression of type 'ClassReferenceExpression'.
-[Log] The expression returned the value 'System.Windows.FontStyles' (System.RuntimeType).
-[Log] The expression returned the value 'Italic' (System.Windows.FontStyle).
-[Log] Return : Italic (System.Windows.FontStyle)
+[Log] The expression returned the value 'System.Windows.Forms.Cursors' (System.RuntimeType).
+[Log] The expression returned the value '[Cursor: System.Windows.Forms.Cursor]' (System.Windows.Forms.Cursor).
+[Log] Return : [Cursor: System.Windows.Forms.Cursor] (System.Windows.Forms.Cursor)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
-[Log] End of the execution of the method 'Main'. Returned value : Italic (System.Windows.FontStyle)
-[State] Stopped
+[Log] End of the execution of the method 'Main'. Returned value : [Cursor: System.Windows.Forms.Cursor] (System.Windows.Forms.Cursor)
+[State] Idle
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
@@ -162,7 +171,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE System
     RETURN System.Windows.FontStyles.Italic
 END FUNCTION";
@@ -175,11 +184,13 @@ END FUNCTION";
             expectedLogs = @"[State] Ready
 [State] Preparing
 [Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running

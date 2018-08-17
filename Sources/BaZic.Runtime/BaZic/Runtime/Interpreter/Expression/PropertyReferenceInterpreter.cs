@@ -49,7 +49,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
 
             if (Expression.TargetObject is ClassReferenceExpression && targetObjectValue is Type)
             {
-                return BaZicInterpreter.Reflection.GetStaticProperty((Type)targetObjectValue, Expression.PropertyName.Identifier);
+                return BaZicInterpreter.Reflection.GetStaticPropertyOrEnum((Type)targetObjectValue, Expression.PropertyName.Identifier);
             }
 
             return BaZicInterpreter.Reflection.GetProperty(targetObjectValue, Expression.PropertyName.Identifier);

@@ -13,8 +13,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
     /// </summary>
     internal sealed class AssignInterpreter : StatementInterpreter<AssignStatement>
     {
-        internal AssignInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, AssignStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal AssignInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, AssignStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 

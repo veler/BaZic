@@ -12,6 +12,11 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         #region Properties
 
         /// <summary>
+        /// Gets if the method is extern or not.
+        /// </summary>
+        public new static bool IsExtern{ get; private set; }
+
+        /// <summary>
         /// Gets if the method is asynchronous or not.
         /// </summary>
         public new static bool IsAsync { get; private set; }
@@ -24,8 +29,9 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// Initializes a new instance of the <see cref="EntryPointMethod"/> class.
         /// </summary>
         public EntryPointMethod()
-            : base(Consts.EntryPointMethodName, false)
+            : base(Consts.EntryPointMethodName, false, true)
         {
+            IsExtern = true;
             WithParameters(new ParameterDeclaration("args", true));
         }
 

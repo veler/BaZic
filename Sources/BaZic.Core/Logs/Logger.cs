@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Windows;
 
 namespace BaZic.Core.Logs

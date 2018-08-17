@@ -1,11 +1,10 @@
-﻿using BaZic.Core.ComponentModel;
-using BaZic.Core.ComponentModel.Assemblies;
+﻿using BaZic.Core.ComponentModel.Assemblies;
+using BaZic.Core.Enums;
 using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.BaZic.Runtime
@@ -20,7 +19,6 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         private readonly AssemblySandbox _assemblySandbox;
         private readonly BaZicInterpreterCore _core;
-        private readonly BaZicInterpreterStateChangedBridge _bridge;
 
         #endregion
 
@@ -72,7 +70,6 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         private BaZicInterpreter()
         {
-            _bridge = new BaZicInterpreterStateChangedBridge();
             _assemblySandbox = new AssemblySandbox();
         }
 
@@ -85,7 +82,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         public BaZicInterpreter(string inputCode, string xamlCode, bool optimize = false)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_bridge, _assemblySandbox, inputCode, xamlCode, optimize);
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_assemblySandbox, inputCode, xamlCode, optimize);
             Initialize();
         }
 
@@ -96,7 +93,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         public BaZicInterpreter(BaZicProgram program)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_bridge, _assemblySandbox, program);
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_assemblySandbox, program);
             Initialize();
         }
 
@@ -113,11 +110,37 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         #region Methods
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             OnDispose(true);
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// Compiles the program and save it on the hard drive or returns the build errors.
+        /// </summary>
+        /// <param name="outputType">Defines the type of assembly to generate.</param>
+        /// <param name="outputPath">The full path to the .exe or .dll file to create if the build succeed.</param>
+        /// <returns>Returns the build errors, or null if it succeed.</returns>
+        public async Task<AggregateException> Build(BaZicCompilerOutputType outputType, string outputPath)
+        {
+            var callback = new MarshaledResultSetter<AggregateException>();
+            _core.Build(callback, outputType, outputPath);
+            return await callback.Task;
+        }
+
+        /// <summary>
+        /// Compiles the program in memory and load it or returns the build errors.
+        /// </summary>
+        /// <returns>Returns the build errors, or null if it succeed.</returns>
+        public async Task<AggregateException> Build()
+        {
+            var callback = new MarshaledResultSetter<AggregateException>();
+            _core.Build(callback);
+            return await callback.Task;
         }
 
         /// <summary>
@@ -144,6 +167,21 @@ namespace BaZic.Runtime.BaZic.Runtime
             var callback = new MarshaledResultSetter();
             _core.StartDebug(callback, verbose, args);
             await callback.Task;
+        }
+
+        /// <summary>
+        /// Invoke a public method accessible from outside of the interpreter (EXTERN FUNCTION).
+        /// </summary>
+        /// <param name="verbose">Defines if the verbose mode must be enabled or not.</param>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="awaitIfAsync">Await if the method is maked as asynchronous.</param>
+        /// <param name="args">The arguments to pass to the method.</param>
+        /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
+        public async Task<object> InvokeMethod(bool verbose, string methodName, bool awaitIfAsync, params object[] args)
+        {
+            var callback = new MarshaledResultSetter<object>();
+            _core.InvokeMethod(callback, verbose, methodName, awaitIfAsync, args);
+            return await callback.Task;
         }
 
         /// <summary>
@@ -183,10 +221,19 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Sets the program required dependencies.
         /// </summary>
-        /// <param name="assemblies">The assemblies.</param>
+        /// <param name="assemblies">The assemblies (can be a full name or a location).</param>
         public void SetDependencies(params string[] assemblies)
         {
-            _core.Program.WithAssemblies(assemblies);
+            _core.SetDependencies(assemblies);
+        }
+
+        /// <summary>
+        /// Sets the program required dependencies.
+        /// </summary>
+        /// <param name="assemblies">The assemblies.</param>
+        public void SetDependencies(params AssemblyDetails[] assemblies)
+        {
+            _core.SetDependencies(assemblies);
         }
 
         /// <summary>
@@ -203,7 +250,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         private void Initialize()
         {
-            _bridge.StateChanged += Bridge_StateChanged;
+            _core.StateChanged += BaZicInterpreterCore_StateChanged;
         }
 
         /// <summary>
@@ -236,8 +283,8 @@ namespace BaZic.Runtime.BaZic.Runtime
         #endregion
 
         #region Handled Methods
-        
-        private void Bridge_StateChanged(object sender, BaZicInterpreterStateChangeEventArgs e)
+
+        private void BaZicInterpreterCore_StateChanged(object sender, BaZicInterpreterStateChangeEventArgs e)
         {
             StateChanged?.Invoke(this, e);
         }

@@ -45,11 +45,12 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         /// <param name="baZicInterpreter">The main interpreter.</param>
         /// <param name="parentInterpreter">The parent interpreter.</param>
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
         /// <param name="isInIteration">Defines whether the current block of statement is executed inside of a iteration statement.</param>
         /// <param name="caughtException">Defines the caught exception.</param>
         /// <param name="statements">The list of statements to interpret.</param>
-        internal BlockInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, bool isInIteration, Exception caughtException, IReadOnlyList<Code.AbstractSyntaxTree.Statement> statements)
-            : base(baZicInterpreter, parentInterpreter)
+        internal BlockInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, Guid executionFlowId, bool isInIteration, Exception caughtException, IReadOnlyList<Code.AbstractSyntaxTree.Statement> statements)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId)
         {
             CaughtException = caughtException;
             State = new BlockState(isInIteration);
@@ -103,12 +104,22 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
 
             var debugInfo = new DebugInfo();
-
+            var stackDeep = 0;
             var parentMethodInterpreter = GetParentMethodInterpreter();
             while (parentMethodInterpreter != null)
             {
-                debugInfo.CallStack.Add(parentMethodInterpreter.DebugCallInfo);
-                parentMethodInterpreter = parentMethodInterpreter.GetParentMethodInterpreter(throwIfNotFound: false);
+                var parentOfParentMethodInterpreter = parentMethodInterpreter.GetParentMethodInterpreter(throwIfNotFound: false);
+                if (parentOfParentMethodInterpreter != null && parentOfParentMethodInterpreter.AsyncMethodCalledWithoutAwait && stackDeep > 0)
+                {
+                    debugInfo.CallStack.Add(null);
+                }
+                else
+                {
+                    debugInfo.CallStack.Add(parentMethodInterpreter.DebugCallInfo);
+                }
+
+                parentMethodInterpreter = parentOfParentMethodInterpreter;
+                stackDeep++;
             }
 
             debugInfo.GlobalVariables = BaZicInterpreter.ProgramInterpreter.Variables;
@@ -179,11 +190,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             switch (statement)
             {
                 case AssignStatement assign:
-                    new AssignInterpreter(BaZicInterpreter, this, assign).Run();
+                    new AssignInterpreter(BaZicInterpreter, this, ExecutionFlowId, assign).Run();
                     break;
 
                 case BreakStatement @break:
-                    new BreakInterpreter(BaZicInterpreter, this, @break).Run();
+                    new BreakInterpreter(BaZicInterpreter, this, ExecutionFlowId, @break).Run();
                     break;
 
                 case CommentStatement comment:
@@ -191,7 +202,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     break;
 
                 case ConditionStatement condition:
-                    var conditionInterpreter = new ConditionInterpreter(BaZicInterpreter, this, condition);
+                    var conditionInterpreter = new ConditionInterpreter(BaZicInterpreter, this, ExecutionFlowId, condition);
                     conditionInterpreter.Run();
                     ApplyChildBlockState(conditionInterpreter.ChildBlockState);
                     break;
@@ -201,13 +212,13 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     break;
 
                 case IterationStatement iteration:
-                    var iterationInterpreter = new IterationInterpreter(BaZicInterpreter, this, iteration);
+                    var iterationInterpreter = new IterationInterpreter(BaZicInterpreter, this, ExecutionFlowId, iteration);
                     iterationInterpreter.Run();
                     ApplyChildBlockState(iterationInterpreter.ChildBlockState);
                     break;
 
                 case LabelConditionStatement labelCondition:
-                    var labelConditionInterpreter = new LabelConditionInterpreter(BaZicInterpreter, this, labelCondition);
+                    var labelConditionInterpreter = new LabelConditionInterpreter(BaZicInterpreter, this, ExecutionFlowId, labelCondition);
                     labelConditionInterpreter.Run();
                     if (!IsAborted && labelConditionInterpreter.ConditionValidated)
                     {
@@ -220,25 +231,25 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     break;
 
                 case ReturnStatement @return:
-                    new ReturnInterpreter(BaZicInterpreter, this, @return).Run();
+                    new ReturnInterpreter(BaZicInterpreter, this, ExecutionFlowId, @return).Run();
                     break;
 
                 case ThrowStatement @throw:
-                    new ThrowInterpreter(BaZicInterpreter, this, @throw).Run();
+                    new ThrowInterpreter(BaZicInterpreter, this, ExecutionFlowId, @throw).Run();
                     break;
 
                 case TryCatchStatement tryCatch:
-                    var tryCatchInterpreter = new TryCatchInterpreter(BaZicInterpreter, this, tryCatch);
+                    var tryCatchInterpreter = new TryCatchInterpreter(BaZicInterpreter, this, ExecutionFlowId, tryCatch);
                     tryCatchInterpreter.Run();
                     ApplyChildBlockState(tryCatchInterpreter.ChildBlockState);
                     break;
 
                 case VariableDeclaration variableDeclaration:
-                    new VariableDeclarationInterpreter(BaZicInterpreter, this, variableDeclaration).Run();
+                    new VariableDeclarationInterpreter(BaZicInterpreter, this, ExecutionFlowId, variableDeclaration).Run();
                     break;
 
                 case ExpressionStatement expressionStatement:
-                    new ExpressionStatementInterpreter(BaZicInterpreter, this, expressionStatement).Run();
+                    new ExpressionStatementInterpreter(BaZicInterpreter, this, ExecutionFlowId, expressionStatement).Run();
                     break;
 
                 case BreakpointStatement breakpoint:
@@ -255,7 +266,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     break;
             }
 
-            if (BaZicInterpreter.Verbose && (State.ExitMethod || State.ExitIteration || State.ExitBlockBecauseOfLabelJump || IsAborted))
+            if (BaZicInterpreter.Verbose && (State.ExitMethod || State.ExitIteration || State.ExitBlockBecauseOfLabelJump))
             {
                 VerboseLog(L.BaZic.Runtime.Interpreters.BlockInterpreter.ExitingBlock);
             }

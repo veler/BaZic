@@ -233,9 +233,9 @@
     <Compile Include="BaZic\Runtime\BaZicInterpreter.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterCore.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterState.cs" />
-    <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangedBridge.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangeEventArgs.cs" />
     <Compile Include="BaZic\Runtime\CompiledProgramRunner.cs" />
+    <Compile Include="BaZic\Runtime\CompilerResult.cs" />
     <Compile Include="BaZic\Runtime\Debugger\BlockState.cs" />
     <Compile Include="BaZic\Runtime\Debugger\Call.cs" />
     <Compile Include="BaZic\Runtime\Debugger\DebugInfo.cs" />
@@ -259,6 +259,7 @@
     <Compile Include="BaZic\Runtime\Debugger\Exceptions\UiException.cs" />
     <Compile Include="BaZic\Runtime\Debugger\Exceptions\UnexpectedException.cs" />
     <Compile Include="BaZic\Runtime\Debugger\Exceptions\VariableNotFoundException.cs" />
+    <Compile Include="BaZic\Runtime\Debugger\RunningStateManager.cs" />
     <Compile Include="BaZic\Runtime\Debugger\ValueInfo.cs" />
     <Compile Include="BaZic\Runtime\Interpreter\BlockInterpreter.cs" />
     <Compile Include="BaZic\Runtime\Interpreter\Expression\ArrayCreationInterpreter.cs" />
@@ -331,8 +332,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
+    <Analyzer Include="$(SolutionDir)\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
+    <Analyzer Include="$(SolutionDir)\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />

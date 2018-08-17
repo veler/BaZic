@@ -38,12 +38,11 @@ namespace BaZic.Runtime.Tests.BaZic.Code
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        dynamic Foo = null;
+        private static dynamic Foo = null;
 
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             dynamic Bar = null;
@@ -73,7 +72,7 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal static class ProgramHelper
+    public partial class ProgramHelper
     {
         #region Fields
 
@@ -81,7 +80,26 @@ namespace BaZicProgramReleaseMode
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the Dispatcher of the UI thread.
+        /// </summary>
+        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
+
+        #endregion
+
         #region Methods
+
+        /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name=""args""></param>
+        [System.STAThreadAttribute()]
+        public static void Main(string[] args)
+        {
+            Program.Main(args);
+        }
 
         /// <summary>
         /// Returns the result of a task. If the task does not return a result, this method will return null.
@@ -128,7 +146,8 @@ namespace BaZicProgramReleaseMode
         /// Runs an action on STA thread.
         /// </summary>
         /// <param name=""func"">The function to run.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func)
+        /// <param name=""isBackground"">Defines whether the thread is a background thread.</param>
+        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
         {
             dynamic result = null;
             var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
@@ -136,6 +155,7 @@ namespace BaZicProgramReleaseMode
                 result = func();
             }));
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.IsBackground = isBackground;
             thread.Start();
             thread.Join();
             return result;
@@ -256,7 +276,7 @@ BIND ListBox1_ItemsSource[] = NEW [""Value 1"", ""Value 2""]
 BIND TextBox1_Text = ""Value to add""
 VARIABLE var1
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION
 
 EVENT FUNCTION Button1_Click()
@@ -284,36 +304,63 @@ END FUNCTION
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        private dynamic var1 = null;
+        private static dynamic var1 = null;
 
-        private dynamic ListBox1_ItemsSource { get { dynamic result = ProgramUiHelper.Instance.GetControl(""ListBox1"").ItemsSource; return result; } set { ProgramUiHelper.Instance.GetControl(""ListBox1"").ItemsSource = value; } }
-        private dynamic TextBox1_Text { get { dynamic result = ProgramUiHelper.Instance.GetControl(""TextBox1"").Text; return result; } set { ProgramUiHelper.Instance.GetControl(""TextBox1"").Text = value; } }
-
-        public Program()
-        {
-            ProgramUiHelper.CreateNewInstance();
+        private static dynamic ListBox1_ItemsSource
+        { 
+            get {
+                dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {
+                    return ProgramHelper.Instance.GetControl(""ListBox1"")?.ItemsSource;
+                }, System.Windows.Threading.DispatcherPriority.Background);
+                return result;
+            }
+            set
+            {
+                ProgramHelper.UIDispatcher.Invoke(() => {
+                    ProgramHelper.Instance.GetControl(""ListBox1"").ItemsSource = value;
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+        }
+        private static dynamic TextBox1_Text
+        { 
+            get {
+                dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {
+                    return ProgramHelper.Instance.GetControl(""TextBox1"")?.Text;
+                }, System.Windows.Threading.DispatcherPriority.Background);
+                return result;
+            }
+            set
+            {
+                ProgramHelper.UIDispatcher.Invoke(() => {
+                    ProgramHelper.Instance.GetControl(""TextBox1"").Text = value;
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
         }
 
-        internal dynamic Button1_Click()
+        static Program()
+        {
+            ProgramHelper.CreateNewInstance();
+        }
+
+        internal static dynamic Button1_Click()
         {
             ProgramHelper.AddUnwaitedThreadIfRequired(ListBox1_ItemsSource, ""Add"", TextBox1_Text);
             return null;
         }
 
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
 
-            return ProgramHelper.RunOnStaThread(() => {
-            ProgramUiHelper.Instance.LoadWindow();
+            //return ProgramHelper.RunOnStaThread(() => {
+            ProgramHelper.Instance.LoadWindow();
             ListBox1_ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" };
             TextBox1_Text = ""Value to add"";
-            ((System.Windows.Controls.Button)ProgramUiHelper.Instance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
-            return ProgramUiHelper.Instance.ShowWindow();
-            });
+            ((System.Windows.Controls.Button)ProgramHelper.Instance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
+            return ProgramHelper.Instance.ShowWindow();
+            //});
             } finally {
             ProgramHelper.WaitAllUnwaitedThreads();
             }
@@ -329,7 +376,7 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal static class ProgramHelper
+    public partial class ProgramHelper
     {
         #region Fields
 
@@ -337,7 +384,26 @@ namespace BaZicProgramReleaseMode
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the Dispatcher of the UI thread.
+        /// </summary>
+        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
+
+        #endregion
+
         #region Methods
+
+        /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name=""args""></param>
+        [System.STAThreadAttribute()]
+        public static void Main(string[] args)
+        {
+            Program.Main(args);
+        }
 
         /// <summary>
         /// Returns the result of a task. If the task does not return a result, this method will return null.
@@ -384,7 +450,8 @@ namespace BaZicProgramReleaseMode
         /// Runs an action on STA thread.
         /// </summary>
         /// <param name=""func"">The function to run.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func)
+        /// <param name=""isBackground"">Defines whether the thread is a background thread.</param>
+        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
         {
             dynamic result = null;
             var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
@@ -392,6 +459,7 @@ namespace BaZicProgramReleaseMode
                 result = func();
             }));
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.IsBackground = isBackground;
             thread.Start();
             thread.Join();
             return result;
@@ -507,12 +575,13 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal sealed class ProgramUiHelper
+    public partial class ProgramHelper
     {
         #region Fields & Constants
 
-        private string _xamlCode = ""\r\n<Window xmlns=\""http://schemas.microsoft.com/winfx/2006/xaml/presentation\"">\r\n    <StackPanel>\r\n        <TextBox Name=\""TextBox1\""/>\r\n        <Button Name=\""Button1\"" Content=\""Add a value\""/>\r\n        <ListBox Name=\""ListBox1\""/>\r\n    </StackPanel>\r\n</Window>"";
         private System.Windows.Window _userInterface;
+
+        private string _xamlCode = ""\r\n<Window xmlns=\""http://schemas.microsoft.com/winfx/2006/xaml/presentation\"">\r\n    <StackPanel>\r\n        <TextBox Name=\""TextBox1\""/>\r\n        <Button Name=\""Button1\"" Content=\""Add a value\""/>\r\n        <ListBox Name=\""ListBox1\""/>\r\n    </StackPanel>\r\n</Window>"";
 
         #endregion
 
@@ -521,7 +590,7 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Gets the current instance of the helper.
         /// </summary>
-        internal static ProgramUiHelper Instance { get; private set; }
+        internal static ProgramHelper Instance { get; private set; }
 
         /// <summary>
         /// Sets the result of the user interface when the window is closing.
@@ -530,14 +599,43 @@ namespace BaZicProgramReleaseMode
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Raised when the Idle state can be set in the BaZicInterpreter.
+        /// </summary>
+        public static event System.EventHandler IdleStateOccured;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
-        /// Creates a new static instance of <see cref=""ProgramUiHelper""/>.
+        /// Creates a new static instance of <see cref=""ProgramHelper""/>.
         /// </summary>
         internal static void CreateNewInstance()
         {
-            Instance = new ProgramUiHelper();
+            Instance = new ProgramHelper();
+        }
+
+        /// <summary>
+        /// Close the UI.
+        /// </summary>
+        public static void RequestCloseUserInterface()
+        {
+            Instance?.CloseUserInterface();
+        }
+
+        /// <summary>
+        /// Close the UI.
+        /// </summary>
+        internal void CloseUserInterface()
+        {
+            UIDispatcher?.Invoke(() =>
+            {
+                _userInterface?.Close();
+                System.Windows.Threading.Dispatcher.CurrentDispatcher?.InvokeShutdown();
+            }, System.Windows.Threading.DispatcherPriority.Send);
         }
 
         /// <summary>
@@ -546,6 +644,7 @@ namespace BaZicProgramReleaseMode
         internal void LoadWindow()
         {
             _userInterface = System.Windows.Markup.XamlReader.Parse(_xamlCode) as System.Windows.Window;
+            UIDispatcher = _userInterface.Dispatcher;
         }
 
         /// <summary>
@@ -558,7 +657,12 @@ namespace BaZicProgramReleaseMode
 
             _userInterface.Closed += (sender, e) =>
             {
-                _userInterface?.Dispatcher?.InvokeShutdown();
+                UIDispatcher?.InvokeShutdown();
+            };
+
+            _userInterface.Loaded += (sender, e) =>
+            {
+                IdleStateOccured?.Invoke(this, e);
             };
 
             try
@@ -640,10 +744,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             if (((1 < 2) && (3 < 4)) || (!false))
@@ -703,10 +806,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             try
@@ -748,10 +850,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             dynamic Foo = null;
@@ -787,10 +888,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             dynamic Baz = new System.Array();
@@ -817,7 +917,7 @@ namespace BaZicProgramReleaseMode
                                   new VariableDeclaration("integer").WithDefaultValue(new PrimitiveExpression(1)),
                                   new ReturnStatement(new InvokeCoreMethodExpression(new VariableReferenceExpression("integer"), "ToString", false).WithParameters(new PrimitiveExpression("X")))
                               ),
-                              new MethodDeclaration("Foo", true)
+                              new MethodDeclaration("Foo", true, true)
                               .WithParameters(new ParameterDeclaration("arg1", true), new ParameterDeclaration("arg2"))
                           );
 
@@ -829,10 +929,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             Foo(1, 2 - 1).GetAwaiter().GetResult();
@@ -844,7 +943,7 @@ namespace BaZicProgramReleaseMode
             return null;
         }
 
-        internal async System.Threading.Tasks.Task<dynamic> Foo(dynamic arg1, dynamic arg2)
+        public static async System.Threading.Tasks.Task<dynamic> Foo(dynamic arg1, dynamic arg2)
         {
 
             return await System.Threading.Tasks.Task.FromResult<object>(null);
@@ -883,10 +982,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             dynamic foo = null;
@@ -930,10 +1028,9 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public sealed class Program : System.MarshalByRefObject
+    public static class Program
     {
-        [System.LoaderOptimization(System.LoaderOptimization.MultiDomainHost)]
-        public dynamic Main(dynamic args)
+        public static dynamic Main(dynamic args)
         {
             try {
             dynamic foo = ""Hello"";

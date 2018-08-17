@@ -2,6 +2,7 @@
 using BaZic.Runtime.BaZic.Runtime.Debugger;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using BaZic.Runtime.Localization;
+using System;
 using System.Collections.Generic;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
@@ -16,8 +17,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         /// </summary>
         internal BlockState ChildBlockState { get; private set; }
 
-        internal ConditionInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, ConditionStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal ConditionInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, ConditionStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 
@@ -53,7 +54,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
             }
 
             // Execute statements
-            var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ParentInterpreter.State.IsInIteration, ParentInterpreter.CaughtException, statements);
+            var block = new BlockInterpreter(BaZicInterpreter, ParentInterpreter, ExecutionFlowId, ParentInterpreter.State.IsInIteration, ParentInterpreter.CaughtException, statements);
             block.Run();
             ChildBlockState = block.State;
 

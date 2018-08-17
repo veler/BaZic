@@ -20,7 +20,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Expression
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 2 * 3 + 1 # Should be 7
     VARIABLE var2 = 1 + 3 * 2 # Should be 7
     VARIABLE var3 = var1 = var2 # Should be True
@@ -42,7 +42,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 2 + 3 # Should be 5
     VARIABLE var2 = ""2"" + 3 # Should be 23
     VARIABLE var3 = 2 + 3.0 # Should be 5
@@ -62,7 +62,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var4 = true + false # Should fail
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -78,7 +78,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 2 / 0 # Should fail
 END FUNCTION";
             var interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);
@@ -94,7 +94,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = False OR (True AND False) # Should be False
     VARIABLE var2 = False OR (True AND True AND True) # Should be True
     VARIABLE var3 = False OR (True OR False) # Should be True
@@ -116,7 +116,7 @@ END FUNCTION";
 
 
             inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var4 = ""Hello"" AND True # Should fail
 END FUNCTION";
             interpreter = new BaZicInterpreter(parser.Parse(inputCode, true).Program);

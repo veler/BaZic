@@ -586,7 +586,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[]) # Program's entry poin
+@"EXTERN FUNCTION Main(args[]) # Program's entry poin
     # Content
 
 END FUNCTION";
@@ -766,7 +766,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"Async FUNCTION Main(args[])
+@"Extern Async FUNCTION Main(args[])
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
@@ -780,7 +780,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main()
+@"EXTERN FUNCTION Main()
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
@@ -794,12 +794,26 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args)
+@"EXTERN FUNCTION Main(args)
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
             var exception = (BaZicParserException)program.Issues.InnerExceptions.Single();
             Assert.AreEqual("The program's entry point's argument must be an array.", exception.Message);
+        }
+
+        [TestMethod]
+        public void BaZicParserMethodDeclaration19()
+        {
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"ASYNC Extern FUNCTION Main(args)
+END FUNCTION";
+
+            var program = parser.Parse(inputCode);
+            var exception = (BaZicParserException)program.Issues.InnerExceptions.First();
+            Assert.AreEqual("A 'FUNCTION' is expected but a 'EXTERN' has been found.", exception.Message);
         }
 
         [TestMethod]

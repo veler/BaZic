@@ -35,6 +35,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         internal Call DebugCallInfo { get; private set; }
 
+        /// <summary>
+        /// Gets whether the method is asynchrone and has been invoked without the await operator.
+        /// </summary>
+        internal bool AsyncMethodCalledWithoutAwait { get; private set; }
+
         #endregion
 
         #region Constructors & Destructors
@@ -46,8 +51,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// <param name="parentInterpreter">The parent interpreter.</param>
         /// <param name="methodDeclaration">The declaration of the method to interpret.</param>
         /// <param name="invokeMethod">The expression that performs the invocation.</param>
-        internal MethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, MethodDeclaration methodDeclaration, InvokeMethodExpression invokeMethod)
-            : base(baZicInterpreter, parentInterpreter)
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
+        internal MethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, MethodDeclaration methodDeclaration, InvokeMethodExpression invokeMethod, Guid executionFlowId)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId)
         {
             Requires.NotNull(methodDeclaration, nameof(methodDeclaration));
             Requires.NotNull(invokeMethod, nameof(invokeMethod));
@@ -128,8 +134,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     {
                         VerboseLog(L.BaZic.Runtime.Interpreters.MethodInterpreter.FormattedAsync(_invokeMethod.MethodName));
                     }
+                    AsyncMethodCalledWithoutAwait = true;
                     var task = RunAsync(argumentValues);
-                    BaZicInterpreter.AddUnwaitedMethodInvocation(task);
+                    BaZicInterpreter.RunningStateManager.AddUnwaitedMethodInvocation(ExecutionFlowId, task);
                     return task;
                 }
             }
@@ -223,10 +230,10 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
 
             // Execute statements
-            var block = new BlockInterpreter(BaZicInterpreter, this, false, null, _methodDeclaration.Statements);
+            var block = new BlockInterpreter(BaZicInterpreter, this, ExecutionFlowId, false, null, _methodDeclaration.Statements);
             block.Run();
 
-            if (BaZicInterpreter.Verbose)
+            if (BaZicInterpreter.Verbose && !IsAborted)
             {
                 VerboseLog(L.BaZic.Runtime.Interpreters.MethodInterpreter.FormattedEndExecution(_invokeMethod.MethodName, ReturnedValue, ValueInfo.GetValueInfo(ReturnedValue)));
             }

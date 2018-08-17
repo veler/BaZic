@@ -1,6 +1,7 @@
 ﻿using BaZic.Runtime.BaZic.Code.Parser;
 using BaZic.Runtime.BaZic.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
@@ -20,7 +21,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter.Statement
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 0
 
     DO WHILE var1 < 10
@@ -34,11 +35,14 @@ END FUNCTION";
 
             var expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -258,7 +262,7 @@ END FUNCTION";
 [Log] Return : 10 (System.Int32)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : 10 (System.Int32)
-[State] Stopped
+[State] Idle
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
@@ -271,7 +275,8 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
+    VARIABLE file = NEW System.IO.FileStream(""LocalWebPage.html"", System.IO.FileMode.OpenOrCreate)
     DO
     LOOP WHILE True
 
@@ -282,10 +287,63 @@ END FUNCTION";
 
             await Task.Delay(3000);
 
+            try
+            {
+                File.ReadAllText("LocalWebPage.html"); // Must crash.
+                Assert.Fail();
+            }
+            catch (IOException)
+            {
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+
             await interpreter.Stop();
 
-
+            var fileContent = File.ReadAllText("LocalWebPage.html");
             Assert.IsTrue(interpreter.GetStateChangedHistoryString().Contains("[Log] The user requests to stop the interpreter as soon as possible."));
+            Assert.IsTrue(interpreter.State == BaZicInterpreterState.Stopped);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(fileContent));
+        }
+
+        [TestMethod]
+        public async Task IterationInterpreterInfiniteLoopReleaseMode()
+        {
+            var parser = new BaZicParser();
+            var inputCode =
+@"EXTERN FUNCTION Main(args[])
+    VARIABLE file = NEW System.IO.FileStream(""LocalWebPage.html"", System.IO.FileMode.OpenOrCreate)
+    DO
+        # The file LocalWebPage.html must be protected in write as it's a busy resource.
+    LOOP WHILE True
+
+    RETURN 1
+END FUNCTION";
+            var interpreter = new BaZicInterpreter(parser.Parse(inputCode, false).Program);
+            var t = interpreter.StartReleaseAsync(true);
+
+            await Task.Delay(10000);
+
+            try
+            {
+                File.ReadAllText("LocalWebPage.html"); // Must crash.
+                Assert.Fail();
+            }
+            catch (IOException)
+            {
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+
+            await interpreter.Stop();
+
+            var fileContent = File.ReadAllText("LocalWebPage.html");
+            Assert.IsTrue(interpreter.State == BaZicInterpreterState.Stopped);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(fileContent));
         }
 
         [TestMethod]
@@ -294,7 +352,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 0
 
     DO WHILE var1 < 10
@@ -309,11 +367,14 @@ END FUNCTION";
 
             var expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -617,7 +678,7 @@ END FUNCTION";
 [Log] Return : 10 (System.Int32)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Main'. Returned value : 10 (System.Int32)
-[State] Stopped
+[State] Idle
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());

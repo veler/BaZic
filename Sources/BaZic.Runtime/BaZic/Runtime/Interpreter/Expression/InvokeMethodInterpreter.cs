@@ -11,9 +11,14 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
     /// </summary>
     internal sealed class InvokeMethodInterpreter : ExpressionInterpreter<InvokeMethodExpression>
     {
-        internal InvokeMethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, InvokeMethodExpression expression)
+        private readonly bool _failIfNotExtern;
+        private readonly Guid _executionFlowId;
+
+        internal InvokeMethodInterpreter(BaZicInterpreterCore baZicInterpreter, Interpreter parentInterpreter, InvokeMethodExpression expression, Guid executionFlowId, bool failIfNotExtern = false)
             : base(baZicInterpreter, parentInterpreter, expression)
         {
+            _executionFlowId = executionFlowId;
+            _failIfNotExtern = failIfNotExtern;
         }
 
         /// <inheritdoc/>
@@ -32,7 +37,22 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
                 return null;
             }
 
-            var methodInterpreter = new MethodInterpreter(BaZicInterpreter, ParentInterpreter, declarations.Single(), Expression);
+            // If the invocation is made manually by the user (outisde of the execution flow).
+            if (_failIfNotExtern)
+            {
+                if (!declarations.Single().IsExtern)
+                {
+                    BaZicInterpreter.ChangeState(this, new MethodNotFoundException(Expression.MethodName.Identifier, L.BaZic.Runtime.Interpreters.Expressions.InvokeMethodInterpreter.FormattedMethodNotFound(Expression.MethodName)), Expression);
+                    return null;
+                }
+
+                if (!declarations.Single().IsAsync && Expression.Await)
+                {
+                    Expression.Await = false;
+                }
+            }
+
+            var methodInterpreter = new MethodInterpreter(BaZicInterpreter, ParentInterpreter, declarations.Single(), Expression, _executionFlowId);
             return methodInterpreter.Invoke();
         }
     }

@@ -11,6 +11,8 @@ namespace BaZic.Core.ComponentModel.Assemblies
         #region Fields & Constants
 
         private TaskCompletionSource<object> _taskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private Action _actionBeforeEnd;
+        private Action _actionAfterEnd;
 
         #endregion
 
@@ -30,7 +32,20 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// </summary>
         internal void NotifyEndTask()
         {
-           _taskCompletionSource.TrySetResult(null);
+            _actionBeforeEnd?.Invoke();
+            _taskCompletionSource.TrySetResult(null);
+            _actionAfterEnd?.Invoke();
+        }
+
+        /// <summary>
+        /// Defines an action to run when the task ended.
+        /// </summary>
+        /// <param name="actionBeforeEnd">The action to execute just before the end of the task.</param>
+        /// <param name="actionAfterEnd">The action to execute just after the end of the task.</param>
+        internal void ContinueWith(Action actionBeforeEnd, Action actionAfterEnd)
+        {
+            _actionBeforeEnd = actionBeforeEnd;
+            _actionAfterEnd = actionAfterEnd;
         }
 
         #endregion
@@ -45,6 +60,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         #region Fields & Constants
 
         private TaskCompletionSource<T> _taskCompletionSource = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private Action _action;
 
         #endregion
 
@@ -66,6 +82,16 @@ namespace BaZic.Core.ComponentModel.Assemblies
         internal void SetResult(T result)
         {
             _taskCompletionSource.TrySetResult(result);
+            _action?.Invoke();
+        }
+
+        /// <summary>
+        /// Defines an action to run when the task ended.
+        /// </summary>
+        /// <param name="action">The action to execute.</param>
+        internal void ContinueWith(Action action)
+        {
+            _action = action;
         }
 
         #endregion

@@ -29,8 +29,8 @@ namespace BaZic.Runtime.Tests.BaZic.Code.Optimizer
     END IF
 END FUNCTION";
 
-            var program = parser.Parse(inputCode, true).Program;
-            var result = codeGenerator.Generate(program);
+            var program = parser.Parse(inputCode, true);
+            var result = codeGenerator.Generate(program.Program);
 
             var expectedResult =
 @"# BaZic code generated automatically
@@ -68,8 +68,8 @@ END FUNCTION";
     LOOP
 END FUNCTION";
 
-            var program = parser.Parse(inputCode, true).Program;
-            var result = codeGenerator.Generate(program);
+            var program = parser.Parse(inputCode, true);
+            var result = codeGenerator.Generate(program.Program);
 
             var expectedResult =
 @"# BaZic code generated automatically
@@ -97,7 +97,7 @@ END FUNCTION";
             var codeGenerator = new BaZicCodeGenerator();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     Method1()
     Method1()
 END FUNCTION
@@ -108,13 +108,13 @@ FUNCTION Method1()
     RETURN
 END FUNCTION";
 
-            var program = parser.Parse(inputCode, true).Program;
-            var result = codeGenerator.Generate(program);
+            var program = parser.Parse(inputCode, true);
+            var result = codeGenerator.Generate(program.Program);
 
             var expectedResult =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE RET_A
     _A:
     VARIABLE x = 1
@@ -135,12 +135,12 @@ FUNCTION Method1()
     RETURN 
 END FUNCTION";
 
-            var variable1Decl = (VariableDeclaration)program.Methods.Last().Statements.First();
-            var variable1Ref = (VariableReferenceExpression)((AssignStatement)program.Methods.Last().Statements[1]).LeftExpression;
-            var variable2Decl = (VariableDeclaration)program.Methods.First().Statements[2];
-            var variable2Ref = (VariableReferenceExpression)((AssignStatement)program.Methods.First().Statements[3]).LeftExpression;
-            var variable3Decl = (VariableDeclaration)program.Methods.First().Statements[8];
-            var variable3Ref = (VariableReferenceExpression)((AssignStatement)program.Methods.First().Statements[9]).LeftExpression;
+            var variable1Decl = (VariableDeclaration)program.Program.Methods.Last().Statements.First();
+            var variable1Ref = (VariableReferenceExpression)((AssignStatement)program.Program.Methods.Last().Statements[1]).LeftExpression;
+            var variable2Decl = (VariableDeclaration)program.Program.Methods.First().Statements[2];
+            var variable2Ref = (VariableReferenceExpression)((AssignStatement)program.Program.Methods.First().Statements[3]).LeftExpression;
+            var variable3Decl = (VariableDeclaration)program.Program.Methods.First().Statements[8];
+            var variable3Ref = (VariableReferenceExpression)((AssignStatement)program.Program.Methods.First().Statements[9]).LeftExpression;
 
             Assert.AreEqual(variable1Decl.Id, variable1Ref.VariableDeclarationID);
             Assert.AreNotEqual(variable1Decl.Id, variable2Decl.Id);
@@ -163,7 +163,7 @@ END FUNCTION";
     RETURN arg1 + arg2
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Method1(1, 2)
     VARIABLE x = Method1(1, 2)
     VARIABLE y
@@ -171,8 +171,8 @@ FUNCTION Main(args[])
     RETURN Method1(1, 2)
 END FUNCTION";
 
-            var program = parser.Parse(inputCode, true).Program;
-            var result = codeGenerator.Generate(program);
+            var program = parser.Parse(inputCode, true);
+            var result = codeGenerator.Generate(program.Program);
 
             var expectedResult =
 @"# BaZic code generated automatically
@@ -181,7 +181,7 @@ FUNCTION Method1(arg1, arg2)
     RETURN arg1 + arg2
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arg1 = 1
     VARIABLE arg2 = 2
     VARIABLE RET_A
@@ -237,14 +237,14 @@ ASYNC FUNCTION Method2()
     VARIABLE x = 1
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Method1(Method1(NULL))
     Method2()
     AWAIT Method2()
 END FUNCTION";
 
-            var program = parser.Parse(inputCode, true).Program;
-            var result = codeGenerator.Generate(program);
+            var program = parser.Parse(inputCode, true);
+            var result = codeGenerator.Generate(program.Program);
 
             var expectedResult =
 @"# BaZic code generated automatically
@@ -257,7 +257,7 @@ ASYNC FUNCTION Method2()
     VARIABLE x = 1
 END FUNCTION
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arg1 = Method1(NULL)
     VARIABLE RET_A
     _A:
@@ -277,7 +277,7 @@ END FUNCTION";
             var codeGenerator = new BaZicCodeGenerator();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     RETURN Method1(100)
 END FUNCTION
 
@@ -295,7 +295,7 @@ END FUNCTION";
             var expectedResult =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE RET_A
     VARIABLE num = 100
     VARIABLE RET_B
@@ -2322,7 +2322,7 @@ END FUNCTION";
             var inputCode =
 @"
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     MyFunction(1, 2, NULL)
 END FUNCTION
 
@@ -2368,7 +2368,7 @@ END FUNCTION
 
 VARIABLE myVar[] = NEW [""value1"", ""val2""]
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE arg1 = 1
     VARIABLE arg2 = 2
     VARIABLE arg3[] = NULL
@@ -2432,7 +2432,7 @@ END FUNCTION";
 
             var inputCode =
 @"
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN Method1()
 END FUNCTION
 
@@ -2458,7 +2458,7 @@ END FUNCTION";
             var expectedResult =
 @"# BaZic code generated automatically
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     VARIABLE RET_A
     VARIABLE RET_B
     _B:

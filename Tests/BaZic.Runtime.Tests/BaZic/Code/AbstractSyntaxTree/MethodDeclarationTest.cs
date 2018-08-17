@@ -9,7 +9,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code.AbstractSyntaxTree
         [TestMethod]
         public void MethodDeclarations()
         {
-            var method = new MethodDeclaration("Foo", false)
+            var method = new MethodDeclaration("Foo", false, false)
                         .WithParameters(new ParameterDeclaration("Bar"))
                         .WithBody(
                             new VariableDeclaration("Var"),

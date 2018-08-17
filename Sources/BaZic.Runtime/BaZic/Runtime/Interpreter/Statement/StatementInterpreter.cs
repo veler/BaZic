@@ -1,4 +1,5 @@
 ﻿using BaZic.Core.ComponentModel;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
@@ -21,6 +22,11 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         protected BlockInterpreter ParentInterpreter { get; }
 
         /// <summary>
+        /// Gets a GUID that defines in which callstack is linked
+        /// </summary>
+        protected Guid ExecutionFlowId { get; }
+
+        /// <summary>
         /// Gets the statement to interpret.
         /// </summary>
         protected T Statement { get; }
@@ -34,8 +40,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
         /// </summary>
         /// <param name="baZicInterpreter">The main interpreter.</param>
         /// <param name="parentInterpreter">The parent interpreter.</param>
+        /// <param name="executionFlowId">A GUID that defines in which callstack is linked.</param>
         /// <param name="statement">The statement to interpret.</param>
-        protected StatementInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, T statement)
+        protected StatementInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, T statement)
         {
             Requires.NotNull(baZicInterpreter, nameof(baZicInterpreter));
             Requires.NotNull(parentInterpreter, nameof(parentInterpreter));
@@ -43,6 +50,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
             BaZicInterpreter = baZicInterpreter;
             ParentInterpreter = parentInterpreter;
             Statement = statement;
+            ExecutionFlowId = executionFlowId;
         }
 
         #endregion

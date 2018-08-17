@@ -26,7 +26,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 @"
 BIND Button1_Content
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION
 
 EVENT FUNCTION Window1_Closed()
@@ -65,11 +65,11 @@ END FUNCTION
 
             var expect = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
 [Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
@@ -137,12 +137,35 @@ END FUNCTION
 [Log] Return : True (System.Boolean)
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
 [Log] End of the execution of the method 'Window1_Loaded'. Returned value : True (System.Boolean)
+[State] Idle
 [Log] The user requests to stop the interpreter as soon as possible.
+[Log] An event has been raised from an interaction with the user interface.
+[State] Running
+[Log] Preparing to invoke the method 'Window1_Closed'.
+[Log] Executing the argument values of the method.
+[Log] Invoking the synchronous method 'Window1_Closed'.
+[Log] Registering labels.
+[Log] Executing a statement of type 'ReturnStatement'.
+[Log] Executing an expression of type 'PrimitiveExpression'.
+[Log] The expression returned the value 'Result of Window.Close' (System.String).
+[Log] Return : Result of Window.Close (System.String)
+[Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
+[Log] End of the execution of the method 'Window1_Closed'. Returned value : Result of Window.Close (System.String)
+[State] Idle
+[Log] Hidding/closing user interface.
 [State] Stopped
 ";
 
             Assert.AreEqual(expect, interpreter.GetStateChangedHistoryString());
             Assert.AreEqual(null, interpreter.ProgramResult); // Null because the program has been forced to stop.
+        }
+
+        [TestMethod]
+        public async Task BaZicInterpreterWithUiProgramGetResult()
+        {
+            // TODO : Make it a unit test similar to BaZicInterpreterWithUiProgram but where we close the window from inside of the program and check if a value is correctly returned by the Closed event method.
+            // It requires, at parsing, compiling and interpretation time, that all controls with a name are declared as a global variable.
+            // And this requirement require some other new unit tests.
         }
 
         [TestMethod]
@@ -154,7 +177,7 @@ END FUNCTION
 @"
 BIND Button1_Text
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
 END FUNCTION";
 
             var xamlCode = @"
@@ -199,7 +222,7 @@ END FUNCTION";
             @"
 BIND Button1_Content
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     Button1_Content = ""Hello""
 END FUNCTION";
 

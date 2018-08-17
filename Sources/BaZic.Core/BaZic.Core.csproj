@@ -53,7 +53,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentModel\Assemblies\LoadedAssemblyDetails.cs" />
     <Compile Include="ComponentModel\SynchronizationCallback.cs" />
+    <Compile Include="Enums\BaZicCompilerOutputType.cs" />
     <Compile Include="Enums\BaZicParserExceptionLevel.cs" />
     <Compile Include="Enums\EnumExtension.cs" />
     <Compile Include="Enums\LogType.cs" />

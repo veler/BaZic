@@ -17,7 +17,7 @@ BaZic is available as [NuGet package](https://www.nuget.org/packages/BaZic/). Us
 ```
 VARIABLE initialValue = 100
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN FirstMethod(initialValue) # This must return 0.
 END FUNCTION
 

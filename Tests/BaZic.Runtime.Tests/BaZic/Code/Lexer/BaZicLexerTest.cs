@@ -468,7 +468,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code.Lexer
 
             var test1 = @"VARIABLE var1 = 1
 
-FUNCTION Main(arg1, arg2)
+EXTERN FUNCTION Main(arg1, arg2)
     IF NOT arg1 <= arg2 THEN
         System.Console.WriteLine(""Hello ""+var1+1)
     END IF
@@ -476,7 +476,7 @@ END FUNCTION";
 
             var result = lexer.Tokenize(test1);
 
-            Assert.AreEqual(42, result.Count);
+            Assert.AreEqual(43, result.Count);
 
             var expectedToken = new TokenType[] {
                 TokenType.StartCode,
@@ -486,6 +486,7 @@ END FUNCTION";
                 TokenType.Integer,
                 TokenType.NewLine,
                 TokenType.NewLine,
+                TokenType.Extern,
                 TokenType.Function,
                 TokenType.Identifier,
                 TokenType.LeftParenth,

@@ -5,7 +5,7 @@ namespace BaZicProgramReleaseMode
     /// <summary>
     /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
     /// </summary>
-    internal static class ProgramHelper
+    public partial class ProgramHelper
     {
         #region Fields
 
@@ -13,7 +13,26 @@ namespace BaZicProgramReleaseMode
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the Dispatcher of the UI thread.
+        /// </summary>
+        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
+
+        #endregion
+
         #region Methods
+
+        /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name="args"></param>
+        [System.STAThreadAttribute()]
+        public static void Main(string[] args)
+        {
+            Program.Main(args);
+        }
 
         /// <summary>
         /// Returns the result of a task. If the task does not return a result, this method will return null.
@@ -60,7 +79,8 @@ namespace BaZicProgramReleaseMode
         /// Runs an action on STA thread.
         /// </summary>
         /// <param name="func">The function to run.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func)
+        /// <param name="isBackground">Defines whether the thread is a background thread.</param>
+        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
         {
             dynamic result = null;
             var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
@@ -68,6 +88,7 @@ namespace BaZicProgramReleaseMode
                 result = func();
             }));
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.IsBackground = isBackground;
             thread.Start();
             thread.Join();
             return result;

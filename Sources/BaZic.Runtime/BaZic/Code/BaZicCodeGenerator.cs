@@ -837,21 +837,25 @@ namespace BaZic.Runtime.BaZic.Code
                 arguments.Add(GenerateParameterDeclaration(argument));
             }
 
+            var accessor = string.Empty;
+            if (method.IsExtern)
+            {
+                accessor = "EXTERN ";
+            }
+
+            var eventAccessor = string.Empty;
             if (uiEvent != null)
             {
-                return $"EVENT FUNCTION {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
-                       $"{statementsString}" + Environment.NewLine +
-                       $"END FUNCTION";
+                eventAccessor = "EVENT ";
             }
 
+            var asyncAccessor = string.Empty;
             if (method.IsAsync)
             {
-                return $"ASYNC FUNCTION {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
-                       $"{statementsString}" + Environment.NewLine +
-                       $"END FUNCTION";
+                asyncAccessor = "ASYNC ";
             }
 
-            return $"FUNCTION {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
+            return $"{accessor}{eventAccessor}{asyncAccessor}FUNCTION {method.Name}({string.Join(", ", arguments)})" + Environment.NewLine +
                    $"{statementsString}" + Environment.NewLine +
                    $"END FUNCTION";
         }

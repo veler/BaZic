@@ -14,10 +14,13 @@ namespace BaZic.Core.ComponentModel
         /// Runs an action on STA thread.
         /// </summary>
         /// <param name="action">The action to run.</param>
-        public static void RunOnStaThread(Action action)
+        /// <param name="isBackground">Defines whether the thread must run in background or not.</param>
+        public static void RunOnStaThread(Action action, bool isBackground = false)
         {
             var thread = new Thread((ThreadStart)new SynchronizationCallback(action));
             thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = isBackground;
+            thread.CurrentCulture = Localization.LocalizationHelper.GetCurrentCulture();
             thread.Start();
             thread.Join();
         }

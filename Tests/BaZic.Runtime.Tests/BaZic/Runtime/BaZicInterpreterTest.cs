@@ -1,8 +1,11 @@
-﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
+﻿using BaZic.Core.ComponentModel.Assemblies;
+using BaZic.Core.Tests.Mocks;
+using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Code.Parser;
 using BaZic.Runtime.BaZic.Runtime;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,7 +26,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 1
     VARIABLE Var1 = 2
     RETURN var1 + Var1
@@ -33,8 +36,8 @@ END FUNCTION";
 
             Assert.AreEqual(BaZicInterpreterState.Ready, interpreter.StateChangedHistory[0].State);
             Assert.AreEqual(BaZicInterpreterState.Preparing, interpreter.StateChangedHistory[1].State);
-            Assert.AreEqual(BaZicInterpreterState.Running, interpreter.StateChangedHistory[9].State);
-            Assert.AreEqual(BaZicInterpreterState.Stopped, interpreter.StateChangedHistory.Last().State);
+            Assert.AreEqual(BaZicInterpreterState.Running, interpreter.StateChangedHistory[12].State);
+            Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.StateChangedHistory.Last().State);
 
             await TestUtilities.TestAllRunningMode("3", inputCode);
         }
@@ -59,7 +62,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = 0
 
     BREAKPOINT
@@ -76,11 +79,14 @@ END FUNCTION";
 
             var expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -114,11 +120,14 @@ END FUNCTION";
 
             expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -163,11 +172,14 @@ END FUNCTION";
 
             expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -204,7 +216,6 @@ END FUNCTION";
 [State] Pause
 [Log] The user requests to stop the interpreter as soon as possible.
 [State] Stopped
-[Log] End of the execution of the method 'Main'. Returned value :  ({Null})
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
@@ -220,7 +231,7 @@ END FUNCTION";
 @"
 VARIABLE globVar = ""Hello""
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN SimpleRecursivity(5)
 END FUNCTION
 
@@ -271,7 +282,7 @@ END FUNCTION";
 @"
 VARIABLE globVar = ""Hello""
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN SimpleRecursivity(5)
 END FUNCTION
 
@@ -294,6 +305,7 @@ END FUNCTION";
             var debugInfo = interpreter.DebugInfos;
 
             Assert.IsNotNull(debugInfo);
+            Assert.AreEqual("Hello", debugInfo.GlobalVariables.Single().Value);
             Assert.AreEqual(BaZicInterpreterState.Pause, interpreter.State);
             Assert.AreEqual(1, debugInfo.GlobalVariables.Count);
             Assert.AreEqual("SimpleRecursivity", debugInfo.CallStack.First().InvokeMethodExpression.MethodName.Identifier);
@@ -308,7 +320,7 @@ END FUNCTION";
 @"
 VARIABLE globVar = ""Hello""
 
-FUNCTION Main(args[])
+EXTERN FUNCTION Main(args[])
     RETURN AWAIT SimpleRecursivity(5)
 END FUNCTION
 
@@ -357,7 +369,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode =
-@"FUNCTION Main(args[])
+@"EXTERN FUNCTION Main(args[])
     VARIABLE var1 = Localization.L.BaZic.AbstractSyntaxTree.InvalidNamespace
     RETURN var1
 END FUNCTION";
@@ -366,11 +378,14 @@ END FUNCTION";
 
             var expectedLogs = @"[State] Ready
 [State] Preparing
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorlib.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Core.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.Runtime.dll' loaded in the application domain.
-[Log] Reference assembly 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.CSharp.dll' loaded in the application domain.
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
 [Log] Declaring global variables.
 [Log] Program's entry point detected.
 [State] Running
@@ -390,6 +405,88 @@ END FUNCTION";
 ";
 
             Assert.AreEqual(expectedLogs, interpreter.GetStateChangedHistoryString());
+        }
+
+        [TestMethod]
+        public async Task BaZicCompile()
+        {
+            var inputCode =
+@"EXTERN FUNCTION Main(args[])
+    VARIABLE var1 = 1
+    VARIABLE Var1 = 2
+    VARIABLE result = var1 + Var1
+    System.Console.WriteLine(result.ToString())
+    RETURN result
+END FUNCTION";
+
+            using (var interpreter = new BaZicInterpreter(inputCode, string.Empty, false))
+            {
+                var mscorlib = AssemblyDetails.GetAssemblyDetailsFromName(typeof(object).Assembly.FullName);
+                var baZicCoreTest = AssemblyDetails.GetAssemblyDetailsFromName(typeof(LogMock).Assembly.Location);
+                interpreter.SetDependencies(mscorlib, baZicCoreTest);
+
+                var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
+                var errors = await interpreter.Build(Core.Enums.BaZicCompilerOutputType.ConsoleApp, tempFile);
+
+                Assert.IsNull(errors);
+                Assert.IsTrue(File.Exists(tempFile));
+                Assert.IsTrue(File.Exists(tempFile.Replace(".exe", ".pdb")));
+                Assert.IsTrue(File.Exists(Path.Combine(Path.GetTempPath(), "BaZic_Bin", "BaZic.Core.Tests.dll")));
+
+                File.Delete(tempFile);
+                File.Delete(tempFile.Replace(".exe", ".pdb"));
+                File.Delete(Path.Combine(Path.GetTempPath(), "BaZic_Bin", "BaZic.Core.Tests.dll"));
+                Directory.Delete(Path.Combine(Path.GetTempPath(), @"BaZic_Bin"), true);
+            }
+        }
+
+        [TestMethod]
+        public async Task BaZicCompileWithUI()
+        {
+            var inputCode =
+@"
+BIND Button1_Content
+
+EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EVENT FUNCTION Window1_Closed()
+    RETURN ""Result of Window.Close""
+END FUNCTION
+
+EVENT FUNCTION Window1_Loaded()
+    VARIABLE var1 = Button1_Content
+    IF var1 = ""Hello"" THEN
+        Button1_Content = ""Hello World""
+        var1 = Button1_Content
+        IF var1 = ""Hello World"" THEN
+            RETURN TRUE
+        END IF
+    END IF
+END FUNCTION
+
+# The XAML will be provided separatly";
+
+            var xamlCode = @"
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"">
+    <StackPanel>
+        <Button Name=""Button1"" Content=""Hello""/>
+    </StackPanel>
+</Window>";
+
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode, false))
+            {
+                var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
+                var errors = await interpreter.Build(Core.Enums.BaZicCompilerOutputType.WindowsApp, tempFile);
+
+                Assert.IsNull(errors);
+                Assert.IsTrue(File.Exists(tempFile));
+                Assert.IsTrue(File.Exists(tempFile.Replace(".exe", ".pdb")));
+
+                File.Delete(tempFile);
+                File.Delete(tempFile.Replace(".exe", ".pdb"));
+                Directory.Delete(Path.Combine(Path.GetTempPath(), @"BaZic_Bin"), true);
+            }
         }
     }
 }

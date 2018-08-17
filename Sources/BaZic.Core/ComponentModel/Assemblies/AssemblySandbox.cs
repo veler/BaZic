@@ -60,11 +60,23 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Attempt to load the specified Assembly from its full name or location on the hard drive.
         /// </summary>
+        /// <param name="assemblyDetails">The assembly's information</param>
+        /// <param name="forReflectionPurpose">(optional) Defines whether the assembly must be load for reflection only or also execution. By default, the value is true.</param>
+        public void LoadAssembly(AssemblyDetails assemblyDetails, bool forReflectionPurpose = true)
+        {
+            Requires.NotNull(assemblyDetails, nameof(assemblyDetails));
+            _assemblyManager.LoadAssembly(assemblyDetails, forReflectionPurpose);
+        }
+
+        /// <summary>
+        /// Attempt to load the specified Assembly from its full name or location on the hard drive.
+        /// </summary>
         /// <param name="assemblyPath">The assembly's full name or location on the hard drive</param>
         /// <param name="forReflectionPurpose">(optional) Defines whether the assembly must be load for reflection only or also execution. By default, the value is true.</param>
         public void LoadAssembly(string assemblyPath, bool forReflectionPurpose = true)
         {
-            _assemblyManager.LoadAssembly(assemblyPath, forReflectionPurpose);
+            Requires.NotNullOrWhiteSpace(assemblyPath, nameof(assemblyPath));
+            _assemblyManager.LoadAssembly(AssemblyDetails.GetAssemblyDetailsFromName(assemblyPath), forReflectionPurpose);
         }
 
         /// <summary>
@@ -73,6 +85,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <param name="assemblyStream">The assembly stream</param>
         public void LoadAssembly(MemoryStream assemblyStream)
         {
+            Requires.NotNull(assemblyStream, nameof(assemblyStream));
             assemblyStream.Seek(0, SeekOrigin.Begin);
 
             _assemblyManager.LoadAssembly(assemblyStream.ToArray());
@@ -94,6 +107,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns the list of types. Returns null if the assembly is not found.</returns>
         public ReadOnlyCollection<TypeDetails> GetTypes(AssemblyDetails assemblyDetails)
         {
+            Requires.NotNull(assemblyDetails, nameof(assemblyDetails));
             return _assemblyManager.GetTypes(assemblyDetails);
         }
 
@@ -105,6 +119,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns the type if it has been found. Otherwise, throws a <see cref="TypeLoadException"/>.<returns>
         public Type GetTypeRef(string fullName, string assemblyPath = "")
         {
+            Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
             return _assemblyManager.GetTypeRef(fullName, assemblyPath);
         }
 
@@ -117,6 +132,8 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns the result of the method.</returns>
         public object CreateInstanceAndInvoke(string fullName, string methodName, object[] arguments)
         {
+            Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
+            Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
             return _assemblyManager.CreateInstanceAndInvoke(fullName, methodName, arguments);
         }
 

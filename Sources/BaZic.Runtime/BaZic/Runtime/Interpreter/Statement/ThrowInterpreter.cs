@@ -10,8 +10,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
     /// </summary>
     internal sealed class ThrowInterpreter : StatementInterpreter<ThrowStatement>
     {
-        internal ThrowInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, ThrowStatement statement)
-            : base(baZicInterpreter, parentInterpreter, statement)
+        internal ThrowInterpreter(BaZicInterpreterCore baZicInterpreter, BlockInterpreter parentInterpreter, Guid executionFlowId, ThrowStatement statement)
+            : base(baZicInterpreter, parentInterpreter, executionFlowId, statement)
         {
         }
 
