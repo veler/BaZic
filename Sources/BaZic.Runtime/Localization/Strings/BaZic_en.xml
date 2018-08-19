@@ -23,7 +23,8 @@
             <XamlParsingError>Parsing error in the XAML Code : {error}</XamlParsingError>
             <XamlUnknownParsingError>Unable to parse the XAML code.</XamlUnknownParsingError>
             <ForbiddenMember>In a BaZic program's root context, only variable declaration and methods are allowed.</ForbiddenMember>
-            <DuplicatedVariable>A variable or binding '{variableName}' is already declared line {line}.</DuplicatedVariable>
+            <DuplicatedControlAccessor>A control accessor '{variableName}' is already declared line {line}.</DuplicatedControlAccessor>
+            <DuplicatedVariable>A variable '{variableName}' is already declared line {line}.</DuplicatedVariable>
             <DuplicatedParameter>A method argument '{parameterName}' is already declared line {line}.</DuplicatedParameter>
             <DuplicatedMethod>A method '{methodName}' is already declared line {line}.</DuplicatedMethod>
             <NoExpressionAnalyzer>There is no code analyzer for an expression of type '{typeName}'</NoExpressionAnalyzer>
@@ -33,10 +34,10 @@
             <OneDimensionVariable>The BaZic declared variable or parameter '{variableName}' is an array of one dimension. Only one index must be specified here.</OneDimensionVariable>
             <ArrayExpectedOnBothSide>The value is an array on a side and not on the other side of the assignment.</ArrayExpectedOnBothSide>
             <ArrayAssign>Cannot assign an array to a non-array variable or parameter.</ArrayAssign>
+            <CannotAssignControlAccessor>A control accessor cannot be assigned.</CannotAssignControlAccessor>
             <VariableDefaultValue>The default value of a global variable can only be made of primitive values, not any reference, instanciation or invocation.</VariableDefaultValue>
             <NoXamlBinding>Unable to define a BIND statement when there is no XAML code or that the XAML code is incorrect.</NoXamlBinding>
             <XamlControlNotFoundBinding>Unable to find the control named '{controlName}' in the user interface to make this binding.</XamlControlNotFoundBinding>
-            <NotAccessibleProperty>The binding '{variableName}' is invalid because the property '{controlName}.{propertyName}' does not have an accessible getter and a setter.</NotAccessibleProperty>
             <NoXamlEvent>Unable to define a EVENT function when there is no XAML code or that the XAML code is incorrect.</NoXamlEvent>
             <XamlControlNotFoundEvent>Unable to find the control named '{controlName}' in the user interface to make this event function.</XamlControlNotFoundEvent>
             <NotAccessibleEvent>The event function '{controlName}_{eventName}' is invalid because the event '{controlName}.{eventName}' does not exist or is not accessible.</NotAccessibleEvent>
@@ -62,7 +63,6 @@
                 <StatementExpected>A statement is expected.</StatementExpected>
                 <InvalidMethodDeclaration>A method cannot be declared in this context.</InvalidMethodDeclaration>
                 <InvalidStatement>Invalid statement. Are you missing a keyword?</InvalidStatement>
-                <InvalidBindingDeclaration>A binding cannot be declared in this context.</InvalidBindingDeclaration>
                 <DefaultValueArrayExpected>The variable '{variableName}' is declared as an array. The default value is not an array.</DefaultValueArrayExpected>
                 <DefaultValueNoArrayExpected>The variable '{variableName}' is not declared as an array but the default value is an array.</DefaultValueNoArrayExpected>
                 <AssignOrLineExpected>Invalid statement. Assignment or new line expected.</AssignOrLineExpected>
@@ -83,7 +83,7 @@
             <RestrictedToken>The identifier '{tokenValue}' is a private BaZic keyword and cannot be use as an identifier.</RestrictedToken>
             <IdentifierExpected>An identifier is expected.</IdentifierExpected>
             <InvalidIdentifier>An identifier can only contains alphanumeric characters.</InvalidIdentifier>
-            <InvalidBindingOrEventName>In a BIND or EVENT FUNCTION statement, the identifier must strickly have the syntax 'ControlName_PropertyName'.</InvalidBindingOrEventName>
+            <InvalidEventName>In an EVENT FUNCTION statement, the identifier must strickly have the syntax 'ControlName_PropertyName'.</InvalidEventName>
         </TokenIdentificationHelper>
         <BaZicCodeGenerator>
             <NoGeneratorForExpressionImplemented>There is no code generator for an expression of type '{expressionName}'.</NoGeneratorForExpressionImplemented>
@@ -145,7 +145,7 @@
                     <LoadingUi>Loading user interface.</LoadingUi>
                     <DeclaringEvents>Registering events.</DeclaringEvents>
                     <EventRaised>An event has been raised from an interaction with the user interface.</EventRaised>
-                    <DeclaringBindings>Declaring bindings.</DeclaringBindings>
+                    <DeclaringBindings>Declaring control accessors.</DeclaringBindings>
                     <ShowUi>Showing user interface.</ShowUi>
                     <CloseUi>Hidding/closing user interface.</CloseUi>
                 </ProgramInterpreter>

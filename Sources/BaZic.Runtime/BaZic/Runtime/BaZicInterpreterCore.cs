@@ -231,7 +231,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             _mainInterpreterTask = Task.Run(() =>
             {
-                LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
 
                 var outputFile = new FileInfo(outputPath);
                 var directory = outputFile.Directory;
@@ -300,6 +300,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     }
                     catch (Exception exception)
                     {
+                        CoreHelper.ReportException(exception);
                         buildErrors = new AggregateException(new List<Exception> { exception });
                         ChangeState(this, new UnexpectedException(exception));
                     }
@@ -337,7 +338,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             _mainInterpreterTask = Task.Run(() =>
             {
-                LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
 
                 _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
 
@@ -709,7 +710,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             _mainInterpreterTask = Task.Run(() =>
             {
                 _mainInterpreterThread = Thread.CurrentThread;
-                LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
                 RuntimeHelpers.EnsureSufficientExecutionStack();
                 GCSettings.LatencyMode = GCLatencyMode.LowLatency;
 
@@ -719,6 +720,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 }
                 catch (Exception exception)
                 {
+                    CoreHelper.ReportException(exception);
                     if (!_ignoreException)
                     {
                         ChangeState(this, new UnexpectedException(exception));
@@ -803,7 +805,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 object result = null;
                 try
                 {
-                    LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                    LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
                     if (State == BaZicInterpreterState.Preparing)
                     {
                         // Wait for running.
@@ -840,6 +842,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 }
                 catch (Exception exception)
                 {
+                    CoreHelper.ReportException(exception);
                     if (!_ignoreException)
                     {
                         ChangeState(this, new UnexpectedException(exception));
@@ -906,7 +909,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     try
                     {
-                        LocalizationHelper.SetCurrentCulture(currentCulture, false);
+                        LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
 
                         ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Running));
 
@@ -934,6 +937,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     }
                     catch (Exception exception)
                     {
+                        CoreHelper.ReportException(exception);
                         if (!_ignoreException)
                         {
                             ChangeState(this, new UnexpectedException(exception));
@@ -1066,6 +1070,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
             catch (Exception exception)
             {
+                CoreHelper.ReportException(exception);
                 ChangeState(this, new LoadAssemblyException(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyFailedLoad(details.ToLocationOrFullName()), details.ToLocationOrFullName(), exception));
             }
         }

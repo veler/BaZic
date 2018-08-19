@@ -5,6 +5,7 @@ using BaZic.Runtime.Localization;
 using BaZicProgramReleaseMode;
 using System;
 using System.Collections;
+using System.Windows;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
 {
@@ -91,6 +92,13 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Statement
             if (propertyReference.TargetObject is ClassReferenceExpression && targetObjectValue is Type)
             {
                 BaZicInterpreter.Reflection.SetStaticProperty((Type)targetObjectValue, propertyReference.PropertyName.Identifier, value);
+            }
+            else if (targetObjectValue is FrameworkElement)
+            {
+                BaZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
+                {
+                    BaZicInterpreter.Reflection.SetProperty(targetObjectValue, propertyReference.PropertyName.Identifier, value);
+                }, System.Windows.Threading.DispatcherPriority.Background);
             }
             else
             {

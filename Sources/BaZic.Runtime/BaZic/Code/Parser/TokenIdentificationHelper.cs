@@ -163,7 +163,6 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     TokenType.And,
                     TokenType.Async,
                     TokenType.Await,
-                    TokenType.Bind,
                     TokenType.Break,
                     TokenType.Breakpoint,
                     TokenType.Catch,
@@ -249,9 +248,9 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// </summary>
         /// <param name="identifier">The identifier</param>
         /// <param name="token">The token to check.</param>
-        /// <param name="isBindOrEvent">Defines whether the identifier is expected to be an identifier in a Binding field or Event function.</param>
+        /// <param name="isEvent">Defines whether the identifier is expected to be an identifier in a Event function.</param>
         /// <param name="issues">A reference to the list of issues that must be used in case of problem with the identifier.</param>
-        internal static void CheckIdentifier(string identifier, Token token, bool isBindOrEvent, List<Exception> issues)
+        internal static void CheckIdentifier(string identifier, Token token, bool isEvent, List<Exception> issues)
         {
             var ttype = token.TokenType;
             if (ttype != TokenType.Identifier && ttype != TokenType.Exception)
@@ -272,11 +271,11 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 return;
             }
 
-            if (isBindOrEvent)
+            if (isEvent)
             {
                 if (identifier.StartsWith("_") || identifier.EndsWith("_") || identifier.Count(c => c == '_') != 1)
                 {
-                    issues.Add(new BaZicParserException(token.Line, token.Column, token.StartOffset, token.ParsedLength, L.BaZic.TokenIdentificationHelper.InvalidBindingOrEventName));
+                    issues.Add(new BaZicParserException(token.Line, token.Column, token.StartOffset, token.ParsedLength, L.BaZic.TokenIdentificationHelper.InvalidEventName));
                     return;
                 }
             }

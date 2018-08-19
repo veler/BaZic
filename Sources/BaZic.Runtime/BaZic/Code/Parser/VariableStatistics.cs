@@ -20,6 +20,11 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// </summary>
         internal int ReferenceCount { get; private set; }
 
+        /// <summary>
+        /// Gets whether the variable is a control accessor or not.
+        /// </summary>
+        internal bool IsControlAccessor { get; private set; }
+
         #endregion
 
         #region Constructors & Destructors
@@ -28,10 +33,12 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// Initializes a new instance of the <see cref="VariableStatistics"/> class.
         /// </summary>
         /// <param name="variableDeclaration">The variable declaration.</param>
-        internal VariableStatistics(VariableDeclaration variableDeclaration)
+        /// <param name="isControlAccessor">Defines whether the variable is a control accessor or not.</param>
+        internal VariableStatistics(VariableDeclaration variableDeclaration, bool isControlAccessor)
         {
             Requires.NotNull(variableDeclaration, nameof(variableDeclaration));
             Declaration = variableDeclaration;
+            IsControlAccessor = isControlAccessor;
         }
 
         #endregion

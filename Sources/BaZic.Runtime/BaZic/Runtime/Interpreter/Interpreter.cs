@@ -118,25 +118,25 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         }
 
         /// <summary>
-        /// Creates a new binded variable in memory.
+        /// Creates a new control accessor in memory.
         /// </summary>
-        /// <param name="bindingDeclaration">The binding declaration to use.</param>
-        internal void AddVariable(BindingDeclaration bindingDeclaration)
+        /// <param name="controlAccessorDeclaration">The control accessor declaration to use.</param>
+        internal void AddVariable(ControlAccessorDeclaration controlAccessorDeclaration)
         {
             if (GetType() != typeof(ProgramInterpreter))
             {
-                BaZicInterpreter.ChangeState(this, new IncoherentStatementException(L.BaZic.Runtime.Interpreters.Interpreter.ForbiddenBinding), bindingDeclaration);
+                BaZicInterpreter.ChangeState(this, new IncoherentStatementException(L.BaZic.Runtime.Interpreters.Interpreter.ForbiddenBinding), controlAccessorDeclaration);
                 return;
             }
 
-            var existingVariable = GetVariable(bindingDeclaration.Id, bindingDeclaration.Variable.Name.Identifier, false, true);
+            var existingVariable = GetVariable(controlAccessorDeclaration.Id, controlAccessorDeclaration.Variable.Name.Identifier, false, true);
             if (existingVariable != null)
             {
-                BaZicInterpreter.ChangeState(this, new InternalException(L.BaZic.Runtime.Interpreters.Interpreter.FormattedDuplicatedVariableId(bindingDeclaration.Id)), bindingDeclaration);
+                BaZicInterpreter.ChangeState(this, new InternalException(L.BaZic.Runtime.Interpreters.Interpreter.FormattedDuplicatedVariableId(controlAccessorDeclaration.Id)), controlAccessorDeclaration);
                 return;
             }
 
-            var defaultValue = RunExpression(bindingDeclaration.Variable.DefaultValue);
+            var defaultValue = RunExpression(controlAccessorDeclaration.Variable.DefaultValue);
             var defaultValueInfo = ValueInfo.GetValueInfo(defaultValue);
 
             if (IsAborted)
@@ -144,17 +144,17 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                 return;
             }
 
-            var targetControl = ((ProgramInterpreter)this).UserInterface.FindName(bindingDeclaration.ControlName);
+            var targetControl = ((ProgramInterpreter)this).UserInterface.FindName(controlAccessorDeclaration.ControlName);
 
             if (targetControl == null)
             {
-                BaZicInterpreter.ChangeState(this, new UiException(L.BaZic.Runtime.Interpreters.Interpreter.FormattedUiControlNotFound(bindingDeclaration.ControlName)));
+                BaZicInterpreter.ChangeState(this, new UiException(L.BaZic.Runtime.Interpreters.Interpreter.FormattedUiControlNotFound(controlAccessorDeclaration.ControlName)));
                 return;
             }
 
-            var binding = new Binding(bindingDeclaration, targetControl, BaZicInterpreter);
+            var binding = new ControlAccessor(controlAccessorDeclaration, targetControl, BaZicInterpreter);
 
-            AddVariable(bindingDeclaration.Variable, binding, defaultValue, defaultValueInfo, false);
+            AddVariable(controlAccessorDeclaration.Variable, binding, defaultValue, defaultValueInfo, false);
         }
 
         /// <summary>

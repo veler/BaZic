@@ -18,9 +18,9 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public string Xaml { get; set; }
 
         /// <summary>
-        /// Gets the list of binding to a UI component.
+        /// Gets the list of controls accessors in the UI.
         /// </summary>
-        public IReadOnlyList<BindingDeclaration> UiBindings { get; private set; }
+        public IReadOnlyList<ControlAccessorDeclaration> UiControlAccessors { get; private set; }
 
         /// <summary>
         /// Gets the list of binding to a UI component's behavior.
@@ -37,7 +37,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public BaZicUiProgram()
             : base()
         {
-            UiBindings = new List<BindingDeclaration>().AsReadOnly();
+            UiControlAccessors = new List<ControlAccessorDeclaration>().AsReadOnly();
             UiEvents = new List<Event>().AsReadOnly();
         }
 
@@ -48,7 +48,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public BaZicUiProgram(bool isOptimized)
             : base(isOptimized)
         {
-            UiBindings = new List<BindingDeclaration>().AsReadOnly();
+            UiControlAccessors = new List<ControlAccessorDeclaration>().AsReadOnly();
             UiEvents = new List<Event>().AsReadOnly();
         }
 
@@ -61,9 +61,9 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         /// </summary>
         /// <param name="bindings">The bindings</param>
         /// <returns>The current program</returns>
-        public BaZicUiProgram WithUiBindings(params BindingDeclaration[] bindings)
+        public BaZicUiProgram WithControlAccessors(params ControlAccessorDeclaration[] bindings)
         {
-            UiBindings = new List<BindingDeclaration>(bindings).AsReadOnly();
+            UiControlAccessors = new List<ControlAccessorDeclaration>(bindings).AsReadOnly();
             return this;
         }
 
@@ -93,7 +93,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
                 StartOffset = StartOffset,
                 NodeLength = NodeLength
             }
-            .WithUiBindings(UiBindings.ToArray())
+            .WithControlAccessors(UiControlAccessors.ToArray())
             .WithUiEvents(UiEvents.ToArray())
             .WithMethods(Methods.ToArray())
             .WithVariables(GlobalVariables.ToArray())

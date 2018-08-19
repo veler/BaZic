@@ -4,6 +4,7 @@ using BaZic.Runtime.Localization;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
 {
@@ -70,6 +71,13 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
             if (Expression.TargetObject is ClassReferenceExpression && targetObjectValue is Type)
             {
                 result = BaZicInterpreter.Reflection.InvokeStaticMethod((Type)targetObjectValue, Expression.MethodName.Identifier, argumentValues.ToArray());
+            }
+            else if (targetObjectValue is FrameworkElement)
+            {
+                BaZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
+                {
+                    result = BaZicInterpreter.Reflection.InvokeMethod(targetObjectValue, Expression.MethodName.Identifier, argumentValues.ToArray());
+                }, System.Windows.Threading.DispatcherPriority.Background);
             }
             else
             {

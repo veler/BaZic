@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using BaZic.Runtime.BaZic.Code.Parser;
+﻿using BaZic.Runtime.BaZic.Code.Parser;
 using BaZic.Runtime.BaZic.Runtime;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BaZic.Runtime.Tests.BaZic.Runtime.Interpreter
 {
@@ -276,8 +276,6 @@ END FUNCTION";
         {
             var inputCode =
 @"
-BIND Button1_Content
-
 EXTERN FUNCTION Main(args[])
 END FUNCTION
 
@@ -286,10 +284,10 @@ EVENT FUNCTION Window1_Closed()
 END FUNCTION
 
 EXTERN FUNCTION Method1()
-    VARIABLE var1 = Button1_Content
+    VARIABLE var1 = Button1.Content
     IF var1 = ""Hello"" THEN
-        Button1_Content = ""Hello World""
-        var1 = Button1_Content
+        Button1.Content = ""Hello World""
+        var1 = Button1.Content
         IF var1 = ""Hello World"" THEN
             RETURN TRUE
         END IF
@@ -307,43 +305,54 @@ END FUNCTION
     </StackPanel>
 </Window>";
 
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            var task1 = Task.Run(() =>
             {
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
+                using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+                {
+                    var result = interpreter.InvokeMethod(true, "Method1", true).Result;
 
-                Assert.IsNull(result);
-                Assert.AreEqual("The variable 'Button1_Content' does not exist or is not accessible.", interpreter.Error.Exception.Message);
+                    Assert.IsNull(result);
+                    Assert.AreEqual("The variable 'Button1' does not exist or is not accessible.", interpreter.Error.Exception.Message);
 
-                var t = interpreter.StartDebugAsync(true);
-                result = await interpreter.InvokeMethod(true, "Method1", true);
+                    var t = interpreter.StartDebugAsync(true);
+                    result = interpreter.InvokeMethod(true, "Method1", true).Result;
 
-                Assert.AreEqual(true, result);
-            }
+                    Assert.AreEqual(true, result);
+                }
+            });
 
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            var task2 = Task.Run(() =>
             {
-                var errors = await interpreter.Build();
+                using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+                {
+                    var errors = interpreter.Build().Result;
 
-                Assert.IsNull(errors);
+                    Assert.IsNull(errors);
 
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
+                    var result = interpreter.InvokeMethod(true, "Method1", true).Result;
 
-                Assert.IsNull(result);
-                Assert.AreEqual("Object reference not set to an instance of an object.", interpreter.Error.Exception.InnerException.Message);
+                    Assert.IsNull(result);
+                    Assert.AreEqual("Object reference not set to an instance of an object.", interpreter.Error.Exception.InnerException.Message);
 
-                var t = interpreter.StartReleaseAsync(true);
-                result = await interpreter.InvokeMethod(true, "Method1", true);
+                    var t = interpreter.StartReleaseAsync(true);
+                    result = interpreter.InvokeMethod(true, "Method1", true).Result;
 
-                Assert.AreEqual(true, result);
-            }
+                    Assert.AreEqual(true, result);
+                }
+            });
 
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+            var task3 = Task.Run(() =>
             {
-                var t = interpreter.StartReleaseAsync(true);
-                var result = await interpreter.InvokeMethod(true, "Method1", true);
+                using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+                {
+                    var t = interpreter.StartReleaseAsync(true);
+                    var result = interpreter.InvokeMethod(true, "Method1", true).Result;
 
-                Assert.AreEqual(true, result);
-            }
+                    Assert.AreEqual(true, result);
+                }
+            });
+
+            await Task.WhenAll(task1, task2, task3);
         }
 
         [TestMethod]

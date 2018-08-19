@@ -18,14 +18,24 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// <summary>
         /// Parse statements.
         /// </summary>
-        /// <param name="methodOrBindDeclarationAllowed">Defines whether a method or binding can be declared in the current block.</param>
+        /// <param name="methodOrControlAccessorDeclarationAllowed">Defines whether a method or control accessor can be declared in the current block.</param>
         /// <param name="expectedEndTokens">Defines the expected tokens that defines the end of a statement.</param>
         /// <returns>Returns a list of parsed statements.</returns>
-        private Statement[] ParseStatements(bool methodOrBindDeclarationAllowed, params TokenType[] expectedEndTokens)
+        private Statement[] ParseStatements(bool methodOrControlAccessorDeclarationAllowed, params TokenType[] expectedEndTokens)
         {
             var statements = new List<Statement>();
 
             EnteringScope();
+
+            if (methodOrControlAccessorDeclarationAllowed)
+            {
+                _controlAccessors.AddRange(AddControlAccessors());
+
+                foreach (var controlAccessor in _controlAccessors)
+                {
+                    ValidateControlsAccessors(controlAccessor);
+                }
+            }
 
             while (expectedEndTokens.All(token => token != CurrentToken.TokenType) && CurrentToken.TokenType != TokenType.EndCode)
             {
@@ -42,8 +52,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 switch (CurrentToken.TokenType)
                 {
                     case TokenType.Variable:
-                    case TokenType.Bind:
-                        statements.Add(ParseBindAndVariableDeclaration(methodOrBindDeclarationAllowed));
+                        statements.Add(ParseVariableDeclaration());
                         break;
 
                     case TokenType.Do:
@@ -78,7 +87,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     case TokenType.Event:
                     case TokenType.Extern:
                     case TokenType.Function:
-                        if (!methodOrBindDeclarationAllowed)
+                        if (!methodOrControlAccessorDeclarationAllowed)
                         {
                             AddIssue(new BaZicParserException(CurrentToken.Line, CurrentToken.Column, CurrentToken.StartOffset, CurrentToken.ParsedLength, L.BaZic.Parser.Statements.InvalidMethodDeclaration));
                         }
@@ -110,34 +119,19 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// Try to parse a variable delcaration statement.
         /// 
         /// Corresponding grammar :
-        ///     ('VARIABLE' | 'BIND') Identifier '[]'? ('=' Expression)?
+        ///     'VARIABLE' Identifier '[]'? ('=' Expression)?
         /// </summary>
-        /// <param name="bindDeclarationAllowed">Defines whether a binding can be declared in the current block.</param>
-        /// <returns>If succeed, returns a <see cref="VariableDeclaration"/> if it's a VARIABLE statement or a <see cref="BindingDeclaration"/> if it's a BIND statement.</returns>
-        private Statement ParseBindAndVariableDeclaration(bool bindDeclarationAllowed)
+        /// <returns>If succeed, returns a <see cref="VariableDeclaration"/> statement.</returns>
+        private Statement ParseVariableDeclaration()
         {
-            var isBinding = CurrentToken.TokenType == TokenType.Bind;
-
-            if (isBinding)
-            {
-                if (!bindDeclarationAllowed)
-                {
-                    AddIssue(new BaZicParserException(CurrentToken.Line, CurrentToken.Column, CurrentToken.StartOffset, CurrentToken.ParsedLength, L.BaZic.Parser.Statements.InvalidBindingDeclaration));
-                }
-
-                DiscardToken(TokenType.Bind);
-            }
-            else
-            {
-                DiscardToken(TokenType.Variable);
-            }
+            DiscardToken(TokenType.Variable);
 
             var identifierToken = CurrentToken;
             var variableName = CurrentToken.Value;
             var variableIsArray = false;
             Expression variableDefaultValue = null;
 
-            TokenIdentificationHelper.CheckIdentifier(variableName, CurrentToken, isBinding, _issues);
+            TokenIdentificationHelper.CheckIdentifier(variableName, CurrentToken, false, _issues);
             DiscardToken();
 
             if (CurrentToken.TokenType == TokenType.LeftBracket)
@@ -183,23 +177,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 variableDeclaration.StartOffset = identifierToken.StartOffset;
                 variableDeclaration.NodeLength = identifierToken.ParsedLength;
 
-                AddVariableToScope(variableDeclaration);
-
-                if (isBinding)
-                {
-                    var splittedVariableName = variableName.Split('_');
-                    var controlName = splittedVariableName[0];
-                    var propertyName = splittedVariableName[1];
-
-                    var binding = new BindingDeclaration(controlName, propertyName, variableDeclaration);
-                    binding.Line = identifierToken.Line;
-                    binding.Column = identifierToken.Column;
-                    binding.StartOffset = identifierToken.StartOffset;
-                    binding.NodeLength = identifierToken.ParsedLength;
-
-                    ValidateUiBinding(binding);
-                    return binding;
-                }
+                AddVariableToScope(variableDeclaration, false);
 
                 return variableDeclaration;
             }

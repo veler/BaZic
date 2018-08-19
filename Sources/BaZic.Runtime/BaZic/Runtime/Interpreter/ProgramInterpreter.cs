@@ -192,9 +192,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.DeclaringBindings);
                     }
 
-                    foreach (var binding in _uiProgram.UiBindings)
+                    foreach (var controlAccessor in _uiProgram.UiControlAccessors)
                     {
-                        AddVariable(binding);
+                        AddVariable(controlAccessor);
                     }
 
                     if (BaZicInterpreter.Verbose)
@@ -219,6 +219,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     }
                     catch (Exception exception)
                     {
+                        CoreHelper.ReportException(exception);
                         eventException = exception;
                     }
                     finally
@@ -227,7 +228,10 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         {
                             UserInterface.Close();
                         }
-                        catch { }
+                        catch (Exception exception)
+                        {
+                            CoreHelper.ReportException(exception);
+                        }
 
                         foreach (var variable in Variables)
                         {

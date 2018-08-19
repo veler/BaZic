@@ -100,9 +100,6 @@ namespace BaZic.Runtime.BaZic.Code.Lexer.Tokens
         [Description("LOOP")]
         Loop,
 
-        [Description("BIND")]
-        Bind,
-
         [Description("BREAK")]
         Break,
 

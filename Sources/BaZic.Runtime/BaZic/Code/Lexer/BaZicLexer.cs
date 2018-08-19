@@ -56,7 +56,6 @@ namespace BaZic.Runtime.BaZic.Code.Lexer
                 { "And",            new TokenDefinition(TokenType.And, "AND") },
                 { "Async",          new TokenDefinition(TokenType.Async, "ASYNC") },
                 { "Await",          new TokenDefinition(TokenType.Await, "AWAIT") },
-                { "Bind",           new TokenDefinition(TokenType.Bind, "BIND") },
                 { "Break",          new TokenDefinition(TokenType.Break, "BREAK") },
                 { "Breakpoint",     new TokenDefinition(TokenType.Breakpoint, "BREAKPOINT") },
                 { "Catch",          new TokenDefinition(TokenType.Catch, "CATCH") },
@@ -131,7 +130,7 @@ namespace BaZic.Runtime.BaZic.Code.Lexer
                         break;
 
                     case 'B':
-                        token = DetectToken(i, previousTokenType, "Bind", "Breakpoint", "Break");
+                        token = DetectToken(i, previousTokenType, "Breakpoint", "Break");
                         break;
 
                     case 'C':

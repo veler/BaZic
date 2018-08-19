@@ -339,8 +339,7 @@ END FUNCTION";
             var parser = new BaZicParser();
 
             var inputCode = @"
-BIND Button1_Content
-VARIABLE Button1_Content";
+VARIABLE Button1";
 
             var xamlCode = @"
 <Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
@@ -350,9 +349,9 @@ VARIABLE Button1_Content";
 </Window>";
 
             var result = parser.Parse(inputCode, xamlCode);
-            Assert.AreEqual(3, result.Issues.InnerExceptions.Count);
+            Assert.AreEqual(2, result.Issues.InnerExceptions.Count);
             var exception = (BaZicParserException)result.Issues.InnerExceptions.First();
-            Assert.AreEqual("A variable or binding 'Button1_Content' is already declared line 2.", exception.Message);
+            Assert.AreEqual("A control accessor 'Button1' is already declared line 0.", exception.Message);
         }
 
         [TestMethod]
@@ -367,7 +366,7 @@ World"" ]";
         }
 
         [TestMethod]
-        public void BaZicParserBindingDeclaration()
+        public void BaZicParserControlAccessorUse()
         {
             var parser = new BaZicParser();
 
@@ -378,46 +377,36 @@ World"" ]";
     </Grid>
 </Window>";
 
-            var inputCode = "BIND ListBox1_ItemsSource[] = NEW [1, 2]";
+            var inputCode = "";
 
             var result = parser.Parse(inputCode, xamlCode);
             var uiProgram = (BaZicUiProgram)result.Program;
             Assert.AreEqual(0, uiProgram.GlobalVariables.Count);
-            Assert.AreEqual(1, uiProgram.UiBindings.Count);
-            Assert.AreEqual("ListBox1_ItemsSource", uiProgram.UiBindings.First().Variable.Name.ToString());
-            Assert.IsNotNull(uiProgram.UiBindings.First().Variable.DefaultValue);
-            Assert.IsTrue(uiProgram.UiBindings.First().Variable.IsArray);
-            Assert.AreEqual("ListBox1", uiProgram.UiBindings.First().ControlName);
-            Assert.AreEqual("ItemsSource", uiProgram.UiBindings.First().ControlPropertyName);
+            Assert.AreEqual(0, uiProgram.UiControlAccessors.Count);
         }
 
         [TestMethod]
-        public void BaZicParserBindingDeclarationBadContext()
+        public void BaZicParserControlAccessorUse2()
         {
             var parser = new BaZicParser();
 
-            var inputCode = @"
-FUNCTION Method()
-    BIND var1[] = MethodThatReturnsAnArray()
-END FUNCTION
-";
+            var xamlCode = @"
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+    <Grid>
+        <ListBox Name=""ListBox1""/>
+    </Grid>
+</Window>";
 
-            var result = parser.Parse(inputCode);
-            Assert.AreEqual(3, result.Issues.InnerExceptions.Count);
-            var exception = (BaZicParserException)result.Issues.InnerExceptions.First();
-            Assert.AreEqual("A binding cannot be declared in this context.", exception.Message);
-        }
+            var inputCode = "VARIABLE test";
 
-        [TestMethod]
-        public void BaZicParserBindingDeclarationBadName()
-        {
-            var parser = new BaZicParser();
-
-            var inputCode = @"BIND HelloWorld";
-
-            var result = parser.Parse(inputCode);
-            var exception = (BaZicParserException)result.Issues.InnerExceptions.First();
-            Assert.AreEqual("In a BIND or EVENT FUNCTION statement, the identifier must strickly have the syntax 'ControlName_PropertyName'.", exception.Message);
+            var result = parser.Parse(inputCode, xamlCode);
+            var uiProgram = (BaZicUiProgram)result.Program;
+            Assert.AreEqual(1, uiProgram.GlobalVariables.Count);
+            Assert.AreEqual(1, uiProgram.UiControlAccessors.Count);
+            Assert.AreEqual("ListBox1", uiProgram.UiControlAccessors.First().ControlName);
+            Assert.AreEqual("ListBox1", uiProgram.UiControlAccessors.First().Variable.Name.ToString());
+            Assert.IsNull(uiProgram.UiControlAccessors.First().Variable.DefaultValue);
+            Assert.IsFalse(uiProgram.UiControlAccessors.First().Variable.IsArray);
         }
 
         [TestMethod]
@@ -742,7 +731,7 @@ END FUNCTION";
             var program = parser.Parse(inputCode);
             Assert.AreEqual(3, program.Issues.InnerExceptions.Count);
             var exception = (BaZicParserException)program.Issues.InnerExceptions.First();
-            Assert.AreEqual("In a BIND or EVENT FUNCTION statement, the identifier must strickly have the syntax 'ControlName_PropertyName'.", exception.Message);
+            Assert.AreEqual("In an EVENT FUNCTION statement, the identifier must strickly have the syntax 'ControlName_PropertyName'.", exception.Message);
         }
 
         [TestMethod]

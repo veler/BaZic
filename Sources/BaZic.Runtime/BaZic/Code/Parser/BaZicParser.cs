@@ -28,6 +28,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         private readonly List<ParameterDeclaration> _declaredParameterDeclaration = new List<ParameterDeclaration>();
         private readonly List<MethodDeclaration> _declaredMethods = new List<MethodDeclaration>();
         private readonly List<Event> _declaredEvents = new List<Event>();
+        private readonly List<ControlAccessorDeclaration> _controlAccessors = new List<ControlAccessorDeclaration>();
         private readonly List<InvokeMethodExpression> _methodInvocations = new List<InvokeMethodExpression>();
         private readonly List<Exception> _issues = new List<Exception>();
 
@@ -88,6 +89,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
             }
             catch (Exception exception)
             {
+                CoreHelper.ReportException(exception);
                 _issues.Add(exception);
                 return new ParserResult(null, new AggregateException(_issues));
             }
@@ -136,11 +138,27 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                         AddIssue(new BaZicParserException(L.BaZic.Parser.FormattedBadFirstToken(TokenType.StartCode)));
                     }
 
-                    PreviousToken = _tokenStack.Pop();
-                    CurrentToken = _tokenStack.Pop();
-                    NextToken = _tokenStack.Pop();
+                    if (_tokenStack.Count <= 2)
+                    {
+                        if (_parsedXamlRoot == null)
+                        {
+                            program = new BaZicProgram();
+                        }
+                        else
+                        {
+                            var uiProgram = new BaZicUiProgram();
+                            uiProgram.Xaml = xamlCode;
+                            program = uiProgram;
+                        }
+                    }
+                    else
+                    {
+                        PreviousToken = _tokenStack.Pop();
+                        CurrentToken = _tokenStack.Pop();
+                        NextToken = _tokenStack.Pop();
 
-                    program = ParseProgram(xamlCode);
+                        program = ParseProgram(xamlCode);
+                    }
 
                     if (optimize && _issues.OfType<BaZicParserException>().Count(issue => issue.Level == BaZicParserExceptionLevel.Error) == 0)
                     {
@@ -152,6 +170,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 }
                 catch (Exception exception)
                 {
+                    CoreHelper.ReportException(exception);
                     _issues.Add(exception);
                 }
                 finally
@@ -161,6 +180,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     _declaredParameterDeclaration.Clear();
                     _declaredMethods.Clear();
                     _declaredEvents.Clear();
+                    _controlAccessors.Clear();
                     _methodInvocations.Clear();
                     _catchIndicator = 0;
                     _doLoopIndicator = 0;
@@ -338,7 +358,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         {
             foreach (var variable in _declaredVariables[0])
             {
-                if (variable.ReferenceCount == 0)
+                if (!variable.IsControlAccessor && variable.ReferenceCount == 0)
                 {
                     AddIssue(variable.Declaration, BaZicParserExceptionLevel.Warning, L.BaZic.Parser.FormattedVariableNeverUsed(variable.Declaration.Name));
                 }
@@ -386,6 +406,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
             }
             catch (Exception exception)
             {
+                CoreHelper.ReportException(exception);
                 AddIssue(new BaZicParserException(L.BaZic.Parser.FormattedXamlParsingError(exception.Message)));
             }
 
@@ -405,7 +426,6 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         private BaZicProgram ParseProgram(string xamlCode)
         {
             var variables = new List<VariableDeclaration>();
-            var bindings = new List<BindingDeclaration>();
             var methods = new List<MethodDeclaration>();
 
             var statements = ParseStatements(true, TokenType.EndCode);
@@ -418,11 +438,6 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     case VariableDeclaration variable:
                         ValidateGlobalVariableDeclarationDefaultValue(variable.DefaultValue);
                         variables.Add(variable);
-                        break;
-
-                    case BindingDeclaration binding:
-                        ValidateGlobalVariableDeclarationDefaultValue(binding.Variable.DefaultValue);
-                        bindings.Add(binding);
                         break;
 
                     case MethodDeclaration method:
@@ -440,11 +455,11 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 ValidateMethodInvocation(methodInvocation);
             }
 
-            if (bindings.Count > 0 || _declaredEvents.Count > 0 || _parsedXamlRoot != null)
+            if (_parsedXamlRoot != null || _controlAccessors.Count > 0 || _declaredEvents.Count > 0)
             {
                 var uiProgram = new BaZicUiProgram();
                 uiProgram.Xaml = xamlCode;
-                uiProgram.WithUiBindings(bindings.ToArray());
+                uiProgram.WithControlAccessors(_controlAccessors.ToArray());
                 uiProgram.WithUiEvents(_declaredEvents.ToArray());
                 uiProgram.WithVariables(variables.ToArray());
                 uiProgram.WithMethods(methods.ToArray());
@@ -463,13 +478,21 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// Register a variable to the current scope (current block of code).
         /// </summary>
         /// <param name="variableDeclaration">The variable to add.</param>
-        private void AddVariableToScope(VariableDeclaration variableDeclaration)
+        /// <param name="isControlAccessor">Defines whether the variable is a control accessor or not.</param>
+        private void AddVariableToScope(VariableDeclaration variableDeclaration, bool isControlAccessor)
         {
             var identicalVariableName = _declaredVariables.SelectMany(var => var).LastOrDefault(variable => string.Compare(variable.Declaration.Name.Identifier, variableDeclaration.Name.Identifier, StringComparison.Ordinal) == 0); // The name is case sensitive.
 
             if (identicalVariableName != null)
             {
-                AddIssue(variableDeclaration, BaZicParserExceptionLevel.Error, L.BaZic.Parser.FormattedDuplicatedVariable(variableDeclaration.Name, identicalVariableName.Declaration.Line));
+                if (identicalVariableName.IsControlAccessor)
+                {
+                    AddIssue(variableDeclaration, BaZicParserExceptionLevel.Error, L.BaZic.Parser.FormattedDuplicatedControlAccessor(variableDeclaration.Name, identicalVariableName.Declaration.Line));
+                }
+                else
+                {
+                    AddIssue(variableDeclaration, BaZicParserExceptionLevel.Error, L.BaZic.Parser.FormattedDuplicatedVariable(variableDeclaration.Name, identicalVariableName.Declaration.Line));
+                }
             }
 
             var identicalParameterName = _declaredParameterDeclaration.LastOrDefault(variable => string.Compare(variable.Name.Identifier, variableDeclaration.Name.Identifier, StringComparison.Ordinal) == 0); // The name is case sensitive.
@@ -479,7 +502,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 AddIssue(variableDeclaration, BaZicParserExceptionLevel.Error, L.BaZic.Parser.FormattedDuplicatedParameter(variableDeclaration.Name, identicalParameterName.Line));
             }
 
-            _declaredVariables.First().Add(new VariableStatistics(variableDeclaration));
+            _declaredVariables.First().Add(new VariableStatistics(variableDeclaration, isControlAccessor));
         }
 
         /// <summary>
@@ -542,6 +565,36 @@ namespace BaZic.Runtime.BaZic.Code.Parser
             }
 
             _methodInvocations.Add(invokeMethod);
+        }
+
+        /// <summary>
+        /// Retrieves all the logic controls in the user interface and generates a variable declaration that match the control name.
+        /// </summary>
+        /// <returns>Returns a list of <see cref="ControlAccessorDeclaration"/> that must be use in the global scope.</returns>
+        private IEnumerable<ControlAccessorDeclaration> AddControlAccessors()
+        {
+            var controlAccessors = new List<ControlAccessorDeclaration>();
+
+            if (_parsedXamlRoot == null)
+            {
+                return controlAccessors;
+            }
+
+            var action = new Action<FrameworkElement>((control) =>
+            {
+                if (string.IsNullOrWhiteSpace(control.Name))
+                {
+                    return;
+                }
+
+                var controlAccessor = new ControlAccessorDeclaration(control.Name);
+                AddVariableToScope(controlAccessor.Variable, true);
+                controlAccessors.Add(controlAccessor);
+            });
+
+            VisualTreeHelperExtension.ProcessLogicalTree(_parsedXamlRoot, action);
+
+            return controlAccessors;
         }
 
         /// <summary>
@@ -750,6 +803,11 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
             if (assign.LeftExpression is VariableReferenceExpression variableReferenceLeft)
             {
+                if (_controlAccessors.Any(c => string.CompareOrdinal(variableReferenceLeft.Name.Identifier, c.ControlName) == 0))
+                {
+                    AddIssue(variableReferenceLeft, BaZicParserExceptionLevel.Error, L.BaZic.Parser.CannotAssignControlAccessor);
+                }
+
                 if (assign.RightExpression is VariableReferenceExpression variableReferenceRight)
                 {
                     var leftIsArray = ValidateVariableReferenceExpression(variableReferenceLeft);
@@ -823,26 +881,21 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// <summary>
         /// Check that a UI Binding is correct and that the requested control property exists in the XAML.
         /// </summary>
-        /// <param name="binding">The binding to check.</param>
-        private void ValidateUiBinding(BindingDeclaration binding)
+        /// <param name="controlAccessor">The binding to check.</param>
+        private void ValidateControlsAccessors(ControlAccessorDeclaration controlAccessor)
         {
             if (_parsedXamlRoot == null)
             {
-                AddIssue(new BaZicParserException(binding.Line, binding.Column, binding.StartOffset, binding.NodeLength, L.BaZic.Parser.NoXamlBinding));
+                AddIssue(new BaZicParserException(controlAccessor.Line, controlAccessor.Column, controlAccessor.StartOffset, controlAccessor.NodeLength, L.BaZic.Parser.NoXamlBinding));
                 return;
             }
 
-            var control = _parsedXamlRoot.FindName(binding.ControlName) as UIElement;
+            var control = _parsedXamlRoot.FindName(controlAccessor.ControlName) as UIElement;
 
             if (control == null)
             {
-                AddIssue(new BaZicParserException(binding.Line, binding.Column, binding.StartOffset, binding.NodeLength, L.BaZic.Parser.FormattedXamlControlNotFoundBinding(binding.ControlName)));
+                AddIssue(new BaZicParserException(controlAccessor.Line, controlAccessor.Column, controlAccessor.StartOffset, controlAccessor.NodeLength, L.BaZic.Parser.FormattedXamlControlNotFoundBinding(controlAccessor.ControlName)));
                 return;
-            }
-
-            if (!_reflectionHelper.PropertyHasGetterAndSetter(control, binding.ControlPropertyName))
-            {
-                AddIssue(new BaZicParserException(binding.Line, binding.Column, binding.StartOffset, binding.NodeLength, L.BaZic.Parser.FormattedNotAccessibleProperty(binding.Variable.Name, binding.ControlName, binding.ControlPropertyName)));
             }
         }
 

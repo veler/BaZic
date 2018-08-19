@@ -5,9 +5,9 @@ using BaZic.Runtime.Localization;
 namespace BaZic.Runtime.BaZic.Runtime.Memory
 {
     /// <summary>
-    /// Represents a binded variable at runtime.
+    /// Represents a control accessor at runtime.
     /// </summary>
-    internal sealed class Binding : Variable
+    internal sealed class ControlAccessor : Variable
     {
         #region Fields & Constants
 
@@ -24,11 +24,6 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
         internal string ControlName { get; }
 
         /// <summary>
-        /// Gets the name of the control's property.
-        /// </summary>
-        internal string PropertyName { get; }
-
-        /// <summary>
         /// Gets or sets the value of the variable and control's property.
         /// </summary>
         public override object Value
@@ -40,22 +35,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
                     return null;
                 }
 
-                return _baZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
-                {
-                    return _baZicInterpreter.Reflection.GetProperty(_control, PropertyName);
-                }, System.Windows.Threading.DispatcherPriority.Background);
-            }
-            protected set
-            {
-                if (_isDisposing)
-                {
-                    return;
-                }
-
-                _baZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
-                {
-                    _baZicInterpreter.Reflection.SetProperty(_control, PropertyName, value);
-                }, System.Windows.Threading.DispatcherPriority.Background);
+                return _control;
             }
         }
 
@@ -64,21 +44,22 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
         #region Constructors & Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Binding"/> class.
+        /// Initializes a new instance of the <see cref="ControlAccessor"/> class.
         /// </summary>
-        /// <param name="bindingDeclaration">The <see cref="BindingDeclaration"/> used to create the new variable in memory at runtime.</param>
+        /// <param name="controlAccessorDeclaration">The <see cref="ControlAccessorDeclaration"/> used to create the new variable in memory at runtime.</param>
         /// <param name="control">The UI component where the binding must be performed.</param>
         /// <param name="baZicInterpreter">The main BaZic interpreter.</param>
-        internal Binding(BindingDeclaration bindingDeclaration, object control, BaZicInterpreterCore baZicInterpreter)
-            : base(bindingDeclaration.Variable)
+        internal ControlAccessor(ControlAccessorDeclaration controlAccessorDeclaration, object control, BaZicInterpreterCore baZicInterpreter)
+            : base(controlAccessorDeclaration.Variable)
         {
             Requires.NotNull(control, nameof(control));
             Requires.NotNull(baZicInterpreter, nameof(baZicInterpreter));
 
-            ControlName = bindingDeclaration.ControlName;
-            PropertyName = bindingDeclaration.ControlPropertyName;
+            ControlName = controlAccessorDeclaration.ControlName;
             _control = control;
             _baZicInterpreter = baZicInterpreter;
+
+            SetValue(control);
         }
 
         #endregion
@@ -92,7 +73,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Memory
                 return L.BaZic.Runtime.Debugger.ValueInfo.Null;
             }
 
-            return $"{Value} ({ControlName}.{PropertyName} : {Info})";
+            return $"{Value} ({ControlName} : {Info})";
         }
 
         #endregion

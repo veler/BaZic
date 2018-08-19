@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Windows;
 
 namespace BaZic.Core.Logs
@@ -255,7 +256,7 @@ namespace BaZic.Core.Logs
             System.Diagnostics.Debug.WriteLine(fullMessage);
 #endif
 
-            _logsCountSinceLastFlush++;
+            Interlocked.Increment(ref _logsCountSinceLastFlush);
             if (_logsCountSinceLastFlush > Consts.LogsFlushInterval)
             {
                 Flush();

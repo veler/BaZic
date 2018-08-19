@@ -45,25 +45,30 @@
         /// <param name="cultureName">The name of the culture</param>
         private static string GetString(string resourceFilePath, string xpath, string cultureName)
         {
+            cultureName = cultureName.Split('-')[0];
             var assemblyResourceFilePath = $"{resourceFilePath}_{cultureName}.xml";
             XmlDocument resourceDocument;
-            loadedResources.TryGetValue(assemblyResourceFilePath, out resourceDocument);
 
-            if (resourceDocument == null)
+            lock(loadedResources)
             {
-                var currentAssembly = Assembly.GetExecutingAssembly();
-                resourceDocument = new XmlDocument();
+                loadedResources.TryGetValue(assemblyResourceFilePath, out resourceDocument);
 
-                if (!isDesignMode)
+                if (resourceDocument == null)
                 {
-                    resourceDocument.Load(new StreamReader(currentAssembly.GetManifestResourceStream($"{currentAssembly.GetName().Name}.{assemblyResourceFilePath}")));
-                }
-                else
-                {
-                    return xpath;
-                }
+                    var currentAssembly = Assembly.GetExecutingAssembly();
+                    resourceDocument = new XmlDocument();
 
-                loadedResources.Add(assemblyResourceFilePath, resourceDocument);
+                    if (!isDesignMode)
+                    {
+                        resourceDocument.Load(new StreamReader(currentAssembly.GetManifestResourceStream($"{currentAssembly.GetName().Name}.{assemblyResourceFilePath}")));
+                    }
+                    else
+                    {
+                        return xpath;
+                    }
+
+                    loadedResources.Add(assemblyResourceFilePath, resourceDocument);
+                }
             }
 
             var node = resourceDocument.SelectSingleNode(xpath);
@@ -94,12 +99,16 @@
         /// </summary>
         /// <param name="culture">The culture to set.</param>
         /// <param name="refreshUi">Defines whether the UI must be refresh. Put this parameter to false if the change should not affect the current UI. Keeping this parameter to True may affect performances.</param>
-        public static void SetCurrentCulture(CultureInfo culture, bool refreshUi = true)
+        /// <param name="reloadResources">Defines whether all the resources file must be reloaded or not.</param>
+        public static void SetCurrentCulture(CultureInfo culture, bool refreshUi = true, bool reloadResources = true)
         {
             Thread.CurrentThread.CurrentCulture = culture;
             Thread.CurrentThread.CurrentUICulture = culture;
 
-            loadedResources.Clear();
+            if (reloadResources)
+            {
+                loadedResources.Clear();
+            }
 
             if (refreshUi)
             {

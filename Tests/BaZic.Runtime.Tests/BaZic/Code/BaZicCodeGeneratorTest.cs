@@ -54,7 +54,7 @@ END FUNCTION";
         public void BaZicCodeGeneratorUi()
         {
             var program = new BaZicUiProgram()
-                          .WithUiBindings(new BindingDeclaration("Button1", "Content", new VariableDeclaration("Button1_Content")))
+                          .WithControlAccessors(new ControlAccessorDeclaration("Button1"))
                           .WithVariables(
                                 new VariableDeclaration("Foo")
                           ).WithMethods(
@@ -79,8 +79,6 @@ END FUNCTION";
 @"# BaZic code generated automatically
 
 VARIABLE Foo
-
-BIND Button1_Content
 
 EXTERN FUNCTION Main(args[])
     VARIABLE Bar[]
