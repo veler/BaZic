@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.BaZic.Runtime.Debugger
@@ -50,14 +51,14 @@ namespace BaZic.Runtime.BaZic.Runtime.Debugger
         /// </summary>
         internal void StartsExternMethod()
         {
-            _externMethodRunningCount++;
+            Interlocked.Increment(ref _externMethodRunningCount);
         }
         /// <summary>
         /// Notifies that an extern method called by the user at a point stopped.
         /// </summary>
         internal void StopsExternMethod()
         {
-            _externMethodRunningCount--;
+            Interlocked.Decrement(ref _externMethodRunningCount);
         }
 
         /// <summary>

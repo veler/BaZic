@@ -19,6 +19,7 @@ namespace BaZic.Core.Logs
         private static Logger instance;
 
         private readonly StringBuilder _logs = new StringBuilder();
+        private SpinLock _spinLock = new SpinLock();
         private bool _fatalOccured;
         private int _logsCountSinceLastFlush;
 
@@ -248,8 +249,17 @@ namespace BaZic.Core.Logs
                 throw new OperationCanceledException("Unable to log something when the logger did a fatal.");
             }
 
+            bool lockTaken = false;
+            _spinLock.Enter(ref lockTaken);
+
             var fullMessage = $"[{type}] [{callerName}] [{DateTime.Now.ToString("dd'/'MM'/'yyyy HH:mm:ss")}] {message}";
             _logs.AppendLine(fullMessage);
+
+            if (lockTaken)
+            {
+                _spinLock.Exit(false);
+            }
+
             LogAdded?.Invoke(this, new LogAddedEventArgs(fullMessage));
 
 #if DEBUG
