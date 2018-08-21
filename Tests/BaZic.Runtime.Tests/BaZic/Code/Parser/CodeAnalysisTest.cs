@@ -48,7 +48,7 @@ VARIABLE x";
 
             var result = parser.Parse(inputCode);
             var baZicEx = (BaZicParserException)result.Issues.InnerExceptions.First();
-            Assert.AreEqual("A variable or binding 'x' is already declared line 2.", baZicEx.Message);
+            Assert.AreEqual("A variable 'x' is already declared line 2.", baZicEx.Message);
             Assert.AreEqual(8, baZicEx.Line);
             Assert.AreEqual(9, baZicEx.Column);
         }
@@ -67,7 +67,7 @@ END FUNCTION";
 
             var result = parser.Parse(inputCode);
             var baZicEx = (BaZicParserException)result.Issues.InnerExceptions.First();
-            Assert.AreEqual("A variable or binding 'x' is already declared line 2.", baZicEx.Message);
+            Assert.AreEqual("A variable 'x' is already declared line 2.", baZicEx.Message);
             Assert.AreEqual(5, baZicEx.Line);
             Assert.AreEqual(13, baZicEx.Column);
         }
@@ -147,7 +147,7 @@ END FUNCTION";
 
             var result = parser.Parse(inputCode);
             var baZicEx = (BaZicParserException)result.Issues.InnerExceptions.First();
-            Assert.AreEqual("A variable or binding 'x' is already declared line 3.", baZicEx.Message);
+            Assert.AreEqual("A variable 'x' is already declared line 3.", baZicEx.Message);
             Assert.AreEqual(6, baZicEx.Line);
             Assert.AreEqual(21, baZicEx.Column);
         }

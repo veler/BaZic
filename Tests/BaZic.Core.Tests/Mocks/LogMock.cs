@@ -1,11 +1,12 @@
 ﻿using BaZic.Core.Logs;
 using System.Text;
+using System.Threading;
 
 namespace BaZic.Core.Tests.Mocks
 {
     public class LogMock : Logger
     {
-        private StringBuilder _logs;
+        private ThreadLocal<StringBuilder> _logs;
 
         public LogMock()
         {
@@ -13,12 +14,12 @@ namespace BaZic.Core.Tests.Mocks
 
         public override void Persist(StringBuilder logs)
         {
-            _logs.Append(logs);
+            _logs.Value.Append(logs);
         }
 
         public override void SessionStarted()
         {
-            _logs = new StringBuilder();
+            _logs = new ThreadLocal<StringBuilder>(() => new StringBuilder());
         }
 
         public override void SessionStopped()
@@ -32,7 +33,7 @@ namespace BaZic.Core.Tests.Mocks
 
         public StringBuilder GetLogs()
         {
-            return _logs;
+            return _logs.Value;
         }
     }
 }

@@ -213,8 +213,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                             UserInterface?.Dispatcher?.InvokeShutdown();
                         };
 
-                        UserInterface.Show();
                         BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                        UserInterface.Show();
                         Dispatcher.Run();
                     }
                     catch (Exception exception)
