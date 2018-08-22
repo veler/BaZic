@@ -192,9 +192,9 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.DeclaringBindings);
                     }
 
-                    foreach (var binding in _uiProgram.UiBindings)
+                    foreach (var controlAccessor in _uiProgram.UiControlAccessors)
                     {
-                        AddVariable(binding);
+                        AddVariable(controlAccessor);
                     }
 
                     if (BaZicInterpreter.Verbose)
@@ -213,12 +213,13 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                             UserInterface?.Dispatcher?.InvokeShutdown();
                         };
 
-                        UserInterface.Show();
                         BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
+                        UserInterface.Show();
                         Dispatcher.Run();
                     }
                     catch (Exception exception)
                     {
+                        CoreHelper.ReportException(exception);
                         eventException = exception;
                     }
                     finally
@@ -227,7 +228,10 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         {
                             UserInterface.Close();
                         }
-                        catch { }
+                        catch (Exception exception)
+                        {
+                            CoreHelper.ReportException(exception);
+                        }
 
                         foreach (var variable in Variables)
                         {
@@ -251,11 +255,15 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         internal void CloseUserInterface()
         {
-            UIDispatcher?.Invoke(() =>
+            try
             {
-                UserInterface?.Close();
-            }, DispatcherPriority.Send);
-            UIDispatcher = null;
+                UIDispatcher?.Invoke(() =>
+                {
+                    UserInterface?.Close();
+                }, DispatcherPriority.Send);
+                UIDispatcher = null;
+            }
+            catch { }
         }
 
         /// <summary>

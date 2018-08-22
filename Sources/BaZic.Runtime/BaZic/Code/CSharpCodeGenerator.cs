@@ -19,12 +19,14 @@ namespace BaZic.Runtime.BaZic.Code
     {
         #region Fields & Constants
 
+        private List<string> _controlAccessorNames = new List<string>();
         private int _indentSpaceCount;
         private bool _currentMethodIsAsync;
         private bool _currentProgramHasUi;
         private StringBuilder _uiLoadingStatements;
         private IReadOnlyList<MethodDeclaration> _methodDeclarations;
         private Window _userInterface;
+        private bool _requiredRunStatementOnUIThread;
 
         #endregion
 
@@ -116,6 +118,7 @@ namespace BaZic.Runtime.BaZic.Code
                 }
                 catch (Exception exception)
                 {
+                    CoreHelper.ReportException(exception);
                     throw new BaZicParserException(L.BaZic.Parser.FormattedXamlParsingError(exception.Message));
                 }
 
@@ -139,13 +142,13 @@ namespace BaZic.Runtime.BaZic.Code
                     globalVariablesString += Environment.NewLine + Environment.NewLine;
                 }
 
-                var bindings = new List<string>();
-                foreach (var binding in syntaxTree.UiBindings)
+                var controlAccessors = new List<string>();
+                foreach (var controlAccessor in syntaxTree.UiControlAccessors)
                 {
-                    bindings.Add(GenerateBindingDeclaration(binding, indent));
+                    controlAccessors.Add(GenerateControlAccessorDeclaration(controlAccessor, indent));
                 }
 
-                bindingsString = string.Join(Environment.NewLine, bindings);
+                bindingsString = string.Join(Environment.NewLine, controlAccessors);
                 if (!string.IsNullOrWhiteSpace(bindingsString))
                 {
                     bindingsString += Environment.NewLine + Environment.NewLine;
@@ -272,53 +275,73 @@ namespace BaZic.Runtime.BaZic.Code
         /// <returns>A CSharp code</returns>
         private string GenerateStatement(Statement statement)
         {
+            var code = string.Empty;
+
             switch (statement)
             {
                 case CommentStatement comment:
-                    return GenerateCommentStatement(comment);
+                    code = GenerateCommentStatement(comment);
+                    break;
 
                 case LabelDeclaration label:
-                    return GenerateLabelDeclaration(label);
+                    code = GenerateLabelDeclaration(label);
+                    break;
 
                 case GoToLabelStatement gotoLabel:
-                    return GenerateGoToLabelStatement(gotoLabel);
+                    code = GenerateGoToLabelStatement(gotoLabel);
+                    break;
 
                 case LabelConditionStatement labelCondition:
-                    return GenerateLabelConditionStatement(labelCondition);
+                    code = GenerateLabelConditionStatement(labelCondition);
+                    break;
 
                 case AssignStatement assign:
-                    return GenerateAssignStatement(assign);
+                    code = GenerateAssignStatement(assign);
+                    break;
 
                 case ConditionStatement condition:
-                    return GenerateConditionStatement(condition);
+                    code = GenerateConditionStatement(condition);
+                    break;
 
                 case IterationStatement iteration:
-                    return GenerateIterationStatement(iteration);
+                    code = GenerateIterationStatement(iteration);
+                    break;
 
                 case TryCatchStatement tryCatch:
-                    return GenerateTryCatchStatement(tryCatch);
+                    code = GenerateTryCatchStatement(tryCatch);
+                    break;
 
                 case VariableDeclaration variable:
-                    return GenerateVariableDeclaration(variable, false, false);
+                    code = GenerateVariableDeclaration(variable, false, false);
+                    break;
 
                 case ReturnStatement @return:
-                    return GenerateReturnStatement(@return);
+                    code = GenerateReturnStatement(@return);
+                    break;
 
                 case ThrowStatement @throw:
-                    return GenerateThrowStatement(@throw);
+                    code = GenerateThrowStatement(@throw);
+                    break;
 
                 case BreakStatement @break:
-                    return GenerateBreakStatement();
+                    code = GenerateBreakStatement();
+                    break;
 
                 case BreakpointStatement breakpoint:
-                    return GenerateCommentStatement(new CommentStatement("Ignored breakpoint."));
+                    code = GenerateCommentStatement(new CommentStatement("Ignored breakpoint."));
+                    break;
 
                 case ExpressionStatement expression:
-                    return GenerateExpressionStatement(expression);
+                    code = GenerateExpressionStatement(expression);
+                    break;
 
                 default:
                     throw new NotImplementedException(L.BaZic.BaZicCodeGenerator.FormattedNoGeneratorForStatementImplemented(statement.GetType().FullName));
             }
+
+            _requiredRunStatementOnUIThread = false;
+
+            return code;
         }
 
         /// <summary>
@@ -373,6 +396,11 @@ namespace BaZic.Runtime.BaZic.Code
         private string GenerateVariableReferenceExpression(VariableReferenceExpression expression)
         {
             Requires.NotNull(expression.Name, nameof(expression.Name));
+
+            if (_controlAccessorNames.Contains(expression.Name.Identifier))
+            {
+                _requiredRunStatementOnUIThread = true;
+            }
 
             return expression.Name.ToString();
         }
@@ -698,6 +726,12 @@ namespace BaZic.Runtime.BaZic.Code
             Requires.NotNull(statement.Condition, nameof(statement.Condition));
 
             var condition = GenerateExpression(statement.Condition);
+
+            if (_requiredRunStatementOnUIThread)
+            {
+                return $"ProgramHelper.UIDispatcher.Invoke(() => {{ if ({condition}) goto {statement.LabelName}; }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+            
             return $"if ({condition}) goto {statement.LabelName};";
         }
 
@@ -714,6 +748,11 @@ namespace BaZic.Runtime.BaZic.Code
             var leftExpression = GenerateExpression(statement.LeftExpression);
             var rightExpression = GenerateExpression(statement.RightExpression);
 
+            if (_requiredRunStatementOnUIThread)
+            {
+                return $"ProgramHelper.UIDispatcher.Invoke(() => {{ {leftExpression} = {rightExpression}; }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
             return $"{leftExpression} = {rightExpression};";
         }
 
@@ -728,6 +767,8 @@ namespace BaZic.Runtime.BaZic.Code
 
             var condition = GenerateExpression(statement.Condition);
 
+            var requiresUiThread = _requiredRunStatementOnUIThread;
+
             var indent = IncreaseIndent();
 
             var trueStatements = new List<string>();
@@ -738,6 +779,7 @@ namespace BaZic.Runtime.BaZic.Code
 
             var trueStatementsString = string.Join(Environment.NewLine, trueStatements);
 
+            var code = string.Empty;
             if (statement.FalseStatements.Count > 0)
             {
                 var falseStatements = new List<string>();
@@ -750,7 +792,7 @@ namespace BaZic.Runtime.BaZic.Code
 
                 indent = DecreaseIndent();
 
-                return $"if ({condition})" + Environment.NewLine +
+                code = $"if ({condition})" + Environment.NewLine +
                        $"{indent}{{" + Environment.NewLine +
                        $"{trueStatementsString}" + Environment.NewLine +
                        $"{indent}}}" + Environment.NewLine +
@@ -759,13 +801,22 @@ namespace BaZic.Runtime.BaZic.Code
                        $"{falseStatementsString}" + Environment.NewLine +
                        $"{indent}}}";
             }
+            else
+            {
+                indent = DecreaseIndent();
 
-            indent = DecreaseIndent();
+                code = $"if ({condition})" + Environment.NewLine +
+                       $"{indent}{{" + Environment.NewLine +
+                       $"{trueStatementsString}" + Environment.NewLine +
+                       $"{indent}}}";
+            }
 
-            return $"if ({condition})" + Environment.NewLine +
-                   $"{indent}{{" + Environment.NewLine +
-                   $"{trueStatementsString}" + Environment.NewLine +
-                   $"{indent}}}";
+            if (requiresUiThread)
+            {
+                return $"ProgramHelper.UIDispatcher.Invoke(() => {{ {code} }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
+            return code;
         }
 
         /// <summary>
@@ -779,6 +830,8 @@ namespace BaZic.Runtime.BaZic.Code
 
             var condition = GenerateExpression(statement.Condition);
 
+            var requiresUiThread = _requiredRunStatementOnUIThread;
+
             var indent = IncreaseIndent();
 
             var statements = new List<string>();
@@ -791,9 +844,10 @@ namespace BaZic.Runtime.BaZic.Code
 
             indent = DecreaseIndent();
 
+            var code = string.Empty;
             if (statement.ConditionAfterBody)
             {
-                return $"do" + Environment.NewLine +
+                code = $"do" + Environment.NewLine +
                        $"{indent}{{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
                        $"{indent}}}" + Environment.NewLine +
@@ -801,11 +855,18 @@ namespace BaZic.Runtime.BaZic.Code
             }
             else
             {
-                return $"while ({condition})" + Environment.NewLine +
+                code = $"while ({condition})" + Environment.NewLine +
                        $"{indent}{{" + Environment.NewLine +
                        $"{statementsString}" + Environment.NewLine +
                        $"{indent}}}";
             }
+
+            if (requiresUiThread)
+            {
+                return $"ProgramHelper.UIDispatcher.Invoke(() => {{ {code} }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
+            return code;
         }
 
         /// <summary>
@@ -881,40 +942,33 @@ namespace BaZic.Runtime.BaZic.Code
             }
 
             var defaultValue = GenerateExpression(statement.DefaultValue);
+
+            if (_requiredRunStatementOnUIThread)
+            {
+                return $"{accessor}dynamic {statement.Name} = ProgramHelper.UIDispatcher.Invoke(() => {{ return {defaultValue}; }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
             return $"{accessor}dynamic {statement.Name} = {defaultValue};";
         }
 
         /// <summary>
-        /// Generates the code for a <see cref="BindingDeclaration"/>.
+        /// Generates the code for a <see cref="ControlAccessorDeclaration"/>.
         /// </summary>
         /// <param name="statement">The statement</param>
         /// <param name="indent">The indentation</param>
         /// <returns>A CSharp code</returns>
-        private string GenerateBindingDeclaration(BindingDeclaration statement, string indent)
+        private string GenerateControlAccessorDeclaration(ControlAccessorDeclaration statement, string indent)
         {
-            var arrayMarkup = statement.Variable.IsArray ? "[]" : string.Empty;
+            _controlAccessorNames.Add(statement.ControlName);
 
-            if (statement.Variable.DefaultValue != null)
-            {
-                var defaultValue = GenerateExpression(statement.Variable.DefaultValue);
-                _uiLoadingStatements.AppendLine($"            {statement.ControlName}_{statement.ControlPropertyName} = {defaultValue};");
-            }
-
-            return $@"{indent}private static dynamic {statement.ControlName}_{statement.ControlPropertyName}
+            return $@"{indent}private static dynamic {statement.ControlName}
 {indent}{{ 
 {indent}    get {{
-{indent}        dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {{
-{indent}            return ProgramHelper.Instance.GetControl(""{statement.ControlName}"")?.{statement.ControlPropertyName};
-{indent}        }}, System.Windows.Threading.DispatcherPriority.Background);
+{indent}        dynamic result = ProgramHelper.Instance.GetControl(nameof({statement.ControlName}));
 {indent}        return result;
 {indent}    }}
-{indent}    set
-{indent}    {{
-{indent}        ProgramHelper.UIDispatcher.Invoke(() => {{
-{indent}            ProgramHelper.Instance.GetControl(""{statement.ControlName}"").{statement.ControlPropertyName} = value;
-{indent}        }}, System.Windows.Threading.DispatcherPriority.Background);
-{indent}    }}
-{indent}}}";
+{indent}}}
+{indent}";
         }
 
         /// <summary>
@@ -924,7 +978,14 @@ namespace BaZic.Runtime.BaZic.Code
         /// <returns>A CSharp code</returns>
         private string GenerateReturnStatement(ReturnStatement statement)
         {
-            return $"return {GenerateExpression(statement.Expression)};";
+            var code = $"return {GenerateExpression(statement.Expression)};";
+
+            if (_requiredRunStatementOnUIThread)
+            {
+                code = $"return ProgramHelper.UIDispatcher.Invoke(() => {{ {code} }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
+            return code;
         }
 
         /// <summary>
@@ -934,7 +995,14 @@ namespace BaZic.Runtime.BaZic.Code
         /// <returns>A CSharp code</returns>
         private string GenerateThrowStatement(ThrowStatement statement)
         {
-            return $"throw {GenerateExpression(statement.Expression)};";
+            var code = $"throw {GenerateExpression(statement.Expression)};";
+
+            if (_requiredRunStatementOnUIThread)
+            {
+                code = $"ProgramHelper.UIDispatcher.Invoke(() => {{ {code} }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
+            return code;
         }
 
         /// <summary>
@@ -953,7 +1021,14 @@ namespace BaZic.Runtime.BaZic.Code
         /// <returns>A CSharp code</returns>
         private string GenerateExpressionStatement(ExpressionStatement statement)
         {
-            return GenerateExpression(statement.Expression) + ";";
+            var code = GenerateExpression(statement.Expression) + ";";
+
+            if (_requiredRunStatementOnUIThread)
+            {
+                code = $"ProgramHelper.UIDispatcher.Invoke(() => {{ {code} }}, System.Windows.Threading.DispatcherPriority.Background);";
+            }
+
+            return code;
         }
 
         /// <summary>
@@ -1008,11 +1083,9 @@ namespace BaZic.Runtime.BaZic.Code
                            $"{oldIdent}{{" + Environment.NewLine +
                            $"{indent}try {{" + Environment.NewLine +
                            $"{statementsString}" + Environment.NewLine +
-                           $"{indent}//return ProgramHelper.RunOnStaThread(() => {{" + Environment.NewLine +
                            $"{indent}ProgramHelper.Instance.LoadWindow();" + Environment.NewLine +
                            $"{_uiLoadingStatements}" +
                            $"{indent}return ProgramHelper.Instance.ShowWindow();" + Environment.NewLine +
-                           $"{indent}//}});" + Environment.NewLine +
                            $"{indent}}} finally {{" + Environment.NewLine +
                            $"{indent}ProgramHelper.WaitAllUnwaitedThreads();" + Environment.NewLine +
                            $"{indent}}}" + Environment.NewLine +

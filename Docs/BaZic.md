@@ -147,7 +147,7 @@ Note : Breakpoints are ignored when the BaZic code is compiled.
 ### Variable or binding declaration
 
 ```
-('VARIABLE' | 'BIND') Identifier '[]'? ('=' Expression)?
+'VARIABLE' Identifier '[]'? ('=' Expression)?
 ```
 
 ## Expressions
@@ -496,14 +496,15 @@ The `XAML code`, that provides a representation of the user interface
 
 ### Explanations
 
-#### Understanding the BIND syntax
+#### Understanding the control accessors
 
-In `XAML`, controls such as `Button` or `TextBox` have properties.
-A `TextBox` has a property called `Text` that is designed to gets or sets the text typed by the user.
+In `XAML`, controls such as `Button` or `TextBox` can have a name, thanks to the `Name` property.
 
-With the syntax `BIND`, we can create a global variable that will automatically get or set the property of the defined control. The name of the variable is used to identify which control and property must be binded.
-Therefore, a `BIND` name must always have the following syntax : `ControlNameInTheXaml_PropertyName`.
-The default value of the `BIND` statement will be the default value of the property when the user interface is loading.
+When a BaZic program in interpreted or compiled, a global read-only variable is declared for each control using the control's name. Those variables are not assignable, but can be use to access a control property or method.
+
+##### Remarks
+
+It is forbidden to use a control accessor in the Main method.
 
 #### Understanding the EVENT FUNCTION syntax
 

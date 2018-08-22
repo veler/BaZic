@@ -173,7 +173,6 @@
     <Compile Include="BaZic\Code\AbstractSyntaxTree\BaZicUiProgram.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\BinaryOperatorExpression.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\BinaryOperatorType.cs" />
-    <Compile Include="BaZic\Code\AbstractSyntaxTree\BindingDeclaration.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\BreakpointStatement.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\BreakStatement.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\ClassReferenceExpression.cs" />
@@ -204,6 +203,7 @@
     <Compile Include="BaZic\Code\AbstractSyntaxTree\Statement.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\ThrowStatement.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\TryCatchStatement.cs" />
+    <Compile Include="BaZic\Code\AbstractSyntaxTree\ControlAccessorDeclaration.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\VariableDeclaration.cs" />
     <Compile Include="BaZic\Code\AbstractSyntaxTree\VariableReferenceExpression.cs" />
     <Compile Include="BaZic\Code\BaZicCodeGenerator.cs" />
@@ -232,6 +232,7 @@
     <Compile Include="BaZic\Code\Parser\VariableStatistics.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreter.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterCore.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreterMiddleware.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterState.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangeEventArgs.cs" />
     <Compile Include="BaZic\Runtime\CompiledProgramRunner.cs" />
@@ -289,7 +290,7 @@
     <Compile Include="BaZic\Runtime\Interpreter\Statement\ThrowInterpreter.cs" />
     <Compile Include="BaZic\Runtime\Interpreter\Statement\TryCatchInterpreter.cs" />
     <Compile Include="BaZic\Runtime\Interpreter\Statement\VariableDeclarationInterpreter.cs" />
-    <Compile Include="BaZic\Runtime\Memory\Binding.cs" />
+    <Compile Include="BaZic\Runtime\Memory\ControlAccessor.cs" />
     <Compile Include="BaZic\Runtime\Memory\Variable.cs" />
     <Content Include="Properties\AssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

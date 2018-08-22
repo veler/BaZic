@@ -2,6 +2,7 @@
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using BaZic.Runtime.Localization;
 using System;
+using System.Windows;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
 {
@@ -50,6 +51,14 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
             if (Expression.TargetObject is ClassReferenceExpression && targetObjectValue is Type)
             {
                 return BaZicInterpreter.Reflection.GetStaticPropertyOrEnum((Type)targetObjectValue, Expression.PropertyName.Identifier);
+            }
+
+            if (targetObjectValue is FrameworkElement)
+            {
+                return BaZicInterpreter.ProgramInterpreter.UIDispatcher.Invoke(() =>
+                {
+                    return BaZicInterpreter.Reflection.GetProperty(targetObjectValue, Expression.PropertyName.Identifier);
+                }, System.Windows.Threading.DispatcherPriority.Background);
             }
 
             return BaZicInterpreter.Reflection.GetProperty(targetObjectValue, Expression.PropertyName.Identifier);

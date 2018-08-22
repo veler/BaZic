@@ -76,25 +76,6 @@ namespace BaZicProgramReleaseMode
         }
 
         /// <summary>
-        /// Runs an action on STA thread.
-        /// </summary>
-        /// <param name="func">The function to run.</param>
-        /// <param name="isBackground">Defines whether the thread is a background thread.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
-        {
-            dynamic result = null;
-            var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
-            {
-                result = func();
-            }));
-            thread.SetApartmentState(System.Threading.ApartmentState.STA);
-            thread.IsBackground = isBackground;
-            thread.Start();
-            thread.Join();
-            return result;
-        }
-
-        /// <summary>
         /// Wait for all the unwaited tasks that have been detected during the program execution.
         /// </summary>
         internal static async void WaitAllUnwaitedThreads()
@@ -144,7 +125,19 @@ namespace BaZicProgramReleaseMode
         internal static dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
         {
             var type = (System.Type)targetObject.GetType();
-            var result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+            object result = null;
+
+            if (targetObject is System.Windows.FrameworkElement)
+            {
+                ProgramHelper.UIDispatcher.Invoke(() =>
+                {
+                    result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+            else
+            {
+                result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+            }
 
             return AddUnwaitedThreadIfRequired(result);
         }
@@ -172,8 +165,9 @@ namespace BaZicProgramReleaseMode
         /// <returns>The added task.</returns>
         private static dynamic AddUnwaitedThreadIfRequired(dynamic result)
         {
-            if (result is System.Threading.Tasks.Task task)
+            if (result != null && result is System.Threading.Tasks.Task)
             {
+                var task = (System.Threading.Tasks.Task)result;
                 lock (_unwaitedMethodInvocation)
                 {
                     var taskType = task.GetType();

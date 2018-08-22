@@ -21,11 +21,23 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
             Localization.LocalizationHelper.SetCurrentCulture(new System.Globalization.CultureInfo("en"));
 
             var results = new List<string>();
-            results.Add(await RunDebug(inputBaZicCode, xamlCode, args));
-            results.Add(await RunDebugOptimized(inputBaZicCode, xamlCode, args));
-            results.Add(await RunDebugVerbose(inputBaZicCode, xamlCode, args));
-            results.Add(await RunDebugOptimizedVerbose(inputBaZicCode, xamlCode, args));
-            results.Add(await RunRelease(inputBaZicCode, xamlCode, args));
+
+            var tasks = new Task[]
+            {
+                RunDebug(results, inputBaZicCode, xamlCode, args),
+                RunDebugOptimized(results, inputBaZicCode, xamlCode, args),
+                RunRelease(results, inputBaZicCode, xamlCode, args)
+            };
+
+            await Task.WhenAll(tasks);
+
+            if (results.Count == 0)
+            {
+                Assert.Fail();
+            }
+
+            await RunDebugVerbose(results, inputBaZicCode, xamlCode, args);
+            await RunDebugOptimizedVerbose(results, inputBaZicCode, xamlCode, args);
 
             foreach (var item in results)
             {
@@ -33,7 +45,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
             }
         }
 
-        internal static async Task<string> RunDebug(string inputBaZicCode, string xamlCode, params object[] args)
+        internal static async Task RunDebug(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
             using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, false))
             {
@@ -45,11 +57,11 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
                     throw interpreter.Error.Exception;
                 }
 
-                return interpreter.ProgramResult?.ToString();
+                resultReceiver.Add(interpreter.ProgramResult?.ToString());
             }
         }
 
-        internal static async Task<string> RunDebugOptimized(string inputBaZicCode, string xamlCode, params object[] args)
+        internal static async Task RunDebugOptimized(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
             using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, true))
             {
@@ -61,11 +73,11 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
                     throw interpreter.Error.Exception;
                 }
 
-                return interpreter.ProgramResult?.ToString();
+                resultReceiver.Add(interpreter.ProgramResult?.ToString());
             }
         }
 
-        internal static async Task<string> RunDebugVerbose(string inputBaZicCode, string xamlCode, params object[] args)
+        internal static async Task RunDebugVerbose(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
             using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, false))
             {
@@ -77,11 +89,11 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
                     throw interpreter.Error.Exception;
                 }
 
-                return interpreter.ProgramResult?.ToString();
+                resultReceiver.Add(interpreter.ProgramResult?.ToString());
             }
         }
 
-        internal static async Task<string> RunDebugOptimizedVerbose(string inputBaZicCode, string xamlCode, params object[] args)
+        internal static async Task RunDebugOptimizedVerbose(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
             using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, true))
             {
@@ -93,11 +105,11 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
                     throw interpreter.Error.Exception;
                 }
 
-                return interpreter.ProgramResult?.ToString();
+                resultReceiver.Add(interpreter.ProgramResult?.ToString());
             }
         }
 
-        internal static async Task<string> RunRelease(string inputBaZicCode, string xamlCode, params object[] args)
+        internal static async Task RunRelease(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
             using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, false))
             {
@@ -109,7 +121,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
                     throw interpreter.Error.Exception;
                 }
 
-                return interpreter.ProgramResult?.ToString();
+                resultReceiver.Add(interpreter.ProgramResult?.ToString());
             }
         }
     }

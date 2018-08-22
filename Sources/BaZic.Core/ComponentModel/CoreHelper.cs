@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace BaZic.Core.ComponentModel
@@ -18,6 +19,17 @@ namespace BaZic.Core.ComponentModel
         public static bool IsValidIdentifier(string identifier)
         {
             return !String.IsNullOrWhiteSpace(identifier) && (char.IsLetter(identifier[0]) || identifier[0] == '_') && identifier.All(ch => char.IsLetterOrDigit(ch) || ch == '_');
+        }
+
+        /// <summary>
+        /// Log in the Debug console the specified exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        public static void ReportException(Exception exception)
+        {
+#if DEBUG
+            Debug.WriteLine($"EXCEPTION : {exception.Message}{Environment.NewLine}Stack Trace : {exception.StackTrace}");
+#endif
         }
 
         #endregion

@@ -82,8 +82,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         public BaZicInterpreter(string inputCode, string xamlCode, bool optimize = false)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_assemblySandbox, inputCode, xamlCode, optimize);
-            Initialize();
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(new BaZicInterpreterMiddleware(this), _assemblySandbox, inputCode, xamlCode, optimize);
         }
 
         /// <summary>
@@ -93,8 +92,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         public BaZicInterpreter(BaZicProgram program)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(_assemblySandbox, program);
-            Initialize();
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(new BaZicInterpreterMiddleware(this), _assemblySandbox, program);
         }
 
         /// <summary>
@@ -246,11 +244,12 @@ namespace BaZic.Runtime.BaZic.Runtime
         }
 
         /// <summary>
-        /// Initializes the state of the interpreter.
+        /// Raises the <see cref="StateChanged"/> event.
         /// </summary>
-        private void Initialize()
+        /// <param name="log"></param>
+        internal void SendLog(BaZicInterpreterStateChangeEventArgs log)
         {
-            _core.StateChanged += BaZicInterpreterCore_StateChanged;
+            StateChanged?.Invoke(this, log);
         }
 
         /// <summary>
@@ -278,15 +277,6 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
 
             IsDisposed = true;
-        }
-
-        #endregion
-
-        #region Handled Methods
-
-        private void BaZicInterpreterCore_StateChanged(object sender, BaZicInterpreterStateChangeEventArgs e)
-        {
-            StateChanged?.Invoke(this, e);
         }
 
         #endregion

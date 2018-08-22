@@ -143,25 +143,6 @@ namespace BaZicProgramReleaseMode
         }
 
         /// <summary>
-        /// Runs an action on STA thread.
-        /// </summary>
-        /// <param name=""func"">The function to run.</param>
-        /// <param name=""isBackground"">Defines whether the thread is a background thread.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
-        {
-            dynamic result = null;
-            var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
-            {
-                result = func();
-            }));
-            thread.SetApartmentState(System.Threading.ApartmentState.STA);
-            thread.IsBackground = isBackground;
-            thread.Start();
-            thread.Join();
-            return result;
-        }
-
-        /// <summary>
         /// Wait for all the unwaited tasks that have been detected during the program execution.
         /// </summary>
         internal static async void WaitAllUnwaitedThreads()
@@ -211,7 +192,19 @@ namespace BaZicProgramReleaseMode
         internal static dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
         {
             var type = (System.Type)targetObject.GetType();
-            var result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+            object result = null;
+
+            if (targetObject is System.Windows.FrameworkElement)
+            {
+                ProgramHelper.UIDispatcher.Invoke(() =>
+                {
+                    result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+            else
+            {
+                result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+            }
 
             return AddUnwaitedThreadIfRequired(result);
         }
@@ -239,8 +232,9 @@ namespace BaZicProgramReleaseMode
         /// <returns>The added task.</returns>
         private static dynamic AddUnwaitedThreadIfRequired(dynamic result)
         {
-            if (result is System.Threading.Tasks.Task task)
+            if (result != null && result is System.Threading.Tasks.Task)
             {
+                var task = (System.Threading.Tasks.Task)result;
                 lock (_unwaitedMethodInvocation)
                 {
                     var taskType = task.GetType();
@@ -272,21 +266,24 @@ namespace BaZicProgramReleaseMode
         {
             var inputCodeUi =
 @"
-BIND ListBox1_ItemsSource[] = NEW [""Value 1"", ""Value 2""]
-BIND TextBox1_Text = ""Value to add""
 VARIABLE var1
 
 EXTERN FUNCTION Main(args[])
 END FUNCTION
 
+EVENT FUNCTION Window1_Loaded()
+    ListBox1.ItemsSource = NEW [""Value 1"", ""Value 2""]
+    TextBox1.Text = ""Value to add""
+END FUNCTION
+
 EVENT FUNCTION Button1_Click()
-    ListBox1_ItemsSource.Add(TextBox1_Text)
+    ListBox1.ItemsSource.Add(TextBox1_Text)
 END FUNCTION
 
 # The XAML will be provided separatly";
 
             var xamlCode = @"
-<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"">
     <StackPanel>
         <TextBox Name=""TextBox1""/>
         <Button Name=""Button1"" Content=""Add a value""/>
@@ -308,45 +305,54 @@ namespace BaZicProgramReleaseMode
     {
         private static dynamic var1 = null;
 
-        private static dynamic ListBox1_ItemsSource
+        private static dynamic Window1
         { 
             get {
-                dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {
-                    return ProgramHelper.Instance.GetControl(""ListBox1"")?.ItemsSource;
-                }, System.Windows.Threading.DispatcherPriority.Background);
+                dynamic result = ProgramHelper.Instance.GetControl(nameof(Window1));
                 return result;
             }
-            set
-            {
-                ProgramHelper.UIDispatcher.Invoke(() => {
-                    ProgramHelper.Instance.GetControl(""ListBox1"").ItemsSource = value;
-                }, System.Windows.Threading.DispatcherPriority.Background);
-            }
         }
-        private static dynamic TextBox1_Text
+        
+        private static dynamic TextBox1
         { 
             get {
-                dynamic result = ProgramHelper.UIDispatcher.Invoke(() => {
-                    return ProgramHelper.Instance.GetControl(""TextBox1"")?.Text;
-                }, System.Windows.Threading.DispatcherPriority.Background);
+                dynamic result = ProgramHelper.Instance.GetControl(nameof(TextBox1));
                 return result;
             }
-            set
-            {
-                ProgramHelper.UIDispatcher.Invoke(() => {
-                    ProgramHelper.Instance.GetControl(""TextBox1"").Text = value;
-                }, System.Windows.Threading.DispatcherPriority.Background);
+        }
+        
+        private static dynamic Button1
+        { 
+            get {
+                dynamic result = ProgramHelper.Instance.GetControl(nameof(Button1));
+                return result;
             }
         }
+        
+        private static dynamic ListBox1
+        { 
+            get {
+                dynamic result = ProgramHelper.Instance.GetControl(nameof(ListBox1));
+                return result;
+            }
+        }
+        
 
         static Program()
         {
             ProgramHelper.CreateNewInstance();
         }
 
+        internal static dynamic Window1_Loaded()
+        {
+            ProgramHelper.UIDispatcher.Invoke(() => { ListBox1.ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" }; }, System.Windows.Threading.DispatcherPriority.Background);
+            ProgramHelper.UIDispatcher.Invoke(() => { TextBox1.Text = ""Value to add""; }, System.Windows.Threading.DispatcherPriority.Background);
+            return null;
+        }
+
         internal static dynamic Button1_Click()
         {
-            ProgramHelper.AddUnwaitedThreadIfRequired(ListBox1_ItemsSource, ""Add"", TextBox1_Text);
+            ProgramHelper.UIDispatcher.Invoke(() => { ProgramHelper.AddUnwaitedThreadIfRequired(ListBox1.ItemsSource, ""Add""); }, System.Windows.Threading.DispatcherPriority.Background);
             return null;
         }
 
@@ -354,13 +360,10 @@ namespace BaZicProgramReleaseMode
         {
             try {
 
-            //return ProgramHelper.RunOnStaThread(() => {
             ProgramHelper.Instance.LoadWindow();
-            ListBox1_ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" };
-            TextBox1_Text = ""Value to add"";
+            ((System.Windows.Window)ProgramHelper.Instance.GetControl(""Window1"")).Loaded += (sender, e) => { Window1_Loaded(); };
             ((System.Windows.Controls.Button)ProgramHelper.Instance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
             return ProgramHelper.Instance.ShowWindow();
-            //});
             } finally {
             ProgramHelper.WaitAllUnwaitedThreads();
             }
@@ -447,25 +450,6 @@ namespace BaZicProgramReleaseMode
         }
 
         /// <summary>
-        /// Runs an action on STA thread.
-        /// </summary>
-        /// <param name=""func"">The function to run.</param>
-        /// <param name=""isBackground"">Defines whether the thread is a background thread.</param>
-        internal static dynamic RunOnStaThread(System.Func<dynamic> func, bool isBackground = false)
-        {
-            dynamic result = null;
-            var thread = new System.Threading.Thread(new System.Threading.ThreadStart(() =>
-            {
-                result = func();
-            }));
-            thread.SetApartmentState(System.Threading.ApartmentState.STA);
-            thread.IsBackground = isBackground;
-            thread.Start();
-            thread.Join();
-            return result;
-        }
-
-        /// <summary>
         /// Wait for all the unwaited tasks that have been detected during the program execution.
         /// </summary>
         internal static async void WaitAllUnwaitedThreads()
@@ -515,7 +499,19 @@ namespace BaZicProgramReleaseMode
         internal static dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
         {
             var type = (System.Type)targetObject.GetType();
-            var result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+            object result = null;
+
+            if (targetObject is System.Windows.FrameworkElement)
+            {
+                ProgramHelper.UIDispatcher.Invoke(() =>
+                {
+                    result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
+            else
+            {
+                result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
+            }
 
             return AddUnwaitedThreadIfRequired(result);
         }
@@ -543,8 +539,9 @@ namespace BaZicProgramReleaseMode
         /// <returns>The added task.</returns>
         private static dynamic AddUnwaitedThreadIfRequired(dynamic result)
         {
-            if (result is System.Threading.Tasks.Task task)
+            if (result != null && result is System.Threading.Tasks.Task)
             {
+                var task = (System.Threading.Tasks.Task)result;
                 lock (_unwaitedMethodInvocation)
                 {
                     var taskType = task.GetType();
@@ -581,7 +578,7 @@ namespace BaZicProgramReleaseMode
 
         private System.Windows.Window _userInterface;
 
-        private string _xamlCode = ""\r\n<Window xmlns=\""http://schemas.microsoft.com/winfx/2006/xaml/presentation\"">\r\n    <StackPanel>\r\n        <TextBox Name=\""TextBox1\""/>\r\n        <Button Name=\""Button1\"" Content=\""Add a value\""/>\r\n        <ListBox Name=\""ListBox1\""/>\r\n    </StackPanel>\r\n</Window>"";
+        private string _xamlCode = ""\r\n<Window xmlns=\""http://schemas.microsoft.com/winfx/2006/xaml/presentation\"" Name=\""Window1\"">\r\n    <StackPanel>\r\n        <TextBox Name=\""TextBox1\""/>\r\n        <Button Name=\""Button1\"" Content=\""Add a value\""/>\r\n        <ListBox Name=\""ListBox1\""/>\r\n    </StackPanel>\r\n</Window>"";
 
         #endregion
 

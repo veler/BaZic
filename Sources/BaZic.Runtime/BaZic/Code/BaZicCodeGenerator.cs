@@ -81,18 +81,6 @@ namespace BaZic.Runtime.BaZic.Code
                 globalVariablesString += Environment.NewLine + Environment.NewLine;
             }
 
-            var bindings = new List<string>();
-            foreach (var binding in syntaxTree.UiBindings)
-            {
-                bindings.Add(GenerateBindingDeclaration(binding));
-            }
-
-            var bindingsString = string.Join(Environment.NewLine, bindings);
-            if (!string.IsNullOrWhiteSpace(bindingsString))
-            {
-                bindingsString += Environment.NewLine + Environment.NewLine;
-            }
-
             var methods = new List<string>();
             foreach (var method in syntaxTree.Methods)
             {
@@ -103,7 +91,6 @@ namespace BaZic.Runtime.BaZic.Code
 
             return $"# BaZic code generated automatically" + Environment.NewLine + Environment.NewLine +
                    $"{globalVariablesString}" +
-                   $"{bindingsString}" +
                    $"{methodsString}";
         }
 
@@ -741,24 +728,6 @@ namespace BaZic.Runtime.BaZic.Code
 
             var defaultValue = GenerateExpression(statement.DefaultValue);
             return $"VARIABLE {statement.Name}{arrayMarkup} = {defaultValue}";
-        }
-
-        /// <summary>
-        /// Generates the code for a <see cref="BindingDeclaration"/>.
-        /// </summary>
-        /// <param name="statement">The statement</param>
-        /// <returns>A BaZic code</returns>
-        private string GenerateBindingDeclaration(BindingDeclaration statement)
-        {
-            var arrayMarkup = statement.Variable.IsArray ? "[]" : string.Empty;
-
-            if (statement.Variable.DefaultValue == null)
-            {
-                return $"BIND {statement.ControlName}_{statement.ControlPropertyName}{arrayMarkup}";
-            }
-
-            var defaultValue = GenerateExpression(statement.Variable.DefaultValue);
-            return $"BIND {statement.ControlName}_{statement.ControlPropertyName}{arrayMarkup} = {defaultValue}";
         }
 
         /// <summary>

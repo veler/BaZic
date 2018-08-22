@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Windows;
 
 namespace BaZic.Core.Logs
@@ -17,7 +18,7 @@ namespace BaZic.Core.Logs
 
         private static Logger instance;
 
-        private readonly StringBuilder _logs = new StringBuilder();
+        private readonly ThreadLocal<StringBuilder> _logs = new ThreadLocal<StringBuilder>(() => new StringBuilder());
         private bool _fatalOccured;
         private int _logsCountSinceLastFlush;
 
@@ -200,8 +201,8 @@ namespace BaZic.Core.Logs
         /// </summary>
         internal void Flush()
         {
-            Persist(_logs);
-            _logs.Clear();
+            Persist(_logs.Value);
+            _logs.Value.Clear();
             _logsCountSinceLastFlush = 0;
         }
 
@@ -248,14 +249,15 @@ namespace BaZic.Core.Logs
             }
 
             var fullMessage = $"[{type}] [{callerName}] [{DateTime.Now.ToString("dd'/'MM'/'yyyy HH:mm:ss")}] {message}";
-            _logs.AppendLine(fullMessage);
+            _logs.Value.AppendLine(fullMessage);
+
             LogAdded?.Invoke(this, new LogAddedEventArgs(fullMessage));
 
 #if DEBUG
             System.Diagnostics.Debug.WriteLine(fullMessage);
 #endif
 
-            _logsCountSinceLastFlush++;
+            Interlocked.Increment(ref _logsCountSinceLastFlush);
             if (_logsCountSinceLastFlush > Consts.LogsFlushInterval)
             {
                 Flush();

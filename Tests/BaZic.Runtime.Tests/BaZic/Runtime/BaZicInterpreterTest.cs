@@ -445,8 +445,6 @@ END FUNCTION";
         {
             var inputCode =
 @"
-BIND Button1_Content
-
 EXTERN FUNCTION Main(args[])
 END FUNCTION
 
@@ -455,10 +453,10 @@ EVENT FUNCTION Window1_Closed()
 END FUNCTION
 
 EVENT FUNCTION Window1_Loaded()
-    VARIABLE var1 = Button1_Content
+    VARIABLE var1 = Button1.Content
     IF var1 = ""Hello"" THEN
-        Button1_Content = ""Hello World""
-        var1 = Button1_Content
+        Button1.Content = ""Hello World""
+        var1 = Button1.Content
         IF var1 = ""Hello World"" THEN
             RETURN TRUE
         END IF

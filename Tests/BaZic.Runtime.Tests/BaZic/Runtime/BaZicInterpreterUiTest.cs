@@ -24,8 +24,6 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 
             var inputCode =
 @"
-BIND Button1_Content
-
 EXTERN FUNCTION Main(args[])
 END FUNCTION
 
@@ -34,10 +32,10 @@ EVENT FUNCTION Window1_Closed()
 END FUNCTION
 
 EVENT FUNCTION Window1_Loaded()
-    VARIABLE var1 = Button1_Content
+    VARIABLE var1 = Button1.Content
     IF var1 = ""Hello"" THEN
-        Button1_Content = ""Hello World""
-        var1 = Button1_Content
+        Button1.Content = ""Hello World""
+        var1 = Button1.Content
         IF var1 = ""Hello World"" THEN
             RETURN TRUE
         END IF
@@ -87,16 +85,22 @@ END FUNCTION
 [Log] End of the execution of the method 'Main'. Returned value :  ({Null})
 [Log] Loading user interface.
 [Log] Registering events.
-[Log] Declaring bindings.
-[Log] Variable 'Button1_Content' declared. Default value : Hello (Button1.Content : )
+[Log] Declaring control accessors.
+[Log] Variable 'Window1' declared. Default value : System.Windows.Window (Window1 : System.Windows.Window)
+[Log] Variable 'Button1' declared. Default value : System.Windows.Controls.Button: Hello (Button1 : System.Windows.Controls.Button)
 [Log] Showing user interface.
+[State] Idle
 [Log] An event has been raised from an interaction with the user interface.
+[State] Running
 [Log] Preparing to invoke the method 'Window1_Loaded'.
 [Log] Executing the argument values of the method.
 [Log] Invoking the synchronous method 'Window1_Loaded'.
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
+[Log] Executing an expression of type 'PropertyReferenceExpression'.
+[Log] Getting the property 'Button1.Content'.
 [Log] Executing an expression of type 'VariableReferenceExpression'.
+[Log] The expression returned the value 'System.Windows.Controls.Button: Hello' (System.Windows.Controls.Button).
 [Log] The expression returned the value 'Hello' (System.String).
 [Log] Variable 'var1' declared. Default value : Hello (System.String)
 [Log] Executing a statement of type 'LabelConditionStatement'.
@@ -110,14 +114,18 @@ END FUNCTION
 [Log] The expression returned the value 'True' (System.Boolean).
 [Log] The expression returned the value 'False' (System.Boolean).
 [Log] Executing a statement of type 'AssignStatement'.
-[Log] Assign 'Button1_Content' to ''Hello World' (type:System.String)'.
+[Log] Assign 'Button1.Content' to ''Hello World' (type:System.String)'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value 'Hello World' (System.String).
-[Log] Variable 'Button1_Content' value set to : Hello World (Button1.Content : System.String)
-[Log] 'Button1_Content' is now equal to 'Hello World'(type:System.String)
-[Log] Executing a statement of type 'AssignStatement'.
-[Log] Assign 'var1' to 'Button1_Content'.
 [Log] Executing an expression of type 'VariableReferenceExpression'.
+[Log] The expression returned the value 'System.Windows.Controls.Button: Hello' (System.Windows.Controls.Button).
+[Log] 'Button1.Content' is now equal to 'Hello World'(type:System.String)
+[Log] Executing a statement of type 'AssignStatement'.
+[Log] Assign 'var1' to 'Button1.Content'.
+[Log] Executing an expression of type 'PropertyReferenceExpression'.
+[Log] Getting the property 'Button1.Content'.
+[Log] Executing an expression of type 'VariableReferenceExpression'.
+[Log] The expression returned the value 'System.Windows.Controls.Button: Hello World' (System.Windows.Controls.Button).
 [Log] The expression returned the value 'Hello World' (System.String).
 [Log] Variable 'var1' value set to : Hello World (System.String)
 [Log] 'var1' is now equal to 'Hello World'(type:System.String)
@@ -163,9 +171,83 @@ END FUNCTION
         [TestMethod]
         public async Task BaZicInterpreterWithUiProgramGetResult()
         {
-            // TODO : Make it a unit test similar to BaZicInterpreterWithUiProgram but where we close the window from inside of the program and check if a value is correctly returned by the Closed event method.
-            // It requires, at parsing, compiling and interpretation time, that all controls with a name are declared as a global variable.
-            // And this requirement require some other new unit tests.
+            var parser = new BaZicParser();
+
+            var inputCode =
+@"
+EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EVENT FUNCTION Window1_Closed()
+    RETURN ""Result of Window.Close""
+END FUNCTION
+
+EVENT FUNCTION Window1_Loaded()
+    CloseAfter3Sec()
+END FUNCTION
+
+ASYNC FUNCTION CloseAfter3Sec()
+    VARIABLE var1 = Button1.Content
+    IF var1 = ""Hello"" THEN
+        Button1.Content = ""Hello World""
+        var1 = Button1.Content
+        IF var1 = ""Hello World"" THEN
+            AWAIT System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(3.0))
+            Window1.Close()
+        END IF
+    END IF
+END FUNCTION
+
+# The XAML will be provided separatly";
+
+            var xamlCode = @"
+<Window xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Name=""Window1"" Opacity=""0"">
+    <StackPanel>
+        <Button Name=""Button1"" Content=""Hello""/>
+    </StackPanel>
+</Window>";
+
+            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, true).Program;
+
+
+            var interpreter = new BaZicInterpreter(bazicProgram);
+            await interpreter.StartDebugAsync(true);
+
+            var expect = @"[State] Ready
+[State] Preparing
+[Log] Reference assembly 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' loaded in the application domain.
+[Log] Reference assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' loaded in the application domain.
+[Log] Reference assembly 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Reference assembly 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' loaded in the application domain.
+[Log] Declaring global variables.
+[Log] Program's entry point detected.
+[State] Running
+[Log] Preparing to invoke the method 'Main'.
+[Log] Executing the argument values of the method.
+[Log] Executing an expression of type 'ArrayCreationExpression'.
+[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] Invoking the synchronous method 'Main'.
+[Log] Variable 'args' declared. Default value : {Null}
+[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Registering labels.
+[Log] End of the execution of the method 'Main'. Returned value :  ({Null})
+[Log] Loading user interface.
+[Log] Registering events.
+[Log] Declaring control accessors.
+[Log] Variable 'Window1' declared. Default value : System.Windows.Window (Window1 : System.Windows.Window)
+[Log] Variable 'Button1' declared. Default value : System.Windows.Controls.Button: Hello (Button1 : System.Windows.Controls.Button)
+[Log] Showing user interface.
+[State] Idle
+[Log] An event has been raised from an interaction with the user interface.
+[State] Running
+[Log] Preparing to invoke the method 'Window1_Loaded'.";
+
+            Assert.IsTrue(interpreter.GetStateChangedHistoryString().Contains(expect));
+            Assert.AreEqual("Result of Window.Close", interpreter.ProgramResult); // Not null because the program has NOT been forced to stop.
         }
 
         [TestMethod]
@@ -175,8 +257,6 @@ END FUNCTION
 
             var inputCode =
 @"
-BIND Button1_Text
-
 EXTERN FUNCTION Main(args[])
 END FUNCTION";
 
@@ -186,7 +266,7 @@ END FUNCTION";
 </Window>";
 
             var result = parser.Parse(inputCode, xamlCode);
-            Assert.AreEqual(4, result.Issues.InnerExceptions.Count);
+            Assert.AreEqual(2, result.Issues.InnerExceptions.Count);
             var exception = (BaZicParserException)result.Issues.InnerExceptions.First();
             Assert.AreEqual("Parsing error in the XAML Code : ''Content' property has already been set on 'Window'.' Line number '3' and line position '12'.", exception.Message);
         }
@@ -214,16 +294,14 @@ END FUNCTION";
         }
 
         [TestMethod]
-        public async Task BaZicInterpreterWithUiProgramBadBindingUse()
+        public async Task BaZicInterpreterWithUiProgramBadControlAccessorUse()
         {
             var parser = new BaZicParser();
 
             var inputCode =
             @"
-BIND Button1_Content
-
 EXTERN FUNCTION Main(args[])
-    Button1_Content = ""Hello""
+    Button1.Content = ""Hello""
 END FUNCTION";
 
             var xamlCode = @"
@@ -239,7 +317,7 @@ END FUNCTION";
             await interpreter.StartDebugAsync(true);
 
             var exception = interpreter.Error.Exception;
-            Assert.AreEqual("The variable 'Button1_Content' does not exist or is not accessible.", exception.Message);
+            Assert.AreEqual("The variable 'Button1' does not exist or is not accessible.", exception.Message);
         }
     }
 }

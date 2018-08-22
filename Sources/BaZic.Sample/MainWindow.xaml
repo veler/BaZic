@@ -25,19 +25,20 @@
                     </ToolBar>
                 </ToolBarTray>
                 <TextBlock DockPanel.Dock="Top" Text="BaZic code :"/>
-                <TextBox x:Name="BaZicCodeTextBox" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
+                <TextBox x:Name="BaZicCodeTextBox" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
             </DockPanel>
             <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" />
             <DockPanel Grid.Row="2" Language="True">
                 <TextBlock DockPanel.Dock="Top" Text="Optional XAML code :"/>
-                <TextBox x:Name="XamlCodeTextBox" Grid.Row="0" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
+                <TextBox x:Name="XamlCodeTextBox" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"/>
             </DockPanel>
         </Grid>
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
         <DockPanel Grid.Column="2" LastChildFill="True">
             <ToolBarTray DockPanel.Dock="Top">
                 <ToolBar>
-                    <Button x:Name="RunProgramButton" Content="Run the program" Click="RunProgramButton_Click"/>
+                    <Button x:Name="RunProgramButton" Content="Interpret the program" Click="RunProgramButton_Click"/>
+                    <Button x:Name="RunProgramReleaseButton" Content="Build and Run the program" Click="RunProgramReleaseButton_Click"/>
                     <CheckBox x:Name="OptimizeCheckBox" Content="Optimize the AST"/>
                     <Button x:Name="PauseButton" Content="Pause" Visibility="Collapsed" Click="PauseButton_Click"/>
                     <Button x:Name="StopButton" Content="Stop" Visibility="Collapsed" Click="StopButton_Click"/>

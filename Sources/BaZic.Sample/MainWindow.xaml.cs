@@ -153,6 +153,7 @@ namespace BaZic.Sample
             if (abstractSyntaxTree.Program != null && abstractSyntaxTree.Issues.InnerExceptions.OfType<BaZicParserException>().All(issue => issue.Level != Core.Enums.BaZicParserExceptionLevel.Error))
             {
                 RunProgramButton.Visibility = Visibility.Collapsed;
+                RunProgramReleaseButton.Visibility = Visibility.Collapsed;
                 OptimizeCheckBox.Visibility = Visibility.Collapsed;
                 PauseButton.Visibility = Visibility.Visible;
                 StopButton.Visibility = Visibility.Visible;
@@ -164,6 +165,50 @@ namespace BaZic.Sample
             else
             {
                 Log("The program has not been interpreted.");
+            }
+        }
+
+        private void RunProgramReleaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(BaZicCodeTextBox.Text))
+            {
+                MessageBox.Show("There is no BaZic code to run.");
+                return;
+            }
+
+            Logs = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(XamlCodeTextBox.Text))
+            {
+                XamlCodeTextBox.Text = string.Empty;
+            }
+
+            var lexer = new BaZicLexer();
+            var parser = new BaZicParser();
+
+            var tokens = lexer.Tokenize(BaZicCodeTextBox.Text);
+            var abstractSyntaxTree = parser.Parse(tokens, XamlCodeTextBox.Text, OptimizeCheckBox.IsChecked.Value);
+
+            foreach (var issue in abstractSyntaxTree.Issues.InnerExceptions.OfType<BaZicParserException>())
+            {
+                Log(issue.ToString());
+            }
+
+            if (abstractSyntaxTree.Program != null && abstractSyntaxTree.Issues.InnerExceptions.OfType<BaZicParserException>().All(issue => issue.Level != Core.Enums.BaZicParserExceptionLevel.Error))
+            {
+                RunProgramButton.Visibility = Visibility.Collapsed;
+                RunProgramReleaseButton.Visibility = Visibility.Collapsed;
+                OptimizeCheckBox.Visibility = Visibility.Collapsed;
+                PauseButton.Visibility = Visibility.Visible;
+                StopButton.Visibility = Visibility.Visible;
+
+                _interpreter = new BaZicInterpreter(abstractSyntaxTree.Program);
+                _interpreter.StateChanged += Interpreter_StateChanged;
+                var t = _interpreter.StartReleaseAsync(true);
+            }
+            else
+            {
+                Log("The program has not been build.");
             }
         }
 
@@ -202,6 +247,7 @@ namespace BaZic.Sample
                 _synchronizationContext.Send((d) =>
                 {
                     RunProgramButton.Visibility = Visibility.Visible;
+                    RunProgramReleaseButton.Visibility = Visibility.Visible;
                     OptimizeCheckBox.Visibility = Visibility.Visible;
                     PauseButton.Visibility = Visibility.Collapsed;
                     StopButton.Visibility = Visibility.Collapsed;
