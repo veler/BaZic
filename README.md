@@ -3,10 +3,6 @@
 This repository provides an interpreter for a homemade `procedural object-oriented semi-dynamic typed` programming language, called `BaZic`.
 Made entirely in C#, this was initially a project designed to learn how to make a programming language, from the `lexer` to the `interpreter` with a `parser` and `optimizer` in the middle.
 
-# Build Status
-
-[![Build status](https://ci.appveyor.com/api/projects/status/apym7r6knjak8xk2/branch/master?svg=true)](https://ci.appveyor.com/project/veler/bazic/branch/master)
-
 # Downloads
 
 BaZic is available as [NuGet package](https://www.nuget.org/packages/BaZic/). Usage details, documentation and more can be found below.
