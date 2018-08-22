@@ -255,11 +255,15 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// </summary>
         internal void CloseUserInterface()
         {
-            UIDispatcher?.Invoke(() =>
+            try
             {
-                UserInterface?.Close();
-            }, DispatcherPriority.Send);
-            UIDispatcher = null;
+                UIDispatcher?.Invoke(() =>
+                {
+                    UserInterface?.Close();
+                }, DispatcherPriority.Send);
+                UIDispatcher = null;
+            }
+            catch { }
         }
 
         /// <summary>

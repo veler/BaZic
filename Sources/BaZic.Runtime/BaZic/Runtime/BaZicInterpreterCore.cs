@@ -32,6 +32,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         private readonly List<BaZicInterpreterStateChangeEventArgs> _stateChangedHistory;
 
+        private BaZicInterpreterMiddleware _middleware;
         private AssemblySandbox _assemblySandbox;
         private object[] _programArguments;
         private Task _mainInterpreterTask;
@@ -120,7 +121,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
         #region Events
 
-        internal event BaZicInterpreterStateEventHandler StateChanged;
+        private event BaZicInterpreterStateEventHandler StateChanged;
 
         #endregion
 
@@ -129,11 +130,14 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="BaZicInterpreterCore"/> class.
         /// </summary>
+        /// <param name="middleware">The middleware</param>
         /// <param name="assemblySandbox">The assembly sandbox.</param>
-        private BaZicInterpreterCore(AssemblySandbox assemblySandbox)
+        private BaZicInterpreterCore(BaZicInterpreterMiddleware middleware, AssemblySandbox assemblySandbox)
         {
+            Requires.NotNull(middleware, nameof(middleware));
             Requires.NotNull(assemblySandbox, nameof(assemblySandbox));
 
+            _middleware = middleware;
             _stateChangedHistory = new List<BaZicInterpreterStateChangeEventArgs>();
             ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Ready));
 
@@ -145,12 +149,13 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="BaZicInterpreterCore"/> class.
         /// </summary>
+        /// <param name="middleware">The middleware</param>
         /// <param name="assemblySandbox">The assembly sandbox.</param>
         /// <param name="inputCode">The BaZic code to interpret.</param>
         /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
-        private BaZicInterpreterCore(AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimize = false)
-            : this(assemblySandbox)
+        private BaZicInterpreterCore(BaZicInterpreterMiddleware middleware, AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimize = false)
+            : this(middleware, assemblySandbox)
         {
             var parser = new BaZicParser();
             var parsingResult = parser.Parse(inputCode, xamlCode, optimize);
@@ -166,10 +171,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="BaZicInterpreterCore"/> class.
         /// </summary>
+        /// <param name="middleware">The middleware</param>
         /// <param name="assemblySandbox">The assembly sandbox.</param>
         /// <param name="program">The <see cref="BaZicProgram"/> to interpret.</param>
-        private BaZicInterpreterCore(AssemblySandbox assemblySandbox, BaZicProgram program)
-            : this(assemblySandbox)
+        private BaZicInterpreterCore(BaZicInterpreterMiddleware middleware, AssemblySandbox assemblySandbox, BaZicProgram program)
+            : this(middleware, assemblySandbox)
         {
             Requires.NotNull(program, nameof(program));
 
@@ -210,6 +216,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the build errors, or null if it succeed.</returns>
         internal void Build(MarshaledResultSetter<AggregateException> callback, BaZicCompilerOutputType outputType, string outputPath)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             Requires.NotNullOrWhiteSpace(outputPath, nameof(outputPath));
 
             if (DebugMode)
@@ -319,6 +326,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the build errors, or null if it succeed.</returns>
         internal void Build(MarshaledResultSetter<AggregateException> callback)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             if (DebugMode)
             {
                 throw new UnexpectedException(new Exception(L.BaZic.Runtime.BaZicInterpreter.CannotBuildAfterStartDebug));
@@ -370,6 +378,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns an awaitable task that can wait the end of the program execution</returns>
         internal void StartRelease(MarshaledResultSetter callback, bool verbose, params object[] args)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             _releaseModeForced = true;
             _forceStop = false;
             DebugMode = false;
@@ -427,6 +436,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns an awaitable task that can wait the end of the program execution</returns>
         internal void StartDebug(MarshaledResultSetter callback, bool verbose, params object[] args)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             if (_releaseModeForced)
             {
                 throw new UnexpectedException(new Exception(L.BaZic.Runtime.BaZicInterpreter.CannotStartDebugAfterBuild));
@@ -481,6 +491,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the result of the invocation (a <see cref="Task"/> in the case of a not awaited asynchronous method, or the value returned by the method).</returns>
         internal void InvokeMethod(MarshaledResultSetter<object> callback, bool verbose, string methodName, bool awaitIfAsync, object[] args)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             Error = null;
             _forceStop = false;
 
@@ -500,6 +511,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="callback">The cross-AppDomain task proxy.</param>
         internal void Stop(MarshaledResultSetter callback)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             if (Verbose)
             {
                 ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.BaZicInterpreter.StopRequested));
@@ -514,6 +526,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         internal void Pause()
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             if (!DebugMode)
             {
                 throw new InternalException("Unable to pause a program in release mode.");
@@ -529,6 +542,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         internal void Resume()
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             if (!DebugMode)
             {
                 throw new InternalException("Unable to resume a program in release mode.");
@@ -544,6 +558,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         internal void NextStep()
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             Resume();
             Pause();
         }
@@ -648,6 +663,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     _stateChangedHistory.Add(e);
                     StateChanged?.Invoke(this, e);
+                    _middleware.SendLog(this, e);
                 }
             }
         }
@@ -658,6 +674,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns a string representation of <see cref="StateChangedHistory"/>.</returns>
         internal string GetStateChangedHistoryString()
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             lock (_stateChangedHistory)
             {
                 var builder = new StringBuilder();
@@ -675,6 +692,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblies">The assemblies (can be a full name or a location).</param>
         internal void SetDependencies(string[] assemblies)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             Program.WithAssemblies(assemblies);
         }
 
@@ -684,6 +702,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblies">The assemblies.</param>
         internal void SetDependencies(AssemblyDetails[] assemblies)
         {
+            Requires.NotNull(_middleware, nameof(_middleware));
             Program.WithAssemblies(assemblies);
         }
 
@@ -806,6 +825,9 @@ namespace BaZic.Runtime.BaZic.Runtime
                 try
                 {
                     LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
+
+                    Task.Delay(500).ConfigureAwait(false).GetAwaiter().GetResult();
+
                     if (State == BaZicInterpreterState.Preparing)
                     {
                         // Wait for running.

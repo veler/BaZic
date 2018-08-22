@@ -61,11 +61,15 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         internal void CloseUserInterface()
         {
-            UIDispatcher?.Invoke(() =>
+            try
             {
-                _userInterface?.Close();
-                System.Windows.Threading.Dispatcher.CurrentDispatcher?.InvokeShutdown();
-            }, System.Windows.Threading.DispatcherPriority.Send);
+                UIDispatcher?.Invoke(() =>
+                {
+                    _userInterface?.Close();
+                    System.Windows.Threading.Dispatcher.CurrentDispatcher?.InvokeShutdown();
+                }, System.Windows.Threading.DispatcherPriority.Send);
+            }
+            catch { }
         }
 
         /// <summary>

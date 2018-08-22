@@ -26,8 +26,6 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
             {
                 RunDebug(results, inputBaZicCode, xamlCode, args),
                 RunDebugOptimized(results, inputBaZicCode, xamlCode, args),
-                RunDebugVerbose(results, inputBaZicCode, xamlCode, args),
-                RunDebugOptimizedVerbose(results, inputBaZicCode, xamlCode, args),
                 RunRelease(results, inputBaZicCode, xamlCode, args)
             };
 
@@ -37,6 +35,9 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
             {
                 Assert.Fail();
             }
+
+            await RunDebugVerbose(results, inputBaZicCode, xamlCode, args);
+            await RunDebugOptimizedVerbose(results, inputBaZicCode, xamlCode, args);
 
             foreach (var item in results)
             {

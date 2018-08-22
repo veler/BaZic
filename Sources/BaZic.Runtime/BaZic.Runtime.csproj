@@ -232,6 +232,7 @@
     <Compile Include="BaZic\Code\Parser\VariableStatistics.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreter.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterCore.cs" />
+    <Compile Include="BaZic\Runtime\BaZicInterpreterMiddleware.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterState.cs" />
     <Compile Include="BaZic\Runtime\BaZicInterpreterStateChangeEventArgs.cs" />
     <Compile Include="BaZic\Runtime\CompiledProgramRunner.cs" />
