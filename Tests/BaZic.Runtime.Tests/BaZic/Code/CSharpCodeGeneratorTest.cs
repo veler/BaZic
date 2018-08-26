@@ -38,11 +38,13 @@ namespace BaZic.Runtime.Tests.BaZic.Code
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        private static dynamic Foo = null;
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        private dynamic Foo = null;
 
-        public static dynamic Main(dynamic args)
+        public dynamic Main(dynamic args)
         {
             try {
             dynamic Bar = null;
@@ -58,203 +60,10 @@ namespace BaZicProgramReleaseMode
                 }
             }
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
-    }
-}
-
-// Helper for CSharp generated code.
-
-namespace BaZicProgramReleaseMode
-{
-    /// <summary>
-    /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
-    /// </summary>
-    public partial class ProgramHelper
-    {
-        #region Fields
-
-        private readonly static System.Collections.Generic.List<System.Threading.Tasks.Task> _unwaitedMethodInvocation = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the Dispatcher of the UI thread.
-        /// </summary>
-        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Entry point of the entire application.
-        /// </summary>
-        /// <param name=""args""></param>
-        [System.STAThreadAttribute()]
-        public static void Main(string[] args)
-        {
-            Program.Main(args);
-        }
-
-        /// <summary>
-        /// Returns the result of a task. If the task does not return a result, this method will return null.
-        /// </summary>
-        /// <param name=""task"">The task to run.</param>
-        /// <returns>Null if there is not result.</returns>
-        internal static dynamic RunTaskSynchronously(System.Threading.Tasks.Task task)
-        {
-            task.Wait();
-            var type = task.GetType();
-            if (!type.IsGenericType)
-            {
-                task.Dispose();
-                return null;
-            }
-            else
-            {
-                dynamic result = type.GetProperty(nameof(System.Threading.Tasks.Task<System.Object>.Result)).GetValue(task);
-                task.Dispose();
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Await the given task and returns its value of null if the task is a void.
-        /// </summary>
-        /// <param name=""task"">The task to run.</param>
-        /// <returns>Null if the task is a void.</returns>
-        internal static async System.Threading.Tasks.Task<dynamic> RunTask(System.Threading.Tasks.Task task)
-        {
-            await task;
-            if (!task.GetType().IsGenericType)
-            {
-                task.Dispose();
-                return null;
-            }
-            else
-            {
-                return task;
-            }
-        }
-
-        /// <summary>
-        /// Wait for all the unwaited tasks that have been detected during the program execution.
-        /// </summary>
-        internal static async void WaitAllUnwaitedThreads()
-        {
-            var waitThreads = true;
-            do
-            {
-                System.Threading.Tasks.Task[] threads = null;
-                lock (_unwaitedMethodInvocation)
-                {
-                    threads = _unwaitedMethodInvocation.ToArray();
-                }
-
-                await System.Threading.Tasks.Task.WhenAll(threads);
-
-                lock (_unwaitedMethodInvocation)
-                {
-                    waitThreads = System.Linq.Enumerable.Any(_unwaitedMethodInvocation, t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
-                }
-            } while (waitThreads);
-
-            _unwaitedMethodInvocation.Clear();
-        }
-
-        /// <summary>
-        /// Add an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""task"">The task to add.</param>
-        /// <returns>The added task.</returns>
-        internal static System.Threading.Tasks.Task AddUnwaitedThread(System.Threading.Tasks.Task task)
-        {
-            lock (_unwaitedMethodInvocation)
-            {
-                _unwaitedMethodInvocation.Add(task);
-            }
-
-            return task;
-        }
-
-        /// <summary>
-        /// If the result of the specified function is a <see cref=""Task""/>, adds an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""targetObject"">The object that contains the method to invoke.</param>
-        /// <param name=""methodName"">The name of the method to invoke.</param>
-        /// <param name=""args"">The arguments of the method.</param>
-        /// <returns>The added task.</returns>
-        internal static dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
-        {
-            var type = (System.Type)targetObject.GetType();
-            object result = null;
-
-            if (targetObject is System.Windows.FrameworkElement)
-            {
-                ProgramHelper.UIDispatcher.Invoke(() =>
-                {
-                    result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
-                }, System.Windows.Threading.DispatcherPriority.Background);
-            }
-            else
-            {
-                result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
-            }
-
-            return AddUnwaitedThreadIfRequired(result);
-        }
-
-        /// <summary>
-        /// If the result of the specified function is a <see cref=""Task""/>, adds an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""targetType"">The type that contains the static method to invoke.</param>
-        /// <param name=""methodName"">The name of the method to invoke.</param>
-        /// <param name=""args"">The arguments of the method.</param>
-        /// <returns>The added task.</returns>
-        internal static dynamic AddUnwaitedThreadIfRequired(System.Type targetType, string methodName, params dynamic[] args)
-        {
-            var result = targetType.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, null, args);
-
-            return AddUnwaitedThreadIfRequired(result);
-        }
-
-        /// <summary>
-        /// If the result of the specified function is a <see cref=""Task""/>, adds an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""targetObject"">The object that contains the method to invoke.</param>
-        /// <param name=""methodName"">The name of the method to invoke.</param>
-        /// <param name=""args"">The arguments of the method.</param>
-        /// <returns>The added task.</returns>
-        private static dynamic AddUnwaitedThreadIfRequired(dynamic result)
-        {
-            if (result != null && result is System.Threading.Tasks.Task)
-            {
-                var task = (System.Threading.Tasks.Task)result;
-                lock (_unwaitedMethodInvocation)
-                {
-                    var taskType = task.GetType();
-                    if (!taskType.IsGenericType)
-                    {
-                        _unwaitedMethodInvocation.Add(task);
-                        result = null;
-                    }
-                    else
-                    {
-                        _unwaitedMethodInvocation.Add(task);
-                        result = task;
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        #endregion
     }
 }";
 
@@ -301,412 +110,75 @@ END FUNCTION
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        private static dynamic var1 = null;
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        private dynamic var1 = null;
 
-        private static dynamic Window1
+        private dynamic Window1
         { 
             get {
-                dynamic result = ProgramHelper.Instance.GetControl(nameof(Window1));
+                dynamic result = _programHelperInstance.GetControl(nameof(Window1));
                 return result;
             }
         }
         
-        private static dynamic TextBox1
+        private dynamic TextBox1
         { 
             get {
-                dynamic result = ProgramHelper.Instance.GetControl(nameof(TextBox1));
+                dynamic result = _programHelperInstance.GetControl(nameof(TextBox1));
                 return result;
             }
         }
         
-        private static dynamic Button1
+        private dynamic Button1
         { 
             get {
-                dynamic result = ProgramHelper.Instance.GetControl(nameof(Button1));
+                dynamic result = _programHelperInstance.GetControl(nameof(Button1));
                 return result;
             }
         }
         
-        private static dynamic ListBox1
+        private dynamic ListBox1
         { 
             get {
-                dynamic result = ProgramHelper.Instance.GetControl(nameof(ListBox1));
+                dynamic result = _programHelperInstance.GetControl(nameof(ListBox1));
                 return result;
             }
         }
         
 
-        static Program()
+        internal dynamic Window1_Loaded()
         {
-            ProgramHelper.CreateNewInstance();
-        }
-
-        internal static dynamic Window1_Loaded()
-        {
-            ProgramHelper.UIDispatcher.Invoke(() => { ListBox1.ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" }; }, System.Windows.Threading.DispatcherPriority.Background);
-            ProgramHelper.UIDispatcher.Invoke(() => { TextBox1.Text = ""Value to add""; }, System.Windows.Threading.DispatcherPriority.Background);
+            _programHelperInstance.UIDispatcher.Invoke(() => { ListBox1.ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" }; }, System.Windows.Threading.DispatcherPriority.Background);
+            _programHelperInstance.UIDispatcher.Invoke(() => { TextBox1.Text = ""Value to add""; }, System.Windows.Threading.DispatcherPriority.Background);
             return null;
         }
 
-        internal static dynamic Button1_Click()
+        internal dynamic Button1_Click()
         {
-            ProgramHelper.UIDispatcher.Invoke(() => { ProgramHelper.AddUnwaitedThreadIfRequired(ListBox1.ItemsSource, ""Add""); }, System.Windows.Threading.DispatcherPriority.Background);
+            _programHelperInstance.UIDispatcher.Invoke(() => { _programHelperInstance.AddUnwaitedThreadIfRequired(ListBox1.ItemsSource, ""Add""); }, System.Windows.Threading.DispatcherPriority.Background);
             return null;
         }
 
-        public static dynamic Main(dynamic args)
+        public dynamic Main(dynamic args)
         {
             try {
 
-            ProgramHelper.Instance.LoadWindow();
-            ((System.Windows.Window)ProgramHelper.Instance.GetControl(""Window1"")).Loaded += (sender, e) => { Window1_Loaded(); };
-            ((System.Windows.Controls.Button)ProgramHelper.Instance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
-            return ProgramHelper.Instance.ShowWindow();
+            _programHelperInstance.LoadUserInterface();
+            ((System.Windows.Window)_programHelperInstance.GetControl(""Window1"")).Loaded += (sender, e) => { Window1_Loaded(); };
+            ((System.Windows.Controls.Button)_programHelperInstance.GetControl(""Button1"")).Click += (sender, e) => { Button1_Click(); };
+            return _programHelperInstance.ShowUserInterface();
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
     }
 }
 
-// Helper for CSharp generated code.
-
-namespace BaZicProgramReleaseMode
-{
-    /// <summary>
-    /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
-    /// </summary>
-    public partial class ProgramHelper
-    {
-        #region Fields
-
-        private readonly static System.Collections.Generic.List<System.Threading.Tasks.Task> _unwaitedMethodInvocation = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the Dispatcher of the UI thread.
-        /// </summary>
-        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Entry point of the entire application.
-        /// </summary>
-        /// <param name=""args""></param>
-        [System.STAThreadAttribute()]
-        public static void Main(string[] args)
-        {
-            Program.Main(args);
-        }
-
-        /// <summary>
-        /// Returns the result of a task. If the task does not return a result, this method will return null.
-        /// </summary>
-        /// <param name=""task"">The task to run.</param>
-        /// <returns>Null if there is not result.</returns>
-        internal static dynamic RunTaskSynchronously(System.Threading.Tasks.Task task)
-        {
-            task.Wait();
-            var type = task.GetType();
-            if (!type.IsGenericType)
-            {
-                task.Dispose();
-                return null;
-            }
-            else
-            {
-                dynamic result = type.GetProperty(nameof(System.Threading.Tasks.Task<System.Object>.Result)).GetValue(task);
-                task.Dispose();
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Await the given task and returns its value of null if the task is a void.
-        /// </summary>
-        /// <param name=""task"">The task to run.</param>
-        /// <returns>Null if the task is a void.</returns>
-        internal static async System.Threading.Tasks.Task<dynamic> RunTask(System.Threading.Tasks.Task task)
-        {
-            await task;
-            if (!task.GetType().IsGenericType)
-            {
-                task.Dispose();
-                return null;
-            }
-            else
-            {
-                return task;
-            }
-        }
-
-        /// <summary>
-        /// Wait for all the unwaited tasks that have been detected during the program execution.
-        /// </summary>
-        internal static async void WaitAllUnwaitedThreads()
-        {
-            var waitThreads = true;
-            do
-            {
-                System.Threading.Tasks.Task[] threads = null;
-                lock (_unwaitedMethodInvocation)
-                {
-                    threads = _unwaitedMethodInvocation.ToArray();
-                }
-
-                await System.Threading.Tasks.Task.WhenAll(threads);
-
-                lock (_unwaitedMethodInvocation)
-                {
-                    waitThreads = System.Linq.Enumerable.Any(_unwaitedMethodInvocation, t => !t.IsCanceled && !t.IsCompleted && !t.IsFaulted);
-                }
-            } while (waitThreads);
-
-            _unwaitedMethodInvocation.Clear();
-        }
-
-        /// <summary>
-        /// Add an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""task"">The task to add.</param>
-        /// <returns>The added task.</returns>
-        internal static System.Threading.Tasks.Task AddUnwaitedThread(System.Threading.Tasks.Task task)
-        {
-            lock (_unwaitedMethodInvocation)
-            {
-                _unwaitedMethodInvocation.Add(task);
-            }
-
-            return task;
-        }
-
-        /// <summary>
-        /// If the result of the specified function is a <see cref=""Task""/>, adds an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""targetObject"">The object that contains the method to invoke.</param>
-        /// <param name=""methodName"">The name of the method to invoke.</param>
-        /// <param name=""args"">The arguments of the method.</param>
-        /// <returns>The added task.</returns>
-        internal static dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
-        {
-            var type = (System.Type)targetObject.GetType();
-            object result = null;
-
-            if (targetObject is System.Windows.FrameworkElement)
-            {
-                ProgramHelper.UIDispatcher.Invoke(() =>
-                {
-                    result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
-                }, System.Windows.Threading.DispatcherPriority.Background);
-            }
-            else
-            {
-                result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
-            }
-
-            return AddUnwaitedThreadIfRequired(result);
-        }
-
-        /// <summary>
-        /// If the result of the specified function is a <see cref=""Task""/>, adds an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""targetType"">The type that contains the static method to invoke.</param>
-        /// <param name=""methodName"">The name of the method to invoke.</param>
-        /// <param name=""args"">The arguments of the method.</param>
-        /// <returns>The added task.</returns>
-        internal static dynamic AddUnwaitedThreadIfRequired(System.Type targetType, string methodName, params dynamic[] args)
-        {
-            var result = targetType.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, null, args);
-
-            return AddUnwaitedThreadIfRequired(result);
-        }
-
-        /// <summary>
-        /// If the result of the specified function is a <see cref=""Task""/>, adds an unwaited task to the list of task to wait to allow the program to consider itself as done.
-        /// </summary>
-        /// <param name=""targetObject"">The object that contains the method to invoke.</param>
-        /// <param name=""methodName"">The name of the method to invoke.</param>
-        /// <param name=""args"">The arguments of the method.</param>
-        /// <returns>The added task.</returns>
-        private static dynamic AddUnwaitedThreadIfRequired(dynamic result)
-        {
-            if (result != null && result is System.Threading.Tasks.Task)
-            {
-                var task = (System.Threading.Tasks.Task)result;
-                lock (_unwaitedMethodInvocation)
-                {
-                    var taskType = task.GetType();
-                    if (!taskType.IsGenericType)
-                    {
-                        _unwaitedMethodInvocation.Add(task);
-                        result = null;
-                    }
-                    else
-                    {
-                        _unwaitedMethodInvocation.Add(task);
-                        result = task;
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        #endregion
-    }
-}
-
-// Helper for CSharp generated code.
-
-namespace BaZicProgramReleaseMode
-{
-    /// <summary>
-    /// Provides a set of methods designed to help the generated program to run with the same behavior than with a BaZic code.
-    /// </summary>
-    public partial class ProgramHelper
-    {
-        #region Fields & Constants
-
-        private System.Windows.Window _userInterface;
-
-        private string _xamlCode = ""\r\n<Window xmlns=\""http://schemas.microsoft.com/winfx/2006/xaml/presentation\"" Name=\""Window1\"">\r\n    <StackPanel>\r\n        <TextBox Name=\""TextBox1\""/>\r\n        <Button Name=\""Button1\"" Content=\""Add a value\""/>\r\n        <ListBox Name=\""ListBox1\""/>\r\n    </StackPanel>\r\n</Window>"";
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the current instance of the helper.
-        /// </summary>
-        internal static ProgramHelper Instance { get; private set; }
-
-        /// <summary>
-        /// Sets the result of the user interface when the window is closing.
-        /// </summary>
-        internal dynamic UiResult { private get; set; }
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Raised when the Idle state can be set in the BaZicInterpreter.
-        /// </summary>
-        public static event System.EventHandler IdleStateOccured;
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates a new static instance of <see cref=""ProgramHelper""/>.
-        /// </summary>
-        internal static void CreateNewInstance()
-        {
-            Instance = new ProgramHelper();
-        }
-
-        /// <summary>
-        /// Close the UI.
-        /// </summary>
-        public static void RequestCloseUserInterface()
-        {
-            Instance?.CloseUserInterface();
-        }
-
-        /// <summary>
-        /// Close the UI.
-        /// </summary>
-        internal void CloseUserInterface()
-        {
-            try
-            {
-                UIDispatcher?.Invoke(() =>
-                {
-                    _userInterface?.Close();
-                    System.Windows.Threading.Dispatcher.CurrentDispatcher?.InvokeShutdown();
-                }, System.Windows.Threading.DispatcherPriority.Send);
-            }
-            catch { }
-        }
-
-        /// <summary>
-        /// Load the user interface in memory.
-        /// </summary>
-        internal void LoadWindow()
-        {
-            _userInterface = System.Windows.Markup.XamlReader.Parse(_xamlCode) as System.Windows.Window;
-            UIDispatcher = _userInterface.Dispatcher;
-        }
-
-        /// <summary>
-        /// Show the user interface of the program.
-        /// </summary>
-        /// <returns>Returns the result of the Window.Closed event from the user interface.</returns>
-        internal dynamic ShowWindow()
-        {
-            System.Exception eventException = null;
-
-            _userInterface.Closed += (sender, e) =>
-            {
-                UIDispatcher?.InvokeShutdown();
-            };
-
-            _userInterface.Loaded += (sender, e) =>
-            {
-                IdleStateOccured?.Invoke(this, e);
-            };
-
-            try
-            {
-                _userInterface.Show();
-                System.Windows.Threading.Dispatcher.Run();
-            }
-            catch (System.Exception exception)
-            {
-                eventException = exception;
-            }
-            finally
-            {
-                try
-                {
-                    _userInterface.Close();
-                }
-                catch { }
-                _userInterface = null;
-            }
-
-            if (eventException != null)
-            {
-                throw eventException;
-            }
-
-            return UiResult;
-        }
-
-        /// <summary>
-        /// Gets the specified control from the user interface.
-        /// </summary>
-        /// <param name=""controlName"">The name of the control to retrieves.</param>
-        /// <returns>Returns null if the control does not exist.</returns>
-        internal dynamic GetControl(System.String controlName)
-        {
-            dynamic dynamic = _userInterface.FindName(controlName);
-            return dynamic;
-        }
-
-        #endregion
-    }
-}";
+// Helper for CSharp generated code.";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -745,9 +217,11 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             if (((1 < 2) && (3 < 4)) || (!false))
@@ -773,7 +247,7 @@ namespace BaZicProgramReleaseMode
                 }
             }
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
@@ -807,9 +281,11 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             try
@@ -821,7 +297,7 @@ namespace BaZicProgramReleaseMode
                 throw EXCEPTION;
             }
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
@@ -851,15 +327,17 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             dynamic Foo = null;
             return Foo[0];
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
@@ -889,15 +367,17 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             dynamic Baz = new System.Array();
             dynamic Boo = new System.String();
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
@@ -930,21 +410,23 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             Foo(1, 2 - 1).GetAwaiter().GetResult();
             dynamic integer = 1;
-            return ProgramHelper.AddUnwaitedThreadIfRequired(integer, ""ToString"", ""X"");
+            return _programHelperInstance.AddUnwaitedThreadIfRequired(integer, ""ToString"", ""X"");
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
 
-        public static async System.Threading.Tasks.Task<dynamic> Foo(dynamic arg1, dynamic arg2)
+        public async System.Threading.Tasks.Task<dynamic> Foo(dynamic arg1, dynamic arg2)
         {
 
             return await System.Threading.Tasks.Task.FromResult<object>(null);
@@ -983,9 +465,11 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             dynamic foo = null;
@@ -999,7 +483,7 @@ namespace BaZicProgramReleaseMode
             dynamic bar = new BaZicProgramReleaseMode.ObservableDictionary() { ""Hello"", new BaZicProgramReleaseMode.ObservableDictionary() { ""Foo"", ""Bar"", ""Buz"" } };
             bar = new BaZicProgramReleaseMode.ObservableDictionary() { 1, 1.1234, ""Hello"" };
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }
@@ -1029,15 +513,17 @@ namespace BaZicProgramReleaseMode
 namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
-    public static class Program
+    public class Program
     {
-        public static dynamic Main(dynamic args)
+        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+        public dynamic Main(dynamic args)
         {
             try {
             dynamic foo = ""Hello"";
             return foo.Length;
             } finally {
-            ProgramHelper.WaitAllUnwaitedThreads();
+            _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
         }

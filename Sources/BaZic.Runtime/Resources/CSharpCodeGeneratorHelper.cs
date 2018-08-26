@@ -9,7 +9,7 @@ namespace BaZicProgramReleaseMode
     {
         #region Fields
 
-        private readonly static System.Collections.Generic.List<System.Threading.Tasks.Task> _unwaitedMethodInvocation = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
+        private readonly System.Collections.Generic.List<System.Threading.Tasks.Task> _unwaitedMethodInvocation = new System.Collections.Generic.List<System.Threading.Tasks.Task>();
 
         #endregion
 
@@ -18,7 +18,7 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Gets the Dispatcher of the UI thread.
         /// </summary>
-        public static System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
+        public System.Windows.Threading.Dispatcher UIDispatcher { get; private set; }
 
         #endregion
 
@@ -31,7 +31,8 @@ namespace BaZicProgramReleaseMode
         [System.STAThreadAttribute()]
         public static void Main(string[] args)
         {
-            Program.Main(args);
+            var instance = new Program();
+            instance.Main(args);
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         /// <param name="task">The task to run.</param>
         /// <returns>Null if there is not result.</returns>
-        internal static dynamic RunTaskSynchronously(System.Threading.Tasks.Task task)
+        internal dynamic RunTaskSynchronously(System.Threading.Tasks.Task task)
         {
             task.Wait();
             var type = task.GetType();
@@ -61,7 +62,7 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         /// <param name="task">The task to run.</param>
         /// <returns>Null if the task is a void.</returns>
-        internal static async System.Threading.Tasks.Task<dynamic> RunTask(System.Threading.Tasks.Task task)
+        internal async System.Threading.Tasks.Task<dynamic> RunTask(System.Threading.Tasks.Task task)
         {
             await task;
             if (!task.GetType().IsGenericType)
@@ -78,7 +79,7 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Wait for all the unwaited tasks that have been detected during the program execution.
         /// </summary>
-        internal static async void WaitAllUnwaitedThreads()
+        internal async void WaitAllUnwaitedThreads()
         {
             var waitThreads = true;
             do
@@ -105,7 +106,7 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         /// <param name="task">The task to add.</param>
         /// <returns>The added task.</returns>
-        internal static System.Threading.Tasks.Task AddUnwaitedThread(System.Threading.Tasks.Task task)
+        internal System.Threading.Tasks.Task AddUnwaitedThread(System.Threading.Tasks.Task task)
         {
             lock (_unwaitedMethodInvocation)
             {
@@ -122,14 +123,14 @@ namespace BaZicProgramReleaseMode
         /// <param name="methodName">The name of the method to invoke.</param>
         /// <param name="args">The arguments of the method.</param>
         /// <returns>The added task.</returns>
-        internal static dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
+        internal dynamic AddUnwaitedThreadIfRequired(dynamic targetObject, string methodName, params dynamic[] args)
         {
             var type = (System.Type)targetObject.GetType();
             object result = null;
 
             if (targetObject is System.Windows.FrameworkElement)
             {
-                ProgramHelper.UIDispatcher.Invoke(() =>
+                UIDispatcher.Invoke(() =>
                 {
                     result = type.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, null, targetObject, args);
                 }, System.Windows.Threading.DispatcherPriority.Background);
@@ -149,7 +150,7 @@ namespace BaZicProgramReleaseMode
         /// <param name="methodName">The name of the method to invoke.</param>
         /// <param name="args">The arguments of the method.</param>
         /// <returns>The added task.</returns>
-        internal static dynamic AddUnwaitedThreadIfRequired(System.Type targetType, string methodName, params dynamic[] args)
+        internal dynamic AddUnwaitedThreadIfRequired(System.Type targetType, string methodName, params dynamic[] args)
         {
             var result = targetType.InvokeMember(methodName, System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public, null, null, args);
 
@@ -163,7 +164,7 @@ namespace BaZicProgramReleaseMode
         /// <param name="methodName">The name of the method to invoke.</param>
         /// <param name="args">The arguments of the method.</param>
         /// <returns>The added task.</returns>
-        private static dynamic AddUnwaitedThreadIfRequired(dynamic result)
+        private dynamic AddUnwaitedThreadIfRequired(dynamic result)
         {
             if (result != null && result is System.Threading.Tasks.Task)
             {
