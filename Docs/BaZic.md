@@ -41,7 +41,7 @@ Yes. A BaZic program is allowed to get one single window for the user interface.
 
 ## Does a BaZic program can return a value?
 
-Yes. If the program does not have a UI defined, the value returned by the entry point method will be considered as the program's result. If the program has a UI, the value returned by the function binded to the ```Closed``` event of the program's ```Window``` will be considered as the program's result.
+Yes. If the program does not have a UI defined, the value returned by the entry point method will be considered as the program's result. If the program has a UI and is based on a window, the value returned by the function binded to the ```Closed``` event of the program's ```Window``` will be considered as the program's result.
 
 ## Do the language keywords are case-sensitive.
 
@@ -144,7 +144,7 @@ Note : Breakpoints are ignored when the BaZic code is compiled.
 
 **Note** : at least one `'WHILE' Expression` must be placed at the top or bottom of the statement.
 
-### Variable or binding declaration
+### Variable declaration
 
 ```
 'VARIABLE' Identifier '[]'? ('=' Expression)?
@@ -467,10 +467,12 @@ END FUNCTION
 The `BaZic code`, that provides the logic :
 
 ```
-BIND ListBox1_ItemsSource[] = NEW ["Value 1", "Value 2"]
-BIND TextBox1_Text = "Value to add"
-
 EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EVENT FUNCTION Window1_Loaded()
+    ListBox1.ItemsSource = NEW ["Value 1", "Value 2"]
+    TextBox1.Text = "Value to add"
 END FUNCTION
 
 EVENT FUNCTION Window1_Closed()
@@ -478,7 +480,7 @@ EVENT FUNCTION Window1_Closed()
 END FUNCTION
 
 EVENT FUNCTION Button1_Click()
-    ListBox1_ItemsSource.Add(TextBox1_Text)
+    ListBox1.ItemsSource.Add(TextBox1.Text)
 END FUNCTION
 ```
 
