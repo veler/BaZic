@@ -272,7 +272,7 @@ END FUNCTION";
         }
 
         [TestMethod]
-        public async Task ProgramInterpreterInvokeExternMethod8()
+        public async Task ProgramInterpreterInvokeExternMethodUI8()
         {
             var inputCode =
 @"
@@ -522,7 +522,7 @@ END FUNCTION";
         }
 
         [TestMethod]
-        public async Task ProgramInterpreterInvokeExternMethod12()
+        public async Task ProgramInterpreterInvokeExternMethodUI12()
         {
             var parser = new BaZicParser();
 
@@ -579,7 +579,7 @@ END FUNCTION";
         }
 
         [TestMethod]
-        public async Task ProgramInterpreterInvokeExternMethod13()
+        public async Task ProgramInterpreterInvokeExternMethodUI13()
         {
             var parser = new BaZicParser();
 
@@ -651,6 +651,84 @@ END FUNCTION";
                 Assert.AreEqual(123, result);
                 Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
             }
+        }
+
+        [TestMethod]
+        public async Task ProgramInterpreterInvokeExternMethodUI15()
+        {
+            var inputCode =
+@"
+EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+EXTERN FUNCTION Method1()
+    VARIABLE var1 = Button1.Content
+    IF var1 = ""Hello"" THEN
+        Button1.Content = ""Hello World""
+        var1 = Button1.Content
+        IF var1 = ""Hello World"" THEN
+            RETURN TRUE
+        END IF
+    END IF
+
+    RETURN FALSE
+END FUNCTION
+
+# The XAML will be provided separatly";
+
+            var xamlCode = @"
+<StackPanel xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+    <Button Name=""Button1"" Content=""Hello""/>
+</StackPanel>";
+
+            var task1 = Task.Run(() =>
+            {
+                using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+                {
+                    var result = interpreter.InvokeMethod(true, "Method1", true).Result;
+
+                    Assert.IsNull(result);
+                    Assert.AreEqual("The variable 'Button1' does not exist or is not accessible.", interpreter.Error.Exception.Message);
+
+                    var t = interpreter.StartDebugAsync(true);
+                    result = interpreter.InvokeMethod(true, "Method1", true).Result;
+
+                    Assert.AreEqual(true, result);
+                }
+            });
+
+            var task2 = Task.Run(() =>
+            {
+                using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+                {
+                    var errors = interpreter.Build().Result;
+
+                    Assert.IsNull(errors);
+
+                    var result = interpreter.InvokeMethod(true, "Method1", true).Result;
+
+                    Assert.IsNull(result);
+                    Assert.AreEqual("Object reference not set to an instance of an object.", interpreter.Error.Exception.InnerException.Message);
+
+                    var t = interpreter.StartReleaseAsync(true);
+                    result = interpreter.InvokeMethod(true, "Method1", true).Result;
+
+                    Assert.AreEqual(true, result);
+                }
+            });
+
+            var task3 = Task.Run(() =>
+            {
+                using (var interpreter = new BaZicInterpreter(inputCode, xamlCode))
+                {
+                    var t = interpreter.StartReleaseAsync(true);
+                    var result = interpreter.InvokeMethod(true, "Method1", true).Result;
+
+                    Assert.AreEqual(true, result);
+                }
+            });
+
+            await Task.WhenAll(task1, task2, task3);
         }
     }
 }

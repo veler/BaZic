@@ -9,18 +9,13 @@ namespace BaZicProgramReleaseMode
     {
         #region Fields & Constants
 
-        private System.Windows.Window _userInterface;
+        private System.Windows.FrameworkElement _userInterface;
 
         private string _xamlCode = "{XAMLCode}";
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets the current instance of the helper.
-        /// </summary>
-        internal static ProgramHelper Instance { get; private set; }
 
         /// <summary>
         /// Sets the result of the user interface when the window is closing.
@@ -34,38 +29,25 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Raised when the Idle state can be set in the BaZicInterpreter.
         /// </summary>
-        public static event System.EventHandler IdleStateOccured;
+        public event System.EventHandler IdleStateOccured;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Creates a new static instance of <see cref="ProgramHelper"/>.
-        /// </summary>
-        internal static void CreateNewInstance()
-        {
-            Instance = new ProgramHelper();
-        }
-
-        /// <summary>
         /// Close the UI.
         /// </summary>
-        public static void RequestCloseUserInterface()
-        {
-            Instance?.CloseUserInterface();
-        }
-
-        /// <summary>
-        /// Close the UI.
-        /// </summary>
-        internal void CloseUserInterface()
+        public void CloseUserInterface()
         {
             try
             {
                 UIDispatcher?.Invoke(() =>
                 {
-                    _userInterface?.Close();
+                    if (_userInterface is System.Windows.Window window)
+                    {
+                        window?.Close();
+                    }
                     System.Windows.Threading.Dispatcher.CurrentDispatcher?.InvokeShutdown();
                 }, System.Windows.Threading.DispatcherPriority.Send);
             }
@@ -75,9 +57,9 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Load the user interface in memory.
         /// </summary>
-        internal void LoadWindow()
+        internal void LoadUserInterface()
         {
-            _userInterface = System.Windows.Markup.XamlReader.Parse(_xamlCode) as System.Windows.Window;
+            _userInterface = System.Windows.Markup.XamlReader.Parse(_xamlCode) as System.Windows.FrameworkElement;
             UIDispatcher = _userInterface.Dispatcher;
         }
 
@@ -85,23 +67,32 @@ namespace BaZicProgramReleaseMode
         /// Show the user interface of the program.
         /// </summary>
         /// <returns>Returns the result of the Window.Closed event from the user interface.</returns>
-        internal dynamic ShowWindow()
+        internal dynamic ShowUserInterface()
         {
             System.Exception eventException = null;
 
-            _userInterface.Closed += (sender, e) =>
-            {
-                UIDispatcher?.InvokeShutdown();
-            };
+            var window = _userInterface as System.Windows.Window;
 
-            _userInterface.Loaded += (sender, e) =>
+            if (window != null)
             {
-                IdleStateOccured?.Invoke(this, e);
-            };
+                window.Closed += (sender, e) =>
+                {
+                    UIDispatcher?.InvokeShutdown();
+                };
+
+                window.Loaded += (sender, e) =>
+                {
+                    IdleStateOccured?.Invoke(this, e);
+                };
+            }
+            else
+            {
+                IdleStateOccured?.Invoke(this, new System.EventArgs());
+            }
 
             try
             {
-                _userInterface.Show();
+                window?.Show();
                 System.Windows.Threading.Dispatcher.Run();
             }
             catch (System.Exception exception)
@@ -112,9 +103,10 @@ namespace BaZicProgramReleaseMode
             {
                 try
                 {
-                    _userInterface.Close();
+                    window?.Close();
                 }
                 catch { }
+                window = null;
                 _userInterface = null;
             }
 

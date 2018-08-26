@@ -1020,7 +1020,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
                 if (Program != null && Program is BaZicUiProgram)
                 {
-                    Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.ProgramHelper", "RequestCloseUserInterface");
+                    _releaseModeRuntime.CloseUserInterface();
                     _mainInterpreterTask?.Wait(1000);
                 }
 
@@ -1151,6 +1151,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                     FreePauseModeWaiter();
                     _mainInterpreterTask?.Dispose();
                     _stateChangedHistory.Clear();
+                    _releaseModeRuntime = null;
                     DebugInfos = null;
                 }
             }

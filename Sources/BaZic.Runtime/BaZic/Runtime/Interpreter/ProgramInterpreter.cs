@@ -45,7 +45,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         /// <summary>
         /// Gets the user interface if the interpreted program is a <see cref="BaZicUiProgram"/>.
         /// </summary>
-        internal Window UserInterface { get; private set; }
+        internal FrameworkElement UserInterface { get; private set; }
 
         /// <summary>
         /// Gets the dispatcher of the UI.
@@ -134,7 +134,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     }
 
                     _uiThread = Thread.CurrentThread;
-                    UserInterface = XamlReader.Parse(_uiProgram.Xaml) as Window;
+                    UserInterface = XamlReader.Parse(_uiProgram.Xaml) as FrameworkElement;
 
                     if (UserInterface == null)
                     {
@@ -202,19 +202,24 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.ShowUi);
                     }
 
+                    var window = UserInterface as Window;
+
                     try
                     {
-                        UserInterface.Closed += (sender, e) =>
+                        if (window != null)
                         {
-                            if (BaZicInterpreter.Verbose)
+                            window.Closed += (sender, e) =>
                             {
-                                VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.CloseUi);
-                            }
-                            UserInterface?.Dispatcher?.InvokeShutdown();
-                        };
+                                if (BaZicInterpreter.Verbose)
+                                {
+                                    VerboseLog(L.BaZic.Runtime.Interpreters.ProgramInterpreter.CloseUi);
+                                }
+                                UserInterface?.Dispatcher?.InvokeShutdown();
+                            };
+                        }
 
                         BaZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle));
-                        UserInterface.Show();
+                        window?.Show();
                         Dispatcher.Run();
                     }
                     catch (Exception exception)
@@ -226,7 +231,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     {
                         try
                         {
-                            UserInterface.Close();
+                            window?.Close();
                         }
                         catch (Exception exception)
                         {
@@ -257,9 +262,13 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
         {
             try
             {
-                UIDispatcher?.Invoke(() =>
+                UIDispatcher.Invoke(() =>
                 {
-                    UserInterface?.Close();
+                    if (UserInterface is Window window)
+                    {
+                        window.Close();
+                    }
+                    Dispatcher.CurrentDispatcher?.InvokeShutdown();
                 }, DispatcherPriority.Send);
                 UIDispatcher = null;
             }

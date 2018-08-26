@@ -14,6 +14,15 @@ namespace BaZic.Core.ComponentModel
         /// </summary>
         public const string EntryPointMethodName = "Main";
 
+        /// <summary>
+        /// Names of the main namespace and class generated when a BaZic program is compiled.
+        /// </summary>
+        public const string CompiledProgramClassName = "BaZicProgramReleaseMode.Program";
+
+        public const string CompiledProgramIdleStateOccuredEvent = "IdleStateOccured";
+        public const string CompiledProgramHelperInstance = "ProgramHelperInstance";
+        public const string CompiledCloseUserInterface = "CloseUserInterface";
+
         // Assembly Properties
         internal const string AssemblyPropertyVersion = "Version=";
         internal const string AssemblyPropertyCulture = "Culture=";

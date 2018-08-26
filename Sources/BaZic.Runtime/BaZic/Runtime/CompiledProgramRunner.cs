@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using BaZic.Core.ComponentModel;
+﻿using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Assemblies;
 using BaZic.Core.Enums;
 using BaZic.Runtime.BaZic.Code;
@@ -11,6 +7,10 @@ using BaZic.Runtime.Localization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace BaZic.Runtime.BaZic.Runtime
 {
@@ -24,6 +24,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         private readonly BaZicInterpreterCore _baZicInterpreter;
         private readonly BaZicProgram _program;
         private readonly AssemblySandbox _assemblySandbox;
+        private object _compiledProgramInstance;
 
         #endregion
 
@@ -146,7 +147,11 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 ThreadHelper.RunOnStaThread(() =>
                 {
-                    _baZicInterpreter.Reflection.SubscribeStaticEvent("BaZicProgramReleaseMode.ProgramHelper", "IdleStateOccured", () =>
+                    InitializeProgram();
+
+                    var programHelper = _assemblySandbox.Reflection.GetProperty(_compiledProgramInstance, Consts.CompiledProgramHelperInstance);
+
+                    _assemblySandbox.Reflection.SubscribeEvent(programHelper, Consts.CompiledProgramIdleStateOccuredEvent, () =>
                     {
                         _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Idle)); // Go to Idle mode.
                     });
@@ -156,6 +161,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
             else
             {
+                InitializeProgram();
                 ProgramResult = InvokeMethod(Consts.EntryPointMethodName, argumentValues);
             }
 
@@ -173,19 +179,29 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <returns>Returns the result of the method.</returns>
         internal object InvokeMethod(string methodName, params object[] arguments)
         {
-            return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
-            //var dispatcher = _assemblySandbox.Reflection.GetStaticProperty("BaZicProgramReleaseMode.ProgramHelper", "UIDispatcher") as Dispatcher;
-            //if (dispatcher == null)
-            //{
-            //    return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments);
-            //}
-            //else
-            //{
-            //    return dispatcher.Invoke(() =>
-            //    {
-            //        return _assemblySandbox.Reflection.InvokeStaticMethod("BaZicProgramReleaseMode.Program", methodName, arguments); ;
-            //    }, DispatcherPriority.Background);
-            //}
+            InitializeProgram();
+            return _assemblySandbox.Reflection.InvokeMethod(_compiledProgramInstance, methodName, arguments);
+        }
+
+        /// <summary>
+        /// Request to close the user interface of the running program.
+        /// </summary>
+        internal void CloseUserInterface()
+        {
+            InitializeProgram();
+            var programHelper = _assemblySandbox.Reflection.GetProperty(_compiledProgramInstance, Consts.CompiledProgramHelperInstance);
+            _assemblySandbox.Reflection.InvokeMethod(programHelper, Consts.CompiledCloseUserInterface);
+        }
+
+        /// <summary>
+        /// Creates an instance of the compiled program class, if it is not already instanciated.
+        /// </summary>
+        private void InitializeProgram()
+        {
+            if (_compiledProgramInstance == null)
+            {
+                _compiledProgramInstance = _assemblySandbox.Reflection.Instantiate(_assemblySandbox.GetTypeRef(Consts.CompiledProgramClassName));
+            }
         }
 
         /// <summary>

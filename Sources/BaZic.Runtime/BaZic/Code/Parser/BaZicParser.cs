@@ -33,7 +33,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         private readonly List<Exception> _issues = new List<Exception>();
 
         private FastReflection _reflectionHelper;
-        private Window _parsedXamlRoot;
+        private FrameworkElement _parsedXamlRoot;
         private int _catchIndicator;
         private int _doLoopIndicator;
 
@@ -186,7 +186,10 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     _doLoopIndicator = 0;
                     if (_parsedXamlRoot != null)
                     {
-                        _parsedXamlRoot?.Close();
+                        if (_parsedXamlRoot is Window window)
+                        {
+                            window.Close();
+                        }
                         _parsedXamlRoot = null;
                     }
                     _reflectionHelper.Dispose();
@@ -390,19 +393,19 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// Parse the user interface XAML code.
         /// </summary>
         /// <param name="xamlCode">The XAML code to analyze that represents the user interface.</param>
-        /// <returns>Returns a <see cref="Window"/> is the parsing succeed. Otherwise, returns null if the XAML code is empty, or an exception if it can't parse it.</returns>
-        private Window ParseXaml(string xamlCode)
+        /// <returns>Returns a <see cref="FrameworkElement"/> is the parsing succeed. Otherwise, returns null if the XAML code is empty, or an exception if it can't parse it.</returns>
+        private FrameworkElement ParseXaml(string xamlCode)
         {
             if (string.IsNullOrWhiteSpace(xamlCode))
             {
                 return null;
             }
 
-            Window result = null;
+            FrameworkElement result = null;
 
             try
             {
-                result = XamlReader.Parse(xamlCode) as Window;
+                result = XamlReader.Parse(xamlCode) as FrameworkElement;
             }
             catch (Exception exception)
             {
