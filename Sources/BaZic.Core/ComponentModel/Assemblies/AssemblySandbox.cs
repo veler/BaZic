@@ -76,7 +76,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public void LoadAssembly(string assemblyPath, bool forReflectionPurpose = true)
         {
             Requires.NotNullOrWhiteSpace(assemblyPath, nameof(assemblyPath));
-            _assemblyManager.LoadAssembly(AssemblyDetails.GetAssemblyDetailsFromName(assemblyPath), forReflectionPurpose);
+            _assemblyManager.LoadAssembly(AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyPath), forReflectionPurpose);
         }
 
         /// <summary>

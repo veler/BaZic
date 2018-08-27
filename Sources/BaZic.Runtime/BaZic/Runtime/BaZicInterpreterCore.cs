@@ -1073,7 +1073,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 if (assemblies.All(a => string.CompareOrdinal(a.ToLocationOrFullName(), path) != 0))
                 {
-                    assemblies.Add(AssemblyDetails.GetAssemblyDetailsFromName(path));
+                    assemblies.Add(AssemblyInfoHelper.GetAssemblyDetailsFromName(path));
                 }
             }
 

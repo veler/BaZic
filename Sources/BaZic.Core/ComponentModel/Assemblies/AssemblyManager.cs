@@ -133,7 +133,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         {
             var assembly = Assembly.Load(assemblyByteArray);
 
-            var details = AssemblyDetails.GetAssemblyDetailsFromName(assembly.FullName);
+            var details = AssemblyInfoHelper.GetAssemblyDetailsFromName(assembly.FullName);
             details.ProcessorArchitecture = assembly.GetName().ProcessorArchitecture;
 
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
@@ -358,7 +358,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                     _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
                     {
                         Assembly = assembly,
-                        Details = AssemblyDetails.GetAssemblyDetailsFromName(dependentAssemblyFilename)
+                        Details = AssemblyInfoHelper.GetAssemblyDetailsFromName(dependentAssemblyFilename)
                     });
                     return assembly;
                 }
@@ -368,7 +368,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
             {
                 Assembly = assembly2,
-                Details = AssemblyDetails.GetAssemblyDetailsFromName(assemblyName.FullName)
+                Details = AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyName.FullName)
             });
             return assembly2;
         }

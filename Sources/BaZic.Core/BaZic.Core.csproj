@@ -54,6 +54,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentModel\Assemblies\AssemblyInfoHelper.cs" />
     <Compile Include="ComponentModel\Assemblies\LoadedAssemblyDetails.cs" />
     <Compile Include="ComponentModel\SynchronizationCallback.cs" />
     <Compile Include="ComponentModel\VisualTreeHelperExtension.cs" />
