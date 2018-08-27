@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,22 +20,29 @@ namespace BaZic.Core.ComponentModel.Assemblies
 
             if (File.Exists(assemblyName))
             {
+                details.Location = assemblyName;
                 if (IsDotNetAssembly(assemblyName))
                 {
                     var assemblyNameInfo = AssemblyName.GetAssemblyName(assemblyName);
-                    details.Location = assemblyName;
                     details.CopyToLocal = true;
-
+                    details.IsDotNetAssembly = true;
                     fullName = assemblyNameInfo.FullName;
                 }
                 else
                 {
-                    // TODO : Still try to retrieve data.
-                    throw new BadImageFormatException($"The file '{assemblyName}' is not a .NET Assembly.");
+                    var windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                    if (!details.Location.StartsWith(windowsPath))
+                    {
+                        details.CopyToLocal = true;
+                    }
+
+                    var fileVersionInfo = FileVersionInfo.GetVersionInfo(details.Location);
+                    fullName = $"{fileVersionInfo.FileDescription}, Version={fileVersionInfo.FileVersion}, Culture={fileVersionInfo.Language}";
                 }
             }
             else
             {
+                details.IsDotNetAssembly = true;
                 fullName = assemblyName;
             }
 

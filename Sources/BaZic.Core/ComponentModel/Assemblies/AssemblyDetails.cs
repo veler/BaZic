@@ -29,6 +29,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public bool CopyToLocal { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the file is a .NET managed assembly or not.
+        /// </summary>
+        public bool IsDotNetAssembly { get; set; }
+
+        /// <summary>
         /// Gets or sets the full name of the assembly.
         /// </summary>
         public string FullName { get; set; }
