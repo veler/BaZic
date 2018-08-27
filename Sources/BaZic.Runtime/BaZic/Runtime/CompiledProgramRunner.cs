@@ -62,7 +62,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <summary>
         /// Convert the BaZic program to CSharp code and build it in memory.
         /// </summary>
-        /// 
+        /// <param name="outputType">The type of assembly to generate</param>
         internal CompilerResult Build(BaZicCompilerOutputType outputType)
         {
             if (_baZicInterpreter.Verbose)
@@ -214,7 +214,7 @@ namespace BaZic.Runtime.BaZic.Runtime
 
             references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
 
-            foreach (var assembly in _assemblySandbox.GetAssemblies())
+            foreach (var assembly in _assemblySandbox.GetAssemblies().Where(a => a.IsDotNetAssembly))
             {
                 references.Add(MetadataReference.CreateFromFile(assembly.Location));
             }

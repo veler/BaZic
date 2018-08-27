@@ -29,6 +29,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public bool CopyToLocal { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the file is a .NET managed assembly or not.
+        /// </summary>
+        public bool IsDotNetAssembly { get; set; }
+
+        /// <summary>
         /// Gets or sets the full name of the assembly.
         /// </summary>
         public string FullName { get; set; }
@@ -98,68 +103,6 @@ namespace BaZic.Core.ComponentModel.Assemblies
             }
 
             return FullName;
-        }
-
-        /// <summary>
-        /// Gets a new instance of <see cref="AssemblyDetails"/> filled from the full name or the location of an assembly.
-        /// </summary>
-        /// <param name="assemblyName">Defines the full name or the location of the assembly.</param>
-        /// <returns>An instance of <see cref="AssemblyDetails"/></returns>
-        public static AssemblyDetails GetAssemblyDetailsFromName(string assemblyName)
-        {
-            var details = new AssemblyDetails();
-            var fullName = string.Empty;
-
-            if (File.Exists(assemblyName))
-            {
-                var assemblyNameInfo = AssemblyName.GetAssemblyName(assemblyName);
-                details.Location = assemblyName;
-                details.CopyToLocal = true;
-
-                fullName = assemblyNameInfo.FullName;
-            }
-            else
-            {
-                fullName = assemblyName;
-            }
-
-            var properties = fullName.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
-
-            var name = properties.FirstOrDefault();
-            var version = properties.SingleOrDefault(p => p.StartsWith(Consts.AssemblyPropertyVersion))?.Replace(Consts.AssemblyPropertyVersion, string.Empty);
-            var culture = properties.SingleOrDefault(p => p.StartsWith(Consts.AssemblyPropertyCulture))?.Replace(Consts.AssemblyPropertyCulture, string.Empty);
-            var publicKeyToken = properties.SingleOrDefault(p => p.StartsWith(Consts.AssemblyPropertyPublicKeyToken))?.Replace(Consts.AssemblyPropertyPublicKeyToken, string.Empty);
-            var processorArchitecture = properties.SingleOrDefault(p => p.StartsWith(Consts.AssemblyPropertyProcessorArchitecture))?.Replace(Consts.AssemblyPropertyProcessorArchitecture, string.Empty);
-            var custom = properties.SingleOrDefault(p => p.StartsWith(Consts.AssemblyPropertyCustom))?.Replace(Consts.AssemblyPropertyCustom, string.Empty);
-
-            var processorArch = ProcessorArchitecture.None;
-            switch (processorArchitecture)
-            {
-                case Consts.AssemblyPropertyX86:
-                    processorArch = ProcessorArchitecture.X86;
-                    break;
-
-                case Consts.AssemblyPropertyX64:
-                    processorArch = ProcessorArchitecture.Amd64;
-                    break;
-
-                case Consts.AssemblyPropertyAnyCPU:
-                    processorArch = ProcessorArchitecture.MSIL;
-                    break;
-
-                default:
-                    break;
-            }
-
-            details.Culture = culture;
-            details.Custom = custom;
-            details.FullName = fullName;
-            details.Name = name;
-            details.ProcessorArchitecture = processorArch;
-            details.PublicKeyToken = publicKeyToken;
-            details.Version = version;
-
-            return details;
         }
 
         #endregion

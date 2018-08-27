@@ -75,6 +75,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>If succeeded, returns the loaded assembly.</returns>
         internal void LoadAssembly(AssemblyDetails assemblyDetails, bool forReflectionPurpose)
         {
+            if (!assemblyDetails.IsDotNetAssembly)
+            {
+                return;
+            }
+
             var assemblies = GetAssembliesInternal();
             var assemblyLoaded = false;
             Assembly assembly = null;
@@ -133,7 +138,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         {
             var assembly = Assembly.Load(assemblyByteArray);
 
-            var details = AssemblyDetails.GetAssemblyDetailsFromName(assembly.FullName);
+            var details = AssemblyInfoHelper.GetAssemblyDetailsFromName(assembly.FullName);
             details.ProcessorArchitecture = assembly.GetName().ProcessorArchitecture;
 
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
@@ -159,6 +164,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns the list of types. Returns null if the assembly is not found.</returns>
         internal ReadOnlyCollection<TypeDetails> GetTypes(AssemblyDetails assemblyDetails)
         {
+            if (!assemblyDetails.IsDotNetAssembly)
+            {
+                return new ReadOnlyCollection<TypeDetails>(new List<TypeDetails>());
+            }
+
             var loadedAssemblies = GetAssembliesInternal();
 
             var loadedAssembly = loadedAssemblies.FirstOrDefault(a => assemblyDetails.Name == a.Assembly.GetName().Name && assemblyDetails.Version == a.Assembly.GetName().Version.ToString() && (string.IsNullOrEmpty(assemblyDetails.Culture) ? "neutral" : assemblyDetails.Culture) == (string.IsNullOrEmpty(a.Assembly.GetName().CultureName) ? "neutral" : a.Assembly.GetName().CultureName));
@@ -350,17 +360,20 @@ namespace BaZic.Core.ComponentModel.Assemblies
 
             if (directory != null)
             {
-                var dependentAssemblyFilename = Path.Combine(directory.FullName, assemblyName.Name + ".dll");
+                var dependentAssemblyFilenames = new string[] { Path.Combine(directory.FullName, assemblyName.Name + ".dll"), Path.Combine(directory.FullName, assemblyName.Name + ".exe") };
 
-                if (File.Exists(dependentAssemblyFilename))
+                foreach (var dependentAssemblyFilename in dependentAssemblyFilenames)
                 {
-                    var assembly = Assembly.ReflectionOnlyLoadFrom(dependentAssemblyFilename);
-                    _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
+                    if (File.Exists(dependentAssemblyFilename))
                     {
-                        Assembly = assembly,
-                        Details = AssemblyDetails.GetAssemblyDetailsFromName(dependentAssemblyFilename)
-                    });
-                    return assembly;
+                        var assembly = Assembly.ReflectionOnlyLoadFrom(dependentAssemblyFilename);
+                        _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
+                        {
+                            Assembly = assembly,
+                            Details = AssemblyInfoHelper.GetAssemblyDetailsFromName(dependentAssemblyFilename)
+                        });
+                        return assembly;
+                    }
                 }
             }
 
@@ -368,7 +381,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
             {
                 Assembly = assembly2,
-                Details = AssemblyDetails.GetAssemblyDetailsFromName(assemblyName.FullName)
+                Details = AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyName.FullName)
             });
             return assembly2;
         }
