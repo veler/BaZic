@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Windows;
 
 namespace BaZic.Core.ComponentModel
 {
@@ -17,12 +18,28 @@ namespace BaZic.Core.ComponentModel
         /// <param name="isBackground">Defines whether the thread must run in background or not.</param>
         public static void RunOnStaThread(Action action, bool isBackground = false)
         {
-            var thread = new Thread((ThreadStart)new SynchronizationCallback(action));
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.IsBackground = isBackground;
-            thread.CurrentCulture = Localization.LocalizationHelper.GetCurrentCulture();
-            thread.Start();
-            thread.Join();
+            if (Application.Current != null)
+            {
+                var priority = System.Windows.Threading.DispatcherPriority.Normal;
+                if (isBackground)
+                {
+                    priority = System.Windows.Threading.DispatcherPriority.Background;
+                }
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    action();
+                }, priority);
+            }
+            else
+            {
+                var thread = new Thread((ThreadStart)new SynchronizationCallback(action));
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.IsBackground = isBackground;
+                thread.CurrentCulture = Localization.LocalizationHelper.GetCurrentCulture();
+                thread.Start();
+                thread.Join();
+            }
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using BaZic.Core.ComponentModel;
+using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using BaZic.Runtime.BaZic.Runtime.Interpreter.Expression;
@@ -134,7 +135,7 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     }
 
                     _uiThread = Thread.CurrentThread;
-                    UserInterface = XamlReader.Parse(_uiProgram.Xaml) as FrameworkElement;
+                    UserInterface = SerializationHelper.ConvertFromXaml(_uiProgram.Xaml) as FrameworkElement;
 
                     if (UserInterface == null)
                     {

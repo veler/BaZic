@@ -1,5 +1,6 @@
 ﻿using BaZic.Core.ComponentModel;
 using BaZic.Core.Enums;
+using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.Localization;
 using System;
@@ -116,7 +117,7 @@ namespace BaZic.Runtime.BaZic.Code
             {
                 try
                 {
-                    _userInterface = XamlReader.Parse(syntaxTree.Xaml) as FrameworkElement;
+                    _userInterface = SerializationHelper.ConvertFromXaml(syntaxTree.Xaml) as FrameworkElement;
                 }
                 catch (Exception exception)
                 {

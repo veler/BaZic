@@ -1,6 +1,9 @@
-﻿using System;
+﻿using BaZic.Core.ComponentModel;
+using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Markup;
+using System.Xml;
 
 namespace BaZic.Core.IO.Serialization
 {
@@ -55,6 +58,22 @@ namespace BaZic.Core.IO.Serialization
             {
                 stream.Seek(0, SeekOrigin.Begin);
                 return formatter.Deserialize(stream) as T;
+            }
+        }
+
+        /// <summary>
+        /// Deserialize the given XAML representation to an object.
+        /// </summary>
+        /// <param name="xaml">The XAML representation of an object.</param>
+        /// <returns>An object resulting from the deserialization of a XML string.</returns>
+        [STAThread]
+        public static object ConvertFromXaml(string xaml)
+        {
+            Requires.NotNullOrWhiteSpace(xaml, nameof(xaml));
+
+            using (var xmlReader = XmlReader.Create(new StringReader(xaml)))
+            {
+                return XamlReader.Load(xmlReader);
             }
         }
     }

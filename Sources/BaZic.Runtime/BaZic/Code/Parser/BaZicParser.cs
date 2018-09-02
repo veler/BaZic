@@ -1,6 +1,7 @@
 ﻿using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Reflection;
 using BaZic.Core.Enums;
+using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Code.Lexer;
 using BaZic.Runtime.BaZic.Code.Lexer.Tokens;
@@ -195,7 +196,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     _reflectionHelper.Dispose();
                     _reflectionHelper = null;
                 }
-            });
+            }, true);
 
             return new ParserResult(program, new AggregateException(_issues));
         }
@@ -405,7 +406,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
             try
             {
-                result = XamlReader.Parse(xamlCode) as FrameworkElement;
+                result = SerializationHelper.ConvertFromXaml(xamlCode) as FrameworkElement;
             }
             catch (Exception exception)
             {
