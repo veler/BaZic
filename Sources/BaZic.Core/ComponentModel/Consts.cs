@@ -33,6 +33,9 @@ namespace BaZic.Core.ComponentModel
         internal const string AssemblyPropertyPublicKeyToken = "PublicKeyToken=";
         internal const string AssemblyPropertyCustom = "Custom=";
 
+        // Resources
+        public static readonly string[] ImageResourcesType = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
+
         // Reflection
 
         /// <summary>

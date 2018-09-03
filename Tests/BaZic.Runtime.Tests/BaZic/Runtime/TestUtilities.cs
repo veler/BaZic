@@ -47,7 +47,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 
         internal static async Task RunDebug(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
-            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, false))
+            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, optimize: false))
             {
                 interpreter.SetDependencies("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
                 await interpreter.StartDebugAsync(false, args);
@@ -63,7 +63,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 
         internal static async Task RunDebugOptimized(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
-            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, true))
+            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, optimize: true))
             {
                 interpreter.SetDependencies("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
                 await interpreter.StartDebugAsync(false, args);
@@ -79,7 +79,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 
         internal static async Task RunDebugVerbose(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
-            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, false))
+            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, optimize: false))
             {
                 interpreter.SetDependencies("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
                 await interpreter.StartDebugAsync(true, args);
@@ -95,7 +95,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 
         internal static async Task RunDebugOptimizedVerbose(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
-            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, true))
+            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, optimize: true))
             {
                 interpreter.SetDependencies("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
                 await interpreter.StartDebugAsync(true, args);
@@ -111,7 +111,7 @@ namespace BaZic.Runtime.Tests.BaZic.Runtime
 
         internal static async Task RunRelease(List<string> resultReceiver, string inputBaZicCode, string xamlCode, params object[] args)
         {
-            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, false))
+            using (var interpreter = new BaZicInterpreter(inputBaZicCode, xamlCode, optimize: false))
             {
                 interpreter.SetDependencies("PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
                 await interpreter.StartReleaseAsync(false, args);

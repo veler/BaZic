@@ -296,10 +296,12 @@
     <Compile Include="BaZic\Runtime\Interpreter\Statement\VariableDeclarationInterpreter.cs" />
     <Compile Include="BaZic\Runtime\Memory\ControlAccessor.cs" />
     <Compile Include="BaZic\Runtime\Memory\Variable.cs" />
+    <EmbeddedResource Include="Resources\CSharpCodeGeneratorResourceManager.cs" />
     <Content Include="Properties\AssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyInfo.codegen.cs</LastGenOutput>
     </Content>
+    <Compile Include="BaZic\Runtime\RuntimeResourceManager.cs" />
     <Compile Include="Localization\L.codegen.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

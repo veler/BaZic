@@ -6,6 +6,7 @@ using BaZic.Runtime.BaZic.Runtime.Interpreter.Expression;
 using BaZic.Runtime.Localization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -135,7 +136,8 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                     }
 
                     _uiThread = Thread.CurrentThread;
-                    UserInterface = SerializationHelper.ConvertFromXaml(_uiProgram.Xaml) as FrameworkElement;
+
+                    LoadUserInterface();
 
                     if (UserInterface == null)
                     {
@@ -238,14 +240,18 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
                         {
                             CoreHelper.ReportException(exception);
                         }
-
-                        foreach (var variable in Variables)
+                        finally
                         {
-                            variable.Dispose();
-                        }
+                            RuntimeResourceManager.DeleteResources(ExecutionFlowId.ToString());
 
-                        BaZicInterpreter.Reflection.UnsubscribeAllEvents();
-                        UserInterface = null;
+                            foreach (var variable in Variables)
+                            {
+                                variable.Dispose();
+                            }
+
+                            BaZicInterpreter.Reflection.UnsubscribeAllEvents();
+                            UserInterface = null;
+                        }
                     }
                 });
 
@@ -353,6 +359,60 @@ namespace BaZic.Runtime.BaZic.Runtime.Interpreter
             }
 
             return entryPoint;
+        }
+
+        /// <summary>
+        /// Loads the resource files and adapt the XAML for loading it.
+        /// </summary>
+        private void LoadUserInterface()
+        {
+            var xamlCode = _uiProgram.Xaml;
+
+            if (_uiProgram.ResourceFilePaths != null)
+            {
+                var xmlns = @"xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""";
+                var xmlnsx = @"xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""";
+
+                var indexOfB = xamlCode.IndexOf(@"xmlns:b=""");
+                if (indexOfB > -1)
+                {
+                    var indexOfEndB = xamlCode.IndexOf('\"', xamlCode.IndexOf('\"', indexOfB) + 1);
+                    xamlCode = xamlCode.Remove(indexOfB, (indexOfEndB - indexOfB) + 1);
+                }
+
+                var xmlnsRes = $@"xmlns:b=""clr-namespace:{typeof(RuntimeResourceManager).Namespace};assembly={typeof(RuntimeResourceManager).Assembly.GetName().Name}""";
+                xamlCode = xamlCode.Replace(xmlns, $"{xmlns} {xmlnsRes}");
+
+                if (!xamlCode.Contains(xmlnsx))
+                {
+                    xamlCode = xamlCode.Replace(xmlns, $"{xmlns} {xmlnsx}");
+                }
+
+                foreach (var resourceFile in _uiProgram.ResourceFilePaths)
+                {
+                    if (File.Exists(resourceFile))
+                    {
+                        var fileName = Path.GetFileName(resourceFile);
+                        var resourceName = RuntimeResourceManager.AddOrReplaceResource(ExecutionFlowId.ToString(), resourceFile);
+                        var xamlResourceFile = resourceFile.Replace("\\", "/");
+
+                        if (xamlCode.Contains($"file:///{xamlResourceFile}"))
+                        {
+                            xamlCode = xamlCode.Replace($"file:///{xamlResourceFile}", $"{{Binding Path=[{resourceName}], Source={{x:Static b:{nameof(RuntimeResourceManager)}.{nameof(RuntimeResourceManager.Resources)}}}, Mode=OneWay}}");
+                        }
+                        else if (xamlCode.Contains(xamlResourceFile))
+                        {
+                            xamlCode = xamlCode.Replace(xamlResourceFile, $"{{Binding Path=[{resourceName}], Source={{x:Static b:{nameof(RuntimeResourceManager)}.{nameof(RuntimeResourceManager.Resources)}}}, Mode=OneWay}}");
+                        }
+                        else if (xamlCode.Contains(fileName))
+                        {
+                            xamlCode = xamlCode.Replace(fileName, resourceName);
+                        }
+                    }
+                }
+            }
+
+            UserInterface = SerializationHelper.ConvertFromXaml(xamlCode) as FrameworkElement;
         }
 
         #endregion

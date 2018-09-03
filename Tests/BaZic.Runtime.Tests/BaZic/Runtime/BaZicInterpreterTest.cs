@@ -419,7 +419,7 @@ END FUNCTION";
     RETURN result
 END FUNCTION";
 
-            using (var interpreter = new BaZicInterpreter(inputCode, string.Empty, false))
+            using (var interpreter = new BaZicInterpreter(inputCode, false))
             {
                 var mscorlib = AssemblyInfoHelper.GetAssemblyDetailsFromName(typeof(object).Assembly.FullName);
                 var baZicCoreTest = AssemblyInfoHelper.GetAssemblyDetailsFromName(typeof(LogMock).Assembly.Location);
@@ -472,7 +472,7 @@ END FUNCTION
     </StackPanel>
 </Window>";
 
-            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode, false))
+            using (var interpreter = new BaZicInterpreter(inputCode, xamlCode, optimize: false))
             {
                 var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
                 var errors = await interpreter.Build(Core.Enums.BaZicCompilerOutputType.WindowsApp, tempFile);

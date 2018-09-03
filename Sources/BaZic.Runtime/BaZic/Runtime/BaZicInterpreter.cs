@@ -77,12 +77,24 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Initializes a new instance of the <see cref="BaZicInterpreter"/> class.
         /// </summary>
         /// <param name="inputCode">The BaZic code to interpret.</param>
-        /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
-        public BaZicInterpreter(string inputCode, string xamlCode, bool optimize = false)
+        public BaZicInterpreter(string inputCode, bool optimize = false)
             : this()
         {
-            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(new BaZicInterpreterMiddleware(this), _assemblySandbox, inputCode, xamlCode, optimize);
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(new BaZicInterpreterMiddleware(this), _assemblySandbox, inputCode, string.Empty, new List<string>(), optimize);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaZicInterpreter"/> class.
+        /// </summary>
+        /// <param name="inputCode">The BaZic code to interpret.</param>
+        /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
+        /// <param name="resourceFilePaths">Paths to the resources files (like PNG or JPG) required for the XAML code.</param>
+        /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
+        public BaZicInterpreter(string inputCode, string xamlCode, IEnumerable<string> resourceFilePaths = null, bool optimize = false)
+            : this()
+        {
+            _core = _assemblySandbox.CreateInstanceMarshalByRefObject<BaZicInterpreterCore>(new BaZicInterpreterMiddleware(this), _assemblySandbox, inputCode, xamlCode, resourceFilePaths, optimize);
         }
 
         /// <summary>
