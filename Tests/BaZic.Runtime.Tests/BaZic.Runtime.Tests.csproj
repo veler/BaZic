@@ -47,6 +47,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaZic\Code\AbstractSyntaxTree\ArrayIndexerExpressionTest.cs" />
@@ -123,6 +124,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Image.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="LocalWebPage.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

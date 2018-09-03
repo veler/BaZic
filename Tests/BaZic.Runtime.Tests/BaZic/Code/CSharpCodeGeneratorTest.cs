@@ -100,7 +100,7 @@ END FUNCTION
     </StackPanel>
 </Window>";
 
-            var program = new BaZicParser().Parse(inputCodeUi, xamlCode, true).Program;
+            var program = new BaZicParser().Parse(inputCodeUi, xamlCode, optimize: true).Program;
 
             var code = new CSharpCodeGenerator().Generate(program);
 

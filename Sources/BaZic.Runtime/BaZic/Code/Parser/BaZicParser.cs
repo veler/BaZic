@@ -1,6 +1,7 @@
 ﻿using BaZic.Core.ComponentModel;
 using BaZic.Core.ComponentModel.Reflection;
 using BaZic.Core.Enums;
+using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Code.Lexer;
 using BaZic.Runtime.BaZic.Code.Lexer.Tokens;
@@ -8,6 +9,7 @@ using BaZic.Runtime.BaZic.Code.Optimizer;
 using BaZic.Runtime.Localization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Markup;
@@ -68,7 +70,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// <returns>A <see cref="BaZicProgram"/> that represents the syntax tree that corresponds to the input code.</returns>
         public ParserResult Parse(string inputCode, bool optimize = false)
         {
-            return Parse(inputCode, string.Empty, optimize);
+            return Parse(inputCode, string.Empty, null, optimize);
         }
 
         /// <summary>
@@ -76,16 +78,17 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// </summary>
         /// <param name="inputCode">The BaZic code to analyze.</param>
         /// <param name="xamlCode">The XAML code to analyze that represents the user interface.</param>
+        /// <param name="resourceFilePaths">Paths to the resources files (like PNG or JPG) required for the XAML code.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
         /// <returns>A <see cref="BaZicProgram"/> that represents the syntax tree that corresponds to the input code.</returns>
-        public ParserResult Parse(string inputCode, string xamlCode, bool optimize = false)
+        public ParserResult Parse(string inputCode, string xamlCode, IEnumerable<string> resourceFilePaths = null, bool optimize = false)
         {
             _issues.Clear();
 
             try
             {
                 var tokens = _lexer.Tokenize(inputCode);
-                return Parse(tokens, xamlCode, optimize);
+                return Parse(tokens, xamlCode, resourceFilePaths, optimize);
             }
             catch (Exception exception)
             {
@@ -100,9 +103,10 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// </summary>
         /// <param name="tokens">The BaZic code represented by tokens to analyze.</param>
         /// <param name="xamlCode">The XAML code to analyze that represents the user interface.</param>
+        /// <param name="resourceFilePaths">Paths to the resources files (like PNG or JPG) required for the XAML code.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
         /// <returns>A <see cref="BaZicProgram"/> that represents the syntax tree that corresponds to the input code.</returns>
-        public ParserResult Parse(List<Token> tokens, string xamlCode, bool optimize = false)
+        public ParserResult Parse(List<Token> tokens, string xamlCode, IEnumerable<string> resourceFilePaths = null, bool optimize = false)
         {
             Requires.NotNull(tokens, nameof(tokens));
 
@@ -120,7 +124,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                 {
                     _reflectionHelper = new FastReflection();
 
-                    // Parse BaZic user interface code. (XAML)
+                    // Parse BaZic user interface code (XAML).
                     _parsedXamlRoot = ParseXaml(xamlCode);
 
                     // Parse BaZic code.
@@ -146,8 +150,14 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                         }
                         else
                         {
+                            ValidateResources(resourceFilePaths);
+
                             var uiProgram = new BaZicUiProgram();
                             uiProgram.Xaml = xamlCode;
+                            if (resourceFilePaths != null)
+                            {
+                                uiProgram.WithResourceFilePaths(resourceFilePaths.ToArray());
+                            }
                             program = uiProgram;
                         }
                     }
@@ -157,7 +167,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                         CurrentToken = _tokenStack.Pop();
                         NextToken = _tokenStack.Pop();
 
-                        program = ParseProgram(xamlCode);
+                        program = ParseProgram(xamlCode, resourceFilePaths);
                     }
 
                     if (optimize && _issues.OfType<BaZicParserException>().Count(issue => issue.Level == BaZicParserExceptionLevel.Error) == 0)
@@ -195,7 +205,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                     _reflectionHelper.Dispose();
                     _reflectionHelper = null;
                 }
-            });
+            }, true);
 
             return new ParserResult(program, new AggregateException(_issues));
         }
@@ -405,7 +415,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
             try
             {
-                result = XamlReader.Parse(xamlCode) as FrameworkElement;
+                result = SerializationHelper.ConvertFromXaml(xamlCode) as FrameworkElement;
             }
             catch (Exception exception)
             {
@@ -425,8 +435,9 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         /// Parse the program's root context.
         /// </summary>
         /// <param name="xamlCode">The XAML code to analyze that represents the user interface.</param>
+        /// <param name="resourceFilePaths">Paths to the resources files (like PNG or JPG) required for the XAML code.</param>
         /// <returns>A <see cref="BaZicProgram"/> that represents the syntax tree that corresponds to the input code.</returns>
-        private BaZicProgram ParseProgram(string xamlCode)
+        private BaZicProgram ParseProgram(string xamlCode, IEnumerable<string> resourceFilePaths)
         {
             var variables = new List<VariableDeclaration>();
             var methods = new List<MethodDeclaration>();
@@ -460,12 +471,19 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
             if (_parsedXamlRoot != null || _controlAccessors.Count > 0 || _declaredEvents.Count > 0)
             {
+                ValidateResources(resourceFilePaths);
+
                 var uiProgram = new BaZicUiProgram();
                 uiProgram.Xaml = xamlCode;
                 uiProgram.WithControlAccessors(_controlAccessors.ToArray());
                 uiProgram.WithUiEvents(_declaredEvents.ToArray());
                 uiProgram.WithVariables(variables.ToArray());
                 uiProgram.WithMethods(methods.ToArray());
+                if (resourceFilePaths != null)
+                {
+                    uiProgram.WithResourceFilePaths(resourceFilePaths.ToArray());
+                }
+
                 return uiProgram;
             }
             else
@@ -666,6 +684,24 @@ namespace BaZic.Runtime.BaZic.Code.Parser
 
                 default:
                     throw new NotImplementedException(L.BaZic.Parser.FormattedNoExpressionAnalyzer(expression.GetType().FullName));
+            }
+        }
+
+        /// <summary>
+        /// Validates that resources looks good.
+        /// </summary>
+        /// <param name="resourceFilePaths">The list of resource files.</param>
+        private void ValidateResources(IEnumerable<string> resourceFilePaths)
+        {
+            if (resourceFilePaths != null)
+            {
+                foreach (var file in resourceFilePaths)
+                {
+                    if (!File.Exists(file))
+                    {
+                        AddIssue(new BaZicParserException(L.BaZic.Parser.FormattedResourceFileNotFound(file)));
+                    }
+                }
             }
         }
 

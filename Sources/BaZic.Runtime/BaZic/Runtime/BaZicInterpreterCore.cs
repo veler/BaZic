@@ -153,12 +153,13 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblySandbox">The assembly sandbox.</param>
         /// <param name="inputCode">The BaZic code to interpret.</param>
         /// <param name="xamlCode">The XAML code to interpret that represents the user interface.</param>
+        /// <param name="resourceFilePaths">Paths to the resources files (like PNG or JPG) required for the XAML code.</param>
         /// <param name="optimize">(optional) Defines whether the generated syntax tree must be optimized for the interpreter or not.</param>
-        private BaZicInterpreterCore(BaZicInterpreterMiddleware middleware, AssemblySandbox assemblySandbox, string inputCode, string xamlCode, bool optimize = false)
+        private BaZicInterpreterCore(BaZicInterpreterMiddleware middleware, AssemblySandbox assemblySandbox, string inputCode, string xamlCode, IEnumerable<string> resourceFilePaths, bool optimize = false)
             : this(middleware, assemblySandbox)
         {
             var parser = new BaZicParser();
-            var parsingResult = parser.Parse(inputCode, xamlCode, optimize);
+            var parsingResult = parser.Parse(inputCode, xamlCode, resourceFilePaths, optimize);
 
             if (parsingResult.Issues.InnerExceptions.OfType<BaZicParserException>().Count(issue => issue.Level == BaZicParserExceptionLevel.Error) != 0 || (!parsingResult.Issues.InnerExceptions.OfType<BaZicParserException>().Any() && parsingResult.Issues.InnerExceptions.Count > 0))
             {
@@ -1006,6 +1007,8 @@ namespace BaZic.Runtime.BaZic.Runtime
 
                 if (ProgramInterpreter != null)
                 {
+                    RuntimeResourceManager.DeleteResources(ProgramInterpreter.ExecutionFlowId.ToString());
+
                     foreach (var variable in ProgramInterpreter.Variables)
                     {
                         variable.Dispose();

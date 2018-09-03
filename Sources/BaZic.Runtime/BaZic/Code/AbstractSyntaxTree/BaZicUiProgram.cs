@@ -18,6 +18,11 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public string Xaml { get; set; }
 
         /// <summary>
+        /// Gets the paths to the resources files (like PNG or JPG) required for the XAML code.
+        /// </summary>
+        public IReadOnlyList<string> ResourceFilePaths { get; private set; }
+
+        /// <summary>
         /// Gets the list of controls accessors in the UI.
         /// </summary>
         public IReadOnlyList<ControlAccessorDeclaration> UiControlAccessors { get; private set; }
@@ -37,6 +42,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public BaZicUiProgram()
             : base()
         {
+            ResourceFilePaths = new List<string>().AsReadOnly();
             UiControlAccessors = new List<ControlAccessorDeclaration>().AsReadOnly();
             UiEvents = new List<Event>().AsReadOnly();
         }
@@ -48,6 +54,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         public BaZicUiProgram(bool isOptimized)
             : base(isOptimized)
         {
+            ResourceFilePaths = new List<string>().AsReadOnly();
             UiControlAccessors = new List<ControlAccessorDeclaration>().AsReadOnly();
             UiEvents = new List<Event>().AsReadOnly();
         }
@@ -55,6 +62,17 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Set the paths to the resources files (like PNG or JPG) required for the XAML code.
+        /// </summary>
+        /// <param name="resourceFilePaths">The paths to the resources files (like PNG or JPG) required for the XAML code.</param>
+        /// <returns>The current program</returns>
+        public BaZicUiProgram WithResourceFilePaths(params string[] resourceFilePaths)
+        {
+            ResourceFilePaths = new List<string>(resourceFilePaths).AsReadOnly();
+            return this;
+        }
 
         /// <summary>
         /// Set program bindings.
@@ -93,6 +111,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
                 StartOffset = StartOffset,
                 NodeLength = NodeLength
             }
+            .WithResourceFilePaths(ResourceFilePaths.ToArray())
             .WithControlAccessors(UiControlAccessors.ToArray())
             .WithUiEvents(UiEvents.ToArray())
             .WithMethods(Methods.ToArray())

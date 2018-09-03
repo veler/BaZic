@@ -61,6 +61,7 @@ namespace BaZic.Runtime.BaZic.Code.Optimizer
                 {
                     Xaml = uiProgram.Xaml
                 }
+                .WithResourceFilePaths(uiProgram.ResourceFilePaths.ToArray())
                 .WithUiEvents(uiProgram.UiEvents.ToArray())
                 .WithControlAccessors(uiProgram.UiControlAccessors.ToArray())
                 .WithAssemblies(program.Assemblies.ToArray())

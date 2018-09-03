@@ -3,7 +3,10 @@ using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.BaZic.Code.Parser;
 using BaZic.Runtime.BaZic.Runtime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace BaZic.Runtime.Tests.BaZic.Runtime
@@ -51,7 +54,7 @@ END FUNCTION
     </StackPanel>
 </Window>";
 
-            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, true).Program;
+            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, optimize: true).Program;
 
 
             var interpreter = new BaZicInterpreter(bazicProgram);
@@ -169,6 +172,69 @@ END FUNCTION
         }
 
         [TestMethod]
+        public async Task BaZicInterpreterWithUiProgramResource()
+        {
+            var parser = new BaZicParser();
+
+            var imageFile = Path.Combine(Directory.GetParent(Assembly.GetAssembly(this.GetType()).Location).FullName, "Image.png");
+
+            var inputCode =
+@"
+EXTERN FUNCTION Main(args[])
+END FUNCTION
+
+# The XAML will be provided separatly";
+
+            var xamlCode = @"
+<Window
+  Title=""Window""
+  BorderBrush=""#FFFFFFFF""
+  Background=""#FFFFFFFF""
+  Foreground=""#FFFFFFFF""
+  Name=""Window1""
+  Width=""154""
+  Height=""183""
+  Margin=""0,0,0,0"" xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" xmlns:b=""clr-namespace:ANamespace;assembly=AnAssembly"">
+  <Grid
+    Name=""Grid1"">
+    <Grid.Background>
+      <ImageBrush
+        ImageSource=""{imageFile}""
+        Stretch=""Uniform"" />
+    </Grid.Background>
+  </Grid>
+</Window>"
+.Replace("{imageFile}", $"file:///{imageFile.Replace("\\", "/")}");
+
+            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, new List<string> { imageFile }, optimize: true).Program;
+
+            Assert.AreEqual(1, bazicProgram.ResourceFilePaths.Count);
+
+            var interpreter = new BaZicInterpreter(bazicProgram);
+            var t = interpreter.StartDebugAsync(true);
+
+            await Task.Delay(5000);
+
+            await interpreter.Stop();
+
+            Assert.AreEqual(null, interpreter.ProgramResult);
+
+            using (interpreter = new BaZicInterpreter(inputCode, xamlCode, new List<string> { imageFile }, optimize: false))
+            {
+                var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");
+                var errors = await interpreter.Build(Core.Enums.BaZicCompilerOutputType.WindowsApp, tempFile);
+
+                Assert.IsNull(errors);
+                Assert.IsTrue(File.Exists(tempFile));
+                Assert.IsTrue(File.Exists(tempFile.Replace(".exe", ".pdb")));
+
+                File.Delete(tempFile);
+                File.Delete(tempFile.Replace(".exe", ".pdb"));
+                Directory.Delete(Path.Combine(Path.GetTempPath(), @"BaZic_Bin"), true);
+            }
+        }
+
+        [TestMethod]
         public async Task BaZicInterpreterWithUiProgramGetResult()
         {
             var parser = new BaZicParser();
@@ -207,7 +273,7 @@ END FUNCTION
     </StackPanel>
 </Window>";
 
-            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, true).Program;
+            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, optimize: true).Program;
 
 
             var interpreter = new BaZicInterpreter(bazicProgram);
@@ -311,7 +377,7 @@ END FUNCTION";
     </Grid>
 </Window>";
 
-            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, true).Program;
+            var bazicProgram = (BaZicUiProgram)parser.Parse(inputCode, xamlCode, optimize: true).Program;
 
             var interpreter = new BaZicInterpreter(bazicProgram);
             await interpreter.StartDebugAsync(true);

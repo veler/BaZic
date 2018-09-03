@@ -143,7 +143,7 @@ namespace BaZic.Sample
             var parser = new BaZicParser();
 
             var tokens = lexer.Tokenize(BaZicCodeTextBox.Text);
-            var abstractSyntaxTree = parser.Parse(tokens, XamlCodeTextBox.Text, OptimizeCheckBox.IsChecked.Value);
+            var abstractSyntaxTree = parser.Parse(tokens, XamlCodeTextBox.Text, optimize: OptimizeCheckBox.IsChecked.Value);
 
             foreach (var issue in abstractSyntaxTree.Issues.InnerExceptions.OfType<BaZicParserException>())
             {
@@ -187,7 +187,7 @@ namespace BaZic.Sample
             var parser = new BaZicParser();
 
             var tokens = lexer.Tokenize(BaZicCodeTextBox.Text);
-            var abstractSyntaxTree = parser.Parse(tokens, XamlCodeTextBox.Text, OptimizeCheckBox.IsChecked.Value);
+            var abstractSyntaxTree = parser.Parse(tokens, XamlCodeTextBox.Text, optimize: OptimizeCheckBox.IsChecked.Value);
 
             foreach (var issue in abstractSyntaxTree.Issues.InnerExceptions.OfType<BaZicParserException>())
             {

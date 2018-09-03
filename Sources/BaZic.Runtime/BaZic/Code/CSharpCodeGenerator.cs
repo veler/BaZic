@@ -1,5 +1,6 @@
 ﻿using BaZic.Core.ComponentModel;
 using BaZic.Core.Enums;
+using BaZic.Core.IO.Serialization;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.Localization;
 using System;
@@ -36,12 +37,13 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates a BaZic code from a syntax tree.
         /// </summary>
         /// <param name="syntaxTree">The syntax tree that represents the algorithm</param>
+        /// <param name="generatedAssemblyName">(optional) Defines the Assembly name that must be used to format the XAML code. The name must match the one that will be use when compiling the generated CSharp code. If this parameter is not defined, the Id property of the <see cref="BaZicProgram"/> will be used.</param>
         /// <returns>A CSharp code</returns>
-        public string Generate(BaZicProgram syntaxTree)
+        public string Generate(BaZicProgram syntaxTree, string generatedAssemblyName = "")
         {
             if (syntaxTree is BaZicUiProgram)
             {
-                return Generate((BaZicUiProgram)syntaxTree);
+                return Generate((BaZicUiProgram)syntaxTree, generatedAssemblyName);
             }
 
             _indentSpaceCount = 0;
@@ -99,8 +101,9 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates a BaZic code with UI from a syntax tree.
         /// </summary>
         /// <param name="syntaxTree">The syntax tree that represents the algorithm</param>
+        /// <param name="generatedAssemblyName">(optional) Defines the Assembly name that must be used to format the XAML code. The name must match the one that will be use when compiling the generated CSharp code. If this parameter is not defined, the Id property of the <see cref="BaZicProgram"/> will be used.</param>
         /// <returns>A CSharp code</returns>
-        public string Generate(BaZicUiProgram syntaxTree)
+        public string Generate(BaZicUiProgram syntaxTree, string generatedAssemblyName = "")
         {
             _indentSpaceCount = 0;
             _currentProgramHasUi = true;
@@ -111,12 +114,13 @@ namespace BaZic.Runtime.BaZic.Code
             var methodsString = string.Empty;
             var bindingsString = string.Empty;
             var globalVariablesString = string.Empty;
+            var xamlCode = string.Empty;
 
             ThreadHelper.RunOnStaThread(() =>
             {
                 try
                 {
-                    _userInterface = XamlReader.Parse(syntaxTree.Xaml) as FrameworkElement;
+                    _userInterface = SerializationHelper.ConvertFromXaml(syntaxTree.Xaml) as FrameworkElement;
                 }
                 catch (Exception exception)
                 {
@@ -128,6 +132,8 @@ namespace BaZic.Runtime.BaZic.Code
                 {
                     throw new BaZicParserException(L.BaZic.Parser.XamlUnknownParsingError);
                 }
+
+                xamlCode = GenerateXamlCode(syntaxTree, generatedAssemblyName);
 
                 IncreaseIndent();
                 var indent = IncreaseIndent();
@@ -179,6 +185,7 @@ namespace BaZic.Runtime.BaZic.Code
 
             var csharpCodeGeneratorHelper = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorHelper.cs"));
             var csharpCodeGeneratorUiHelper = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorUiHelper.cs"));
+            var csharpCodeGeneratorResourceManager = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorResourceManager.cs"));
             var observableConcurrentDictionary = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.ObservableDictionary.cs"));
 
             return $"// CSharp code generated automatically" + Environment.NewLine + Environment.NewLine +
@@ -195,7 +202,8 @@ namespace BaZic.Runtime.BaZic.Code
                    $"    }}" + Environment.NewLine +
                    $"}}" + Environment.NewLine + Environment.NewLine +
                    csharpCodeGeneratorHelper.ReadToEnd() + Environment.NewLine + Environment.NewLine +
-                   csharpCodeGeneratorUiHelper.ReadToEnd().Replace("{XAMLCode}", FormatLiteralString(syntaxTree.Xaml)) + Environment.NewLine + Environment.NewLine +
+                   csharpCodeGeneratorUiHelper.ReadToEnd().Replace("{XAMLCode}", FormatLiteralString(xamlCode)) + Environment.NewLine + Environment.NewLine +
+                   csharpCodeGeneratorResourceManager.ReadToEnd() + Environment.NewLine + Environment.NewLine +
                    observableConcurrentDictionary.ReadToEnd();
         }
 
@@ -734,7 +742,7 @@ namespace BaZic.Runtime.BaZic.Code
             {
                 return $"_programHelperInstance.UIDispatcher.Invoke(() => {{ if ({condition}) goto {statement.LabelName}; }}, System.Windows.Threading.DispatcherPriority.Background);";
             }
-            
+
             return $"if ({condition}) goto {statement.LabelName};";
         }
 
@@ -1143,6 +1151,59 @@ namespace BaZic.Runtime.BaZic.Code
             Requires.NotNull(parameter.Name, nameof(parameter.Name));
 
             return $"dynamic {parameter.Name}";
+        }
+
+
+        /// <summary>
+        /// Generates the XAML code for compilation.
+        /// </summary>
+        /// <param name="syntaxTree">The syntax tree that represents the algorithm</param>
+        /// <param name="assemblyName">The Assembly name to use in the XAML.</param>
+        /// <returns>Returns a XAML code ready to be compiled.</returns>
+        private string GenerateXamlCode(BaZicUiProgram syntaxTree, string assemblyName)
+        {
+            var xamlCode = syntaxTree.Xaml;
+
+            if (syntaxTree.ResourceFilePaths != null)
+            {
+                var xmlns = @"xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""";
+                var xmlnsx = @"xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""";
+
+                var indexOfB = xamlCode.IndexOf(@"xmlns:b=""");
+                if (indexOfB > -1)
+                {
+                    var indexOfEndB = xamlCode.IndexOf('\"', xamlCode.IndexOf('\"', indexOfB) + 1);
+                    xamlCode = xamlCode.Remove(indexOfB, (indexOfEndB - indexOfB) + 1);
+                }
+
+                var xmlnsRes = $@"xmlns:b=""clr-namespace:BaZicProgramReleaseMode;assembly={assemblyName}""";
+                xamlCode = xamlCode.Replace(xmlns, $"{xmlns} {xmlnsRes}");
+
+                if (!xamlCode.Contains(xmlnsx))
+                {
+                    xamlCode = xamlCode.Replace(xmlns, $"{xmlns} {xmlnsx}");
+                }
+
+                foreach (var resourceFile in syntaxTree.ResourceFilePaths)
+                {
+                    if (File.Exists(resourceFile))
+                    {
+                        var resourceName = Path.GetFileName(resourceFile);
+                        var xamlResourceFile = resourceFile.Replace("\\", "/");
+
+                        if (xamlCode.Contains($"file:///{xamlResourceFile}"))
+                        {
+                            xamlCode = xamlCode.Replace($"file:///{xamlResourceFile}", $"{{Binding Path=[{resourceName}], Source={{x:Static b:ProgramResourceManager.Resources}}, Mode=OneWay}}");
+                        }
+                        else if (xamlCode.Contains(xamlResourceFile))
+                        {
+                            xamlCode = xamlCode.Replace(xamlResourceFile, $"{{Binding Path=[{resourceName}], Source={{x:Static b:ProgramResourceManager.Resources}}, Mode=OneWay}}");
+                        }
+                    }
+                }
+            }
+
+            return xamlCode;
         }
 
         /// <summary>

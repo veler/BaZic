@@ -15,6 +15,7 @@
         </Optimizer>
         <Parser>
             <ParserError>Line {line}; Column {column}; Level {level}; {message}</ParserError>
+            <ResourceFileNotFound>The resource file '{filePath}' does not exist.</ResourceFileNotFound>
             <BadFirstToken>The first token of the input code must be of type '{firstTokenType}'.</BadFirstToken>
             <UnexpectedOrMissingCharacter>Syntax error. Unexpected or missing character.</UnexpectedOrMissingCharacter>
             <UnexpectedToken>A '{tokenDescription}' is expected but a '{currentTokenDescription}' has been found.</UnexpectedToken>

@@ -59,6 +59,7 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         internal void LoadUserInterface()
         {
+            ProgramResourceManager.LoadResources();
             _userInterface = System.Windows.Markup.XamlReader.Parse(_xamlCode) as System.Windows.FrameworkElement;
             UIDispatcher = _userInterface.Dispatcher;
         }

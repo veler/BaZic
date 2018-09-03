@@ -70,8 +70,10 @@ namespace BaZic.Runtime.BaZic.Runtime
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.GenerationCSharp));
             }
 
+            var assemblyName = Guid.NewGuid().ToString();
+
             var codeGen = new CSharpCodeGenerator();
-            var syntaxTree = CSharpSyntaxTree.ParseText(codeGen.Generate(_program));
+            var syntaxTree = CSharpSyntaxTree.ParseText(codeGen.Generate(_program, assemblyName));
 
             if (_baZicInterpreter.Verbose)
             {
@@ -88,7 +90,6 @@ namespace BaZic.Runtime.BaZic.Runtime
                 outputKind = OutputKind.DynamicallyLinkedLibrary;
             }
 
-            var assemblyName = Guid.NewGuid().ToString();
             var references = GetAssemblyReferences();
             var options = new CSharpCompilationOptions(outputKind)
                 .WithAllowUnsafe(true)
@@ -100,7 +101,24 @@ namespace BaZic.Runtime.BaZic.Runtime
             var assemblyStream = new MemoryStream();
             var pdbStream = new MemoryStream();
 
-            var result = cSharpCompilation.Emit(peStream: assemblyStream, pdbStream: pdbStream);
+            var resources = new List<ResourceDescription>();
+            if (_program is BaZicUiProgram uiProgram)
+            {
+                foreach (var resourceFile in uiProgram.ResourceFilePaths)
+                {
+                    if (!File.Exists(resourceFile))
+                    {
+                        return new CompilerResult
+                        {
+                            BuildErrors = new AggregateException(new FileNotFoundException("The resource file does not exist", resourceFile))
+                        };
+                    }
+
+                    resources.Add(new ResourceDescription(Path.GetFileName(resourceFile), () => File.OpenRead(resourceFile), true));
+                }
+            }
+
+            var result = cSharpCompilation.Emit(peStream: assemblyStream, pdbStream: pdbStream, manifestResources: resources);
             var errors = GetCompilationErrors(result);
 
             if (errors != null)
