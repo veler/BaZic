@@ -47,6 +47,10 @@ FUNCTION Method1()
     VARIABLE foo = 2
     VARIABLE bar = 3
     _B:
+END FUNCTION
+
+EXTERN FUNCTION Main(args[])
+
 END FUNCTION";
 
             Assert.AreEqual(expectedResult, result);
@@ -85,6 +89,10 @@ FUNCTION Method1()
     _D:
     GOTO _A
     _B:
+END FUNCTION
+
+EXTERN FUNCTION Main(args[])
+
 END FUNCTION";
 
             Assert.AreEqual(expectedResult, result);

@@ -105,8 +105,8 @@ END FUNCTION
 ";
 
             var result = parser.Parse(inputCode);
-            Assert.IsTrue(((VariableDeclaration)result.Program.Methods.Single().Statements.Single()).IsArray);
-            Assert.AreEqual(typeof(InvokeMethodExpression), ((VariableDeclaration)result.Program.Methods.Single().Statements.Single()).DefaultValue.GetType());
+            Assert.IsTrue(((VariableDeclaration)result.Program.Methods.First().Statements.Single()).IsArray);
+            Assert.AreEqual(typeof(InvokeMethodExpression), ((VariableDeclaration)result.Program.Methods.First().Statements.Single()).DefaultValue.GetType());
         }
 
         [TestMethod]
@@ -420,7 +420,7 @@ World"" ]";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var returnStatement = (ThrowStatement)program.Program.Methods.Single().Statements.Single();
+            var returnStatement = (ThrowStatement)program.Program.Methods.First().Statements.Single();
             Assert.IsNotNull(returnStatement.Expression);
         }
 
@@ -451,7 +451,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var returnStatement = (ReturnStatement)program.Program.Methods.Single().Statements.Single();
+            var returnStatement = (ReturnStatement)program.Program.Methods.First().Statements.Single();
             Assert.IsNull(returnStatement.Expression);
         }
 
@@ -466,7 +466,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var returnStatement = (ReturnStatement)program.Program.Methods.Single().Statements.Single();
+            var returnStatement = (ReturnStatement)program.Program.Methods.First().Statements.Single();
             Assert.IsNotNull(returnStatement.Expression);
         }
 
@@ -483,7 +483,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            Assert.IsInstanceOfType(program.Program.Methods.Single().Statements.Single(), typeof(IterationStatement));
+            Assert.IsInstanceOfType(program.Program.Methods.First().Statements.Single(), typeof(IterationStatement));
         }
 
         [TestMethod]
@@ -530,12 +530,12 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            Assert.IsNotInstanceOfType(program.Program.Methods.Single(), typeof(EntryPointMethod));
-            Assert.IsTrue(program.Program.Methods.Single().IsAsync);
-            Assert.AreEqual("Method1", program.Program.Methods.Single().Name.Identifier);
-            Assert.AreEqual("var1", program.Program.Methods.Single().Arguments.First().Name.Identifier);
-            Assert.IsTrue(program.Program.Methods.Single().Arguments.Last().IsArray);
-            Assert.AreEqual("var3", ((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).Name.Identifier);
+            Assert.IsNotInstanceOfType(program.Program.Methods.First(), typeof(EntryPointMethod));
+            Assert.IsTrue(program.Program.Methods.First().IsAsync);
+            Assert.AreEqual("Method1", program.Program.Methods.First().Name.Identifier);
+            Assert.AreEqual("var1", program.Program.Methods.First().Arguments.First().Name.Identifier);
+            Assert.IsTrue(program.Program.Methods.First().Arguments.Last().IsArray);
+            Assert.AreEqual("var3", ((VariableDeclaration)program.Program.Methods.First().Statements.Single()).Name.Identifier);
         }
 
         [TestMethod]
@@ -552,7 +552,7 @@ END FUNCTION";
 
             var program = parser.Parse(inputCode);
             Assert.AreEqual("Method", program.Program.Methods.First().Name.Identifier);
-            Assert.AreEqual("MEthod", program.Program.Methods.Last().Name.Identifier);
+            Assert.AreEqual("MEthod", program.Program.Methods[1].Name.Identifier);
         }
 
         [TestMethod]
@@ -565,8 +565,8 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            Assert.AreEqual("arg", program.Program.Methods.Single().Arguments.First().Name.Identifier);
-            Assert.AreEqual("ARG", program.Program.Methods.Single().Arguments.Last().Name.Identifier);
+            Assert.AreEqual("arg", program.Program.Methods.First().Arguments.First().Name.Identifier);
+            Assert.AreEqual("ARG", program.Program.Methods.First().Arguments.Last().Name.Identifier);
         }
 
         [TestMethod]
@@ -581,7 +581,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            Assert.IsInstanceOfType(program.Program.Methods.Single(), typeof(EntryPointMethod));
+            Assert.IsInstanceOfType(program.Program.Methods.First(), typeof(EntryPointMethod));
         }
 
         [TestMethod]
@@ -820,7 +820,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var loop = (IterationStatement)program.Program.Methods.Single().Statements.Single();
+            var loop = (IterationStatement)program.Program.Methods.First().Statements.Single();
             Assert.IsTrue(loop.ConditionAfterBody);
             Assert.IsInstanceOfType(loop.Condition, typeof(PrimitiveExpression));
             Assert.IsInstanceOfType(loop.Statements.Single(), typeof(IterationStatement));
@@ -839,7 +839,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var loop = (IterationStatement)program.Program.Methods.Single().Statements.Single();
+            var loop = (IterationStatement)program.Program.Methods.First().Statements.Single();
             Assert.IsFalse(loop.ConditionAfterBody);
             Assert.IsInstanceOfType(loop.Condition, typeof(PrimitiveExpression));
             Assert.IsInstanceOfType(loop.Statements.Single(), typeof(VariableDeclaration));
@@ -911,7 +911,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var condition = (ConditionStatement)program.Program.Methods.Single().Statements.Single();
+            var condition = (ConditionStatement)program.Program.Methods.First().Statements.Single();
             Assert.AreEqual(1, condition.TrueStatements.Count);
             Assert.AreEqual(2, condition.FalseStatements.Count);
         }
@@ -929,7 +929,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var condition = (ConditionStatement)program.Program.Methods.Single().Statements.Single();
+            var condition = (ConditionStatement)program.Program.Methods.First().Statements.Single();
             Assert.AreEqual(1, condition.TrueStatements.Count);
             Assert.AreEqual(0, condition.FalseStatements.Count);
         }
@@ -1004,7 +1004,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var tryCatch = (TryCatchStatement)program.Program.Methods.Single().Statements.Single();
+            var tryCatch = (TryCatchStatement)program.Program.Methods.First().Statements.Single();
             Assert.AreEqual(1, tryCatch.TryStatements.Count);
             Assert.AreEqual(2, tryCatch.CatchStatements.Count);
         }
@@ -1022,7 +1022,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var tryCatch = (TryCatchStatement)program.Program.Methods.Single().Statements.Single();
+            var tryCatch = (TryCatchStatement)program.Program.Methods.First().Statements.Single();
             Assert.AreEqual(1, tryCatch.TryStatements.Count);
             Assert.AreEqual(0, tryCatch.CatchStatements.Count);
         }
@@ -1042,7 +1042,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var tryCatch = (TryCatchStatement)program.Program.Methods.Single().Statements.Single();
+            var tryCatch = (TryCatchStatement)program.Program.Methods.First().Statements.Single();
             Assert.AreEqual(1, tryCatch.TryStatements.Count);
             Assert.AreEqual(1, tryCatch.CatchStatements.Count);
         }
@@ -1114,7 +1114,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var assign = (AssignStatement)program.Program.Methods.Single().Statements.Last();
+            var assign = (AssignStatement)program.Program.Methods.First().Statements.Last();
             Assert.IsInstanceOfType(assign.LeftExpression, typeof(VariableReferenceExpression));
             Assert.IsInstanceOfType(assign.RightExpression, typeof(BinaryOperatorExpression));
         }
@@ -1130,7 +1130,7 @@ END FUNCTION";
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            Assert.IsInstanceOfType(program.Program.Methods.Single().Statements.Single(), typeof(ExpressionStatement));
+            Assert.IsInstanceOfType(program.Program.Methods.First().Statements.Single(), typeof(ExpressionStatement));
         }
 
         [TestMethod]

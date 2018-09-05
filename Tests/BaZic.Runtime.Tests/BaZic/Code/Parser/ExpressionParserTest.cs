@@ -241,7 +241,7 @@ FUNCTION Method()
     VARIABLE var1 = var2.Property
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var propertyRef = (PropertyReferenceExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Last()).DefaultValue;
+            var propertyRef = (PropertyReferenceExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Last()).DefaultValue;
             var variableRef = (VariableReferenceExpression)propertyRef.TargetObject;
             Assert.AreEqual("Property", propertyRef.PropertyName.ToString());
             Assert.AreEqual("var2", variableRef.Name.ToString());
@@ -258,7 +258,7 @@ FUNCTION Method()
     VARIABLE var1 = var2.Method(1)
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Last()).DefaultValue;
+            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Last()).DefaultValue;
             var variableRef = (VariableReferenceExpression)methodCoreRef.TargetObject;
             Assert.AreEqual("Method", methodCoreRef.MethodName.ToString());
             Assert.IsFalse(methodCoreRef.Await);
@@ -276,7 +276,7 @@ FUNCTION Method()
     VARIABLE var1 = 1.ToString()
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).DefaultValue;
+            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Single()).DefaultValue;
             var primitiveExpr = (PrimitiveExpression)methodCoreRef.TargetObject;
             Assert.AreEqual("ToString", methodCoreRef.MethodName.ToString());
             Assert.AreEqual("1", primitiveExpr.Value.ToString());
@@ -293,7 +293,7 @@ FUNCTION Method()
     VARIABLE var1 = var2.Method(1)[0]
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var arrayIndexer = (ArrayIndexerExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Last()).DefaultValue;
+            var arrayIndexer = (ArrayIndexerExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Last()).DefaultValue;
             var methodCoreRef = (InvokeCoreMethodExpression)arrayIndexer.TargetObject;
             var variableRef = (VariableReferenceExpression)methodCoreRef.TargetObject;
             Assert.AreEqual("Method", methodCoreRef.MethodName.ToString());
@@ -329,7 +329,7 @@ FUNCTION Method()
     VARIABLE var1 = NEW System.EventArgs(1, 2)
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var instanciation = (InstantiateExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).DefaultValue;
+            var instanciation = (InstantiateExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Single()).DefaultValue;
             Assert.AreEqual("System", instanciation.CreateType.Namespace);
             Assert.AreEqual("EventArgs", instanciation.CreateType.ClassName.Identifier);
             Assert.AreEqual("System.EventArgs", instanciation.CreateType.ToString());
@@ -379,7 +379,7 @@ FUNCTION Method()
     VARIABLE var1 = var2[0].Property.Method(NEW System.EventArgs(1, 2), 1)
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Last()).DefaultValue;
+            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Last()).DefaultValue;
             var propertyRef = (PropertyReferenceExpression)methodCoreRef.TargetObject;
             var arrayIndexer = (ArrayIndexerExpression)propertyRef.TargetObject;
             var variableRef = (VariableReferenceExpression)arrayIndexer.TargetObject;
@@ -399,7 +399,7 @@ EXTERN FUNCTION Main(args[])
     VARIABLE var1 = AWAIT Method1(args[AWAIT Method2()])
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodRef = (InvokeMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).DefaultValue;
+            var methodRef = (InvokeMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Single()).DefaultValue;
             Assert.AreEqual("Method1", methodRef.MethodName.ToString());
             Assert.IsTrue(methodRef.Await);
         }
@@ -414,7 +414,7 @@ FUNCTION Method()
     VARIABLE var1 = AWAIT (AWAIT Method2()).Method1()
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).DefaultValue;
+            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Single()).DefaultValue;
             Assert.AreEqual("Method1", methodCoreRef.MethodName.ToString());
             Assert.IsTrue(methodCoreRef.Await);
             var methodRef = (InvokeMethodExpression)methodCoreRef.TargetObject;
@@ -432,7 +432,7 @@ FUNCTION Method()
     VARIABLE var1 = (AWAIT Method2()).Method1()
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).DefaultValue;
+            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Single()).DefaultValue;
             Assert.AreEqual("Method1", methodCoreRef.MethodName.ToString());
             Assert.IsFalse(methodCoreRef.Await);
             var methodRef = (InvokeMethodExpression)methodCoreRef.TargetObject;
@@ -450,7 +450,7 @@ FUNCTION Method()
     VARIABLE var1 = AWAIT Method2().Method1()
 END FUNCTION";
             var program = parser.Parse(inputCode);
-            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.Single().Statements.Single()).DefaultValue;
+            var methodCoreRef = (InvokeCoreMethodExpression)((VariableDeclaration)program.Program.Methods.First().Statements.Single()).DefaultValue;
             Assert.AreEqual("Method1", methodCoreRef.MethodName.ToString());
             Assert.IsTrue(methodCoreRef.Await);
             var methodRef = (InvokeMethodExpression)methodCoreRef.TargetObject;
@@ -717,7 +717,7 @@ END FUNCTION";
             program = parser.Parse(inputCode);
             Assert.AreEqual(3, program.Issues.InnerExceptions.Count);
 
-            var stmts = program.Program.Methods.Single().Statements;
+            var stmts = program.Program.Methods.First().Statements;
 
             var expr = (PropertyReferenceExpression)((VariableDeclaration)stmts[0]).DefaultValue;
             var classRef = (ClassReferenceExpression)expr.TargetObject;

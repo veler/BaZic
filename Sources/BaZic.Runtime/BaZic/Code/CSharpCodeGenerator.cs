@@ -37,13 +37,20 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates a BaZic code from a syntax tree.
         /// </summary>
         /// <param name="syntaxTree">The syntax tree that represents the algorithm</param>
-        /// <param name="generatedAssemblyName">(optional) Defines the Assembly name that must be used to format the XAML code. The name must match the one that will be use when compiling the generated CSharp code. If this parameter is not defined, the Id property of the <see cref="BaZicProgram"/> will be used.</param>
+        /// <param name="assemblyName">(optional) Defines the Assembly name that must be used to format the XAML code. The name must match the one that will be use when compiling the generated CSharp code. If this parameter is not defined, the Id property of the <see cref="BaZicProgram"/> will be used.</param>
+        /// <param name="assemblyVersion">Defines the version of the assembly.</param>
+        /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
         /// <returns>A CSharp code</returns>
-        public string Generate(BaZicProgram syntaxTree, string generatedAssemblyName = "")
+        public string Generate(BaZicProgram syntaxTree, string assemblyName = "", string assemblyVersion = "", string assemblyCopyright = "")
         {
             if (syntaxTree is BaZicUiProgram)
             {
-                return Generate((BaZicUiProgram)syntaxTree, generatedAssemblyName);
+                return Generate((BaZicUiProgram)syntaxTree, assemblyName, assemblyVersion, assemblyCopyright);
+            }
+
+            if (string.IsNullOrWhiteSpace(assemblyName))
+            {
+                assemblyName = syntaxTree.Id.ToString();
             }
 
             _indentSpaceCount = 0;
@@ -82,6 +89,7 @@ namespace BaZic.Runtime.BaZic.Code
             var observableConcurrentDictionary = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.ObservableDictionary.cs"));
 
             return $"// CSharp code generated automatically" + Environment.NewLine + Environment.NewLine +
+                   GenerateAssemblyInformation(assemblyName, assemblyVersion, assemblyCopyright) +
                    $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
                    $"{{" + Environment.NewLine +
                    $"    [System.Serializable]" + Environment.NewLine +
@@ -101,10 +109,17 @@ namespace BaZic.Runtime.BaZic.Code
         /// Generates a BaZic code with UI from a syntax tree.
         /// </summary>
         /// <param name="syntaxTree">The syntax tree that represents the algorithm</param>
-        /// <param name="generatedAssemblyName">(optional) Defines the Assembly name that must be used to format the XAML code. The name must match the one that will be use when compiling the generated CSharp code. If this parameter is not defined, the Id property of the <see cref="BaZicProgram"/> will be used.</param>
+        /// <param name="assemblyName">(optional) Defines the Assembly name that must be used to format the XAML code. The name must match the one that will be use when compiling the generated CSharp code. If this parameter is not defined, the Id property of the <see cref="BaZicProgram"/> will be used.</param>
+        /// <param name="assemblyVersion">Defines the version of the assembly.</param>
+        /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
         /// <returns>A CSharp code</returns>
-        public string Generate(BaZicUiProgram syntaxTree, string generatedAssemblyName = "")
+        public string Generate(BaZicUiProgram syntaxTree, string assemblyName = "", string assemblyVersion = "", string assemblyCopyright = "")
         {
+            if (string.IsNullOrWhiteSpace(assemblyName))
+            {
+                assemblyName = syntaxTree.Id.ToString();
+            }
+
             _indentSpaceCount = 0;
             _currentProgramHasUi = true;
             _currentMethodIsAsync = false;
@@ -133,7 +148,7 @@ namespace BaZic.Runtime.BaZic.Code
                     throw new BaZicParserException(L.BaZic.Parser.XamlUnknownParsingError);
                 }
 
-                xamlCode = GenerateXamlCode(syntaxTree, generatedAssemblyName);
+                xamlCode = GenerateXamlCode(syntaxTree, assemblyName);
 
                 IncreaseIndent();
                 var indent = IncreaseIndent();
@@ -189,6 +204,7 @@ namespace BaZic.Runtime.BaZic.Code
             var observableConcurrentDictionary = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.ObservableDictionary.cs"));
 
             return $"// CSharp code generated automatically" + Environment.NewLine + Environment.NewLine +
+                   GenerateAssemblyInformation(assemblyName, assemblyVersion, assemblyCopyright) +
                    $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
                    $"{{" + Environment.NewLine +
                    $"    [System.Serializable]" + Environment.NewLine +
@@ -1153,6 +1169,26 @@ namespace BaZic.Runtime.BaZic.Code
             return $"dynamic {parameter.Name}";
         }
 
+        /// <summary>
+        /// Generates the code that describes the assembly information.
+        /// </summary>
+        /// <param name="assemblyName">The name of the assembly.</param>
+        /// <param name="assemblyVersion">The version of the assembly.</param>
+        /// <param name="assemblyCopyright">The copyright of the assembly.</param>
+        /// <returns></returns>
+        private string GenerateAssemblyInformation(string assemblyName, string assemblyVersion, string assemblyCopyright)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyVersion))
+            {
+                return $@"[assembly: System.Reflection.AssemblyTitle(""{assemblyName}"")]" + Environment.NewLine +
+                       $@"[assembly: System.Reflection.AssemblyCopyright(""{assemblyCopyright}"")]" + Environment.NewLine;
+            }
+
+            return $@"[assembly: System.Reflection.AssemblyTitle(""{assemblyName}"")]" + Environment.NewLine +
+                   $@"[assembly: System.Reflection.AssemblyCopyright(""{assemblyCopyright}"")]" + Environment.NewLine +
+                   $@"[assembly: System.Reflection.AssemblyVersion(""{assemblyVersion}"")]" + Environment.NewLine +
+                   $@"[assembly: System.Reflection.AssemblyFileVersion(""{assemblyVersion}"")]" + Environment.NewLine;
+        }
 
         /// <summary>
         /// Generates the XAML code for compilation.

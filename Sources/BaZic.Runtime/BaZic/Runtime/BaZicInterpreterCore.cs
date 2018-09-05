@@ -214,8 +214,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="callback">The cross-AppDomain task proxy.</param>
         /// <param name="outputType">Defines the type of assembly to generate</param>
         /// <param name="outputPath">The full path to the .exe or .dll file to create if the build succeed.</param>
+        /// <param name="assemblyName">Defines the name of the assembly to generate.</param>
+        /// <param name="assemblyVersion">Defines the version of the assembly.</param>
+        /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
         /// <returns>Returns the build errors, or null if it succeed.</returns>
-        internal void Build(MarshaledResultSetter<AggregateException> callback, BaZicCompilerOutputType outputType, string outputPath)
+        internal void Build(MarshaledResultSetter<AggregateException> callback, BaZicCompilerOutputType outputType, string outputPath, string assemblyName, string assemblyVersion, string assemblyCopyright)
         {
             Requires.NotNull(_middleware, nameof(_middleware));
             Requires.NotNullOrWhiteSpace(outputPath, nameof(outputPath));
@@ -259,7 +262,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 var outputFileName = Path.GetFileNameWithoutExtension(outputPath);
                 var outputPdbFile = new FileInfo(Path.Combine(directory.FullName, outputFileName + ".pdb"));
 
-                using (var compileResult = Build(outputType))
+                using (var compileResult = Build(outputType, assemblyName, assemblyVersion, assemblyCopyright))
                 {
                     if (compileResult.BuildErrors != null)
                     {
@@ -294,7 +297,6 @@ namespace BaZic.Runtime.BaZic.Runtime
                                     File.Copy(xmlFilePath, Path.Combine(directory.FullName, Path.GetFileName(xmlFilePath)));
                                 }
                             }
-
                         }
 
                         using (var assemblyFileStream = new FileStream(outputFile.FullName, FileMode.Create))
@@ -349,7 +351,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
 
-                _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
+                _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary, string.Empty, string.Empty, string.Empty);
 
                 if (_compilerResult.BuildErrors != null)
                 {
@@ -390,7 +392,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     if (State == BaZicInterpreterState.Preparing)
                     {
-                        _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary);
+                        _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary, string.Empty, string.Empty, string.Empty);
 
                         if (_compilerResult.BuildErrors != null)
                         {
@@ -769,8 +771,11 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Compiles the program in memory and returns either the generated assembly or the errors.
         /// </summary>
         /// <param name="outputType">Defines the type of assembly to generate</param>
+        /// <param name="assemblyName">Defines the name of the assembly to generate.</param>
+        /// <param name="assemblyVersion">Defines the version of the assembly.</param>
+        /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
         /// <returns>Returns a <seealso cref="CompilerResult"/>.</returns>
-        private CompilerResult Build(BaZicCompilerOutputType outputType)
+        private CompilerResult Build(BaZicCompilerOutputType outputType, string assemblyName, string assemblyVersion, string assemblyCopyright)
         {
             LoadAssemblies();
 
@@ -779,7 +784,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 _releaseModeRuntime = new CompiledProgramRunner(this, Program, _assemblySandbox);
             }
 
-            return _releaseModeRuntime.Build(outputType);
+            return _releaseModeRuntime.Build(outputType, assemblyName, assemblyVersion, assemblyCopyright);
         }
 
         /// <summary>

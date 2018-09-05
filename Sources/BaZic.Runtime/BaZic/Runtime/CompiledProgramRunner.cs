@@ -63,17 +63,24 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// Convert the BaZic program to CSharp code and build it in memory.
         /// </summary>
         /// <param name="outputType">The type of assembly to generate</param>
-        internal CompilerResult Build(BaZicCompilerOutputType outputType)
+        /// <param name="assemblyName">Defines the name of the assembly to generate.</param>
+        /// <param name="assemblyVersion">Defines the version of the assembly.</param>
+        /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
+        /// <returns>Returns the result of the build.</returns>
+        internal CompilerResult Build(BaZicCompilerOutputType outputType, string assemblyName, string assemblyVersion, string assemblyCopyright)
         {
             if (_baZicInterpreter.Verbose)
             {
                 _baZicInterpreter.ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.CompiledProgramRunner.GenerationCSharp));
             }
 
-            var assemblyName = Guid.NewGuid().ToString();
+            if (string.IsNullOrWhiteSpace(assemblyName))
+            {
+                assemblyName = _program.Id.ToString();
+            }
 
             var codeGen = new CSharpCodeGenerator();
-            var syntaxTree = CSharpSyntaxTree.ParseText(codeGen.Generate(_program, assemblyName));
+            var syntaxTree = CSharpSyntaxTree.ParseText(codeGen.Generate(_program, assemblyName, assemblyVersion, assemblyCopyright));
 
             if (_baZicInterpreter.Verbose)
             {
