@@ -69,7 +69,8 @@ namespace BaZic.Core.Tests.Logs
             Assert.IsTrue(logs.Contains($"[Warning] [Logs] [{date1}] This is a warn"));
             Assert.IsTrue(logs.Contains($"[Error] [Logs] [{date1}] Error"));
             Assert.IsTrue(logs.Contains($"[Information] [Logs] [{date1}] Hello world"));
-            Assert.IsTrue(logs.Contains($"[Fatal] [Logs in LoggerTests.cs, line 46] [{date2}] This is a fatal error"));
+            Assert.IsTrue(logs.Contains($"[Fatal] [Logs in LoggerTests.cs, line 46]"));
+            Assert.IsTrue(logs.Contains("This is a fatal error"));
             Assert.IsTrue(logs.Contains($"[Fatal] [Additional Information] [{date2}] Additional info..."));
         }
     }
