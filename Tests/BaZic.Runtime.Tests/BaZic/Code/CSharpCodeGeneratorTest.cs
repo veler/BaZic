@@ -33,9 +33,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -105,9 +103,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -212,9 +208,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -276,9 +270,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -322,9 +314,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -362,9 +352,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -405,9 +393,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -460,9 +446,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program
@@ -508,9 +492,7 @@ namespace BaZicProgramReleaseMode
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"// CSharp code generated automatically
-
-namespace BaZicProgramReleaseMode
+@"namespace BaZicProgramReleaseMode
 {
     [System.Serializable]
     public class Program

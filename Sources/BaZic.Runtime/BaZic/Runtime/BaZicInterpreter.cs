@@ -134,11 +134,14 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// </summary>
         /// <param name="outputType">Defines the type of assembly to generate.</param>
         /// <param name="outputPath">The full path to the .exe or .dll file to create if the build succeed.</param>
+        /// <param name="assemblyName">(optional) Defines the name of the assembly to generate.</param>
+        /// <param name="assemblyVersion">(optional) Defines the version of the assembly.</param>
+        /// <param name="assemblyCopyright">(optional) Defines the copyright of the assembly.</param>
         /// <returns>Returns the build errors, or null if it succeed.</returns>
-        public async Task<AggregateException> Build(BaZicCompilerOutputType outputType, string outputPath)
+        public async Task<AggregateException> Build(BaZicCompilerOutputType outputType, string outputPath, string assemblyName = "", string assemblyVersion = "", string assemblyCopyright = "")
         {
             var callback = new MarshaledResultSetter<AggregateException>();
-            _core.Build(callback, outputType, outputPath);
+            _core.Build(callback, outputType, outputPath, assemblyName, assemblyVersion, assemblyCopyright);
             return await callback.Task;
         }
 

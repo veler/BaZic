@@ -126,7 +126,7 @@ FUNCTION x()
 END FUNCTION";
 
             var program = parser.Parse(inputCode);
-            var variableDecl = (VariableDeclaration)((ConditionStatement)program.Program.Methods.Single().Statements.First()).TrueStatements.First();
+            var variableDecl = (VariableDeclaration)((ConditionStatement)program.Program.Methods.First().Statements.First()).TrueStatements.First();
             Assert.AreEqual("x", variableDecl.Name.Identifier);
         }
 

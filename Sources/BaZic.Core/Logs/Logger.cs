@@ -54,6 +54,11 @@ namespace BaZic.Core.Logs
         /// <inheritdoc/>
         public bool IsDisposed { get; private set; }
 
+        /// <summary>
+        /// Defines whether the logs must be displayed in the console or not.
+        /// </summary>
+        public bool RedirectToConsole { get; set; }
+
         #endregion
 
         #region Events
@@ -256,6 +261,11 @@ namespace BaZic.Core.Logs
 #if DEBUG
             System.Diagnostics.Debug.WriteLine(fullMessage);
 #endif
+
+            if (RedirectToConsole)
+            {
+                Console.WriteLine(message);
+            }
 
             Interlocked.Increment(ref _logsCountSinceLastFlush);
             if (_logsCountSinceLastFlush > Consts.LogsFlushInterval)

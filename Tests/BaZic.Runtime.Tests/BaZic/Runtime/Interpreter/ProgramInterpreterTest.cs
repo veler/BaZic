@@ -28,7 +28,7 @@ END FUNCTION";
             {
                 await interpreter.StartDebugAsync(true);
 
-                Assert.IsInstanceOfType(interpreter.Error.Exception, typeof(MissingEntryPointMethodException));
+                Assert.AreEqual(BaZicInterpreterState.Idle, interpreter.State);
             }
 
             inputCode =

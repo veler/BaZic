@@ -441,6 +441,7 @@ namespace BaZic.Runtime.BaZic.Code.Parser
         {
             var variables = new List<VariableDeclaration>();
             var methods = new List<MethodDeclaration>();
+            var entryPointExists = false;
 
             var statements = ParseStatements(true, TokenType.EndCode);
             DiscardToken(TokenType.EndCode);
@@ -454,6 +455,11 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                         variables.Add(variable);
                         break;
 
+                    case EntryPointMethod entryPointMethod:
+                        entryPointExists = true;
+                        methods.Add(entryPointMethod);
+                        break;
+
                     case MethodDeclaration method:
                         methods.Add(method);
                         break;
@@ -462,6 +468,11 @@ namespace BaZic.Runtime.BaZic.Code.Parser
                         AddIssue(new BaZicParserException(L.BaZic.Parser.ForbiddenMember));
                         break;
                 }
+            }
+
+            if (!entryPointExists)
+            {
+                methods.Add(new EntryPointMethod());
             }
 
             foreach (var methodInvocation in _methodInvocations)
