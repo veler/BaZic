@@ -93,15 +93,27 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public static bool IsDotNetAssembly(string filePath)
         {
             using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            using (var binaryReader = new BinaryReader(fileStream))
             {
-                if (fileStream.Length < 64)
+                return IsDotNetAssembly(fileStream);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified file is a .NET assembly or not. Credit to Kirill Osenkov : https://stackoverflow.com/questions/367761/how-to-determine-whether-a-dll-is-a-managed-assembly-or-native-prevent-loading
+        /// </summary>
+        /// <param name="assemblyStream">A stream that contains the file assembly.</param>
+        /// <returns>Returns <c>True</c> if the file is a .NET assembly.</returns>
+        public static bool IsDotNetAssembly(Stream assemblyStream)
+        {
+            using (var binaryReader = new BinaryReader(assemblyStream))
+            {
+                if (assemblyStream.Length < 64)
                 {
                     return false;
                 }
 
                 //PE Header starts @ 0x3C (60). Its a 4 byte header.
-                fileStream.Position = 0x3C;
+                assemblyStream.Position = 0x3C;
                 var peHeaderPointer = binaryReader.ReadUInt32();
                 if (peHeaderPointer == 0)
                 {
@@ -113,13 +125,13 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 //     28 byte Standard Fields         (24 bytes for PE32+)
                 //     68 byte NT Fields               (88 bytes for PE32+)
                 // >= 128 byte Data Dictionary Table
-                if (peHeaderPointer > fileStream.Length - 256)
+                if (peHeaderPointer > assemblyStream.Length - 256)
                 {
                     return false;
                 }
 
                 // Check the PE signature.  Should equal 'PE\0\0'.
-                fileStream.Position = peHeaderPointer;
+                assemblyStream.Position = peHeaderPointer;
                 var peHeaderSignature = binaryReader.ReadUInt32();
                 if (peHeaderSignature != 0x00004550)
                 {
@@ -127,7 +139,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 }
 
                 // skip over the PEHeader fields
-                fileStream.Position += 20;
+                assemblyStream.Position += 20;
 
                 const ushort PE32 = 0x10b;
                 const ushort PE32Plus = 0x20b;
@@ -142,7 +154,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 // Read the 15th Data Dictionary RVA field which contains the CLI header RVA.
                 // When this is non-zero then the file contains CLI data otherwise not.
                 var dataDictionaryStart = (ushort)(peHeaderPointer + (peFormat == PE32 ? 232 : 248));
-                fileStream.Position = dataDictionaryStart;
+                assemblyStream.Position = dataDictionaryStart;
 
                 var cliHeaderRva = binaryReader.ReadUInt32();
                 if (cliHeaderRva == 0)

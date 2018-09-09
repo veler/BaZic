@@ -137,11 +137,12 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblyName">(optional) Defines the name of the assembly to generate.</param>
         /// <param name="assemblyVersion">(optional) Defines the version of the assembly.</param>
         /// <param name="assemblyCopyright">(optional) Defines the copyright of the assembly.</param>
+        /// <param name="releaseMode">(optional) Defines whether the compiler must build in release mode or debug mode.</param>
         /// <returns>Returns the build errors, or null if it succeed.</returns>
-        public async Task<AggregateException> Build(BaZicCompilerOutputType outputType, string outputPath, string assemblyName = "", string assemblyVersion = "", string assemblyCopyright = "")
+        public async Task<AggregateException> Build(BaZicCompilerOutputType outputType, string outputPath, string assemblyName = "", string assemblyVersion = "", string assemblyCopyright = "", bool releaseMode = false)
         {
             var callback = new MarshaledResultSetter<AggregateException>();
-            _core.Build(callback, outputType, outputPath, assemblyName, assemblyVersion, assemblyCopyright);
+            _core.Build(callback, outputType, outputPath, assemblyName, assemblyVersion, assemblyCopyright, releaseMode);
             return await callback.Task;
         }
 

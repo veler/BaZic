@@ -76,7 +76,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public void LoadAssembly(string assemblyPath, bool forReflectionPurpose = true)
         {
             Requires.NotNullOrWhiteSpace(assemblyPath, nameof(assemblyPath));
-            _assemblyManager.LoadAssembly(AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyPath), forReflectionPurpose);
+            LoadAssembly(AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyPath), forReflectionPurpose);
         }
 
         /// <summary>
@@ -86,6 +86,12 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public void LoadAssembly(MemoryStream assemblyStream)
         {
             Requires.NotNull(assemblyStream, nameof(assemblyStream));
+
+            if (!AssemblyInfoHelper.IsDotNetAssembly(assemblyStream))
+            {
+                return;
+            }
+
             assemblyStream.Seek(0, SeekOrigin.Begin);
 
             _assemblyManager.LoadAssembly(assemblyStream.ToArray());
