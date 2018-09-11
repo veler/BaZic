@@ -94,7 +94,7 @@ namespace BaZic.Runtime.BaZic.Code.AbstractSyntaxTree
 
             foreach (var assembly in assemblies)
             {
-                assembliesDetails.Add(AssemblyInfoHelper.GetAssemblyDetailsFromName(assembly));
+                assembliesDetails.Add(AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(assembly));
             }
 
             Assemblies = assembliesDetails.AsReadOnly();

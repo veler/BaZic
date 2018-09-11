@@ -1,4 +1,5 @@
-﻿using BaZic.Core.Logs;
+﻿using BaZic.Core.Interop;
+using BaZic.Core.Logs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Threading;
 
 namespace BaZic.Core.ComponentModel.Assemblies
@@ -19,6 +21,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
 
         private readonly ResolveEventHandler AssemblyResolveEventHandler;
         private readonly List<LoadedAssemblyDetails> _explicitLoadedAssemblies;
+        private readonly List<IntPtr> _win32ModuleHandlers;
 
         private DirectoryInfo _assemblyResolutionDirectory = null;
         private Exception _exceptionThrown;
@@ -43,6 +46,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             Localization.LocalizationHelper.SetCurrentCulture(culture as CultureInfo, false);
 
             _explicitLoadedAssemblies = new List<LoadedAssemblyDetails>();
+            _win32ModuleHandlers = new List<IntPtr>();
 
             AssemblyResolveEventHandler = (s, e) =>
             {
@@ -72,11 +76,21 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// </summary>
         /// <param name="assemblyDetails">The assembly's informations</param>
         /// <param name="forReflectionPurpose">Defines whether the assembly must be load for reflection only or also execution.</param>
-        /// <returns>If succeeded, returns the loaded assembly.</returns>
         internal void LoadAssembly(AssemblyDetails assemblyDetails, bool forReflectionPurpose)
         {
             if (!assemblyDetails.IsDotNetAssembly)
             {
+                if (!forReflectionPurpose && File.Exists(assemblyDetails.Location))
+                {
+                    var handler = NativeMethods.LoadLibrary(assemblyDetails.Location);
+                    if (handler == IntPtr.Zero)
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Exception($"Failed to load library '{Path.GetFileName(assemblyDetails.Location)}' (ErrorCode: {0})");
+                    }
+
+                    _win32ModuleHandlers.Add(handler);
+                }
                 return;
             }
 
@@ -133,12 +147,20 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Attempt to load the specified Assembly.
         /// </summary>
         /// <param name="assemblyByteArray">A byte array that represents the assembly.</param>
-        /// <returns>If succeeded, returns the loaded assembly.</returns>
-        internal void LoadAssembly(byte[] assemblyByteArray)
+        /// <param name="forReflectionPurpose">Defines whether the assembly must be load for reflection only or also execution.</param>
+        internal void LoadAssembly(byte[] assemblyByteArray, bool forReflectionPurpose)
         {
-            var assembly = Assembly.Load(assemblyByteArray);
+            Assembly assembly = null;
+            if (forReflectionPurpose)
+            {
+                assembly = Assembly.ReflectionOnlyLoad(assemblyByteArray);
+            }
+            else
+            {
+                assembly = Assembly.Load(assemblyByteArray);
+            }
 
-            var details = AssemblyInfoHelper.GetAssemblyDetailsFromName(assembly.FullName);
+            var details = AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(assembly.FullName);
             details.ProcessorArchitecture = assembly.GetName().ProcessorArchitecture;
 
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
@@ -313,6 +335,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
             {
                 if (!IsDisposed)
                 {
+                    foreach (var win32ModuleHandler in _win32ModuleHandlers)
+                    {
+                        NativeMethods.FreeLibrary(win32ModuleHandler);
+                    }
+
                     AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= AssemblyResolveEventHandler;
                 }
             }
@@ -370,7 +397,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                         _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
                         {
                             Assembly = assembly,
-                            Details = AssemblyInfoHelper.GetAssemblyDetailsFromName(dependentAssemblyFilename)
+                            Details = AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(dependentAssemblyFilename)
                         });
                         return assembly;
                     }
@@ -381,7 +408,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
             {
                 Assembly = assembly2,
-                Details = AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyName.FullName)
+                Details = AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(assemblyName.FullName)
             });
             return assembly2;
         }

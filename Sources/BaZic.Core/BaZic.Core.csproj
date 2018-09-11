@@ -69,6 +69,7 @@
     <Compile Include="Exceptions\NotNullOrEmptyRequiredException.cs" />
     <Compile Include="Exceptions\NotNullOrWhiteSpaceRequiredException.cs" />
     <Compile Include="Exceptions\NotNullRequiredException.cs" />
+    <Compile Include="Interop\NativeMethods.cs" />
     <Compile Include="IO\Serialization\SerializationHelper.cs" />
     <Compile Include="Localization\L.codegen.cs">
       <AutoGen>True</AutoGen>

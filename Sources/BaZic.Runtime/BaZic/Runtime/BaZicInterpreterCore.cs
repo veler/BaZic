@@ -279,7 +279,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                             directory.Create();
                         }
 
-                        foreach (var assembly in _assemblySandbox.GetAssemblies().Where(a => a.CopyToLocal))
+                        var assembliesToCopy = _assemblySandbox.GetAssemblies().Where(a => a.CopyToLocal).Concat(Program.Assemblies.Where(a => a.CopyToLocal)).Distinct();
+                        foreach (var assembly in assembliesToCopy)
                         {
                             if (File.Exists(assembly.Location))
                             {
@@ -361,7 +362,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 }
                 else
                 {
-                    _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
+                    _assemblySandbox.LoadAssembly(_compilerResult.Assembly, false);
                     _compilerResult.Dispose();
                     _releaseModeForced = true;
                     ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
@@ -401,7 +402,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                         }
                         else
                         {
-                            _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
+                            _assemblySandbox.LoadAssembly(_compilerResult.Assembly, false);
                             _compilerResult.Dispose();
                         }
                     }
@@ -1083,7 +1084,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 if (assemblies.All(a => string.CompareOrdinal(a.ToLocationOrFullName(), path) != 0))
                 {
-                    assemblies.Add(AssemblyInfoHelper.GetAssemblyDetailsFromName(path));
+                    assemblies.Add(AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(path));
                 }
             }
 

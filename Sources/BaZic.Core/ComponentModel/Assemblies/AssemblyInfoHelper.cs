@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace BaZic.Core.ComponentModel.Assemblies
 {
@@ -11,19 +12,19 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Gets a new instance of <see cref="AssemblyDetails"/> filled from the full name or the location of an assembly.
         /// </summary>
-        /// <param name="assemblyName">Defines the full name or the location of the assembly.</param>
+        /// <param name="assemblyNameOrLocation">Defines the full name or the location of the assembly.</param>
         /// <returns>An instance of <see cref="AssemblyDetails"/></returns>
-        public static AssemblyDetails GetAssemblyDetailsFromName(string assemblyName)
+        public static AssemblyDetails GetAssemblyDetailsFromNameOrLocation(string assemblyNameOrLocation)
         {
             var details = new AssemblyDetails();
             var fullName = string.Empty;
 
-            if (File.Exists(assemblyName))
+            if (File.Exists(assemblyNameOrLocation))
             {
-                details.Location = assemblyName;
-                if (IsDotNetAssembly(assemblyName))
+                details.Location = assemblyNameOrLocation;
+                if (IsDotNetAssembly(assemblyNameOrLocation))
                 {
-                    var assemblyNameInfo = AssemblyName.GetAssemblyName(assemblyName);
+                    var assemblyNameInfo = AssemblyName.GetAssemblyName(assemblyNameOrLocation);
                     details.CopyToLocal = true;
                     details.IsDotNetAssembly = true;
                     fullName = assemblyNameInfo.FullName;
@@ -43,7 +44,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             else
             {
                 details.IsDotNetAssembly = true;
-                fullName = assemblyName;
+                fullName = assemblyNameOrLocation;
             }
 
             var properties = fullName.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
@@ -105,7 +106,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <returns>Returns <c>True</c> if the file is a .NET assembly.</returns>
         public static bool IsDotNetAssembly(Stream assemblyStream)
         {
-            using (var binaryReader = new BinaryReader(assemblyStream))
+            using (var binaryReader = new BinaryReader(assemblyStream, Encoding.Default, true))
             {
                 if (assemblyStream.Length < 64)
                 {
