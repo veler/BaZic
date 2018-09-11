@@ -88,9 +88,9 @@ namespace BaZic.Core.ComponentModel.Assemblies
         {
             Requires.NotNull(assemblyStream, nameof(assemblyStream));
 
-            if (!AssemblyInfoHelper.IsDotNetAssembly(assemblyStream))
+            if (!forReflectionPurpose && !AssemblyInfoHelper.IsDotNetAssembly(assemblyStream))
             {
-                return;
+                throw new NotSupportedException("A unmanaged library cannot be loaded from a memory stream.");
             }
 
             assemblyStream.Seek(0, SeekOrigin.Begin);
