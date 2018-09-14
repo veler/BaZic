@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace BaZic.Core.ComponentModel.Assemblies
 {
@@ -11,19 +12,19 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Gets a new instance of <see cref="AssemblyDetails"/> filled from the full name or the location of an assembly.
         /// </summary>
-        /// <param name="assemblyName">Defines the full name or the location of the assembly.</param>
+        /// <param name="assemblyNameOrLocation">Defines the full name or the location of the assembly.</param>
         /// <returns>An instance of <see cref="AssemblyDetails"/></returns>
-        public static AssemblyDetails GetAssemblyDetailsFromName(string assemblyName)
+        public static AssemblyDetails GetAssemblyDetailsFromNameOrLocation(string assemblyNameOrLocation)
         {
             var details = new AssemblyDetails();
             var fullName = string.Empty;
 
-            if (File.Exists(assemblyName))
+            if (File.Exists(assemblyNameOrLocation))
             {
-                details.Location = assemblyName;
-                if (IsDotNetAssembly(assemblyName))
+                details.Location = assemblyNameOrLocation;
+                if (IsDotNetAssembly(assemblyNameOrLocation))
                 {
-                    var assemblyNameInfo = AssemblyName.GetAssemblyName(assemblyName);
+                    var assemblyNameInfo = AssemblyName.GetAssemblyName(assemblyNameOrLocation);
                     details.CopyToLocal = true;
                     details.IsDotNetAssembly = true;
                     fullName = assemblyNameInfo.FullName;
@@ -43,7 +44,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
             else
             {
                 details.IsDotNetAssembly = true;
-                fullName = assemblyName;
+                fullName = assemblyNameOrLocation;
             }
 
             var properties = fullName.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
@@ -93,15 +94,27 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public static bool IsDotNetAssembly(string filePath)
         {
             using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            using (var binaryReader = new BinaryReader(fileStream))
             {
-                if (fileStream.Length < 64)
+                return IsDotNetAssembly(fileStream);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified file is a .NET assembly or not. Credit to Kirill Osenkov : https://stackoverflow.com/questions/367761/how-to-determine-whether-a-dll-is-a-managed-assembly-or-native-prevent-loading
+        /// </summary>
+        /// <param name="assemblyStream">A stream that contains the file assembly.</param>
+        /// <returns>Returns <c>True</c> if the file is a .NET assembly.</returns>
+        public static bool IsDotNetAssembly(Stream assemblyStream)
+        {
+            using (var binaryReader = new BinaryReader(assemblyStream, Encoding.Default, true))
+            {
+                if (assemblyStream.Length < 64)
                 {
                     return false;
                 }
 
                 //PE Header starts @ 0x3C (60). Its a 4 byte header.
-                fileStream.Position = 0x3C;
+                assemblyStream.Position = 0x3C;
                 var peHeaderPointer = binaryReader.ReadUInt32();
                 if (peHeaderPointer == 0)
                 {
@@ -113,13 +126,13 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 //     28 byte Standard Fields         (24 bytes for PE32+)
                 //     68 byte NT Fields               (88 bytes for PE32+)
                 // >= 128 byte Data Dictionary Table
-                if (peHeaderPointer > fileStream.Length - 256)
+                if (peHeaderPointer > assemblyStream.Length - 256)
                 {
                     return false;
                 }
 
                 // Check the PE signature.  Should equal 'PE\0\0'.
-                fileStream.Position = peHeaderPointer;
+                assemblyStream.Position = peHeaderPointer;
                 var peHeaderSignature = binaryReader.ReadUInt32();
                 if (peHeaderSignature != 0x00004550)
                 {
@@ -127,7 +140,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 }
 
                 // skip over the PEHeader fields
-                fileStream.Position += 20;
+                assemblyStream.Position += 20;
 
                 const ushort PE32 = 0x10b;
                 const ushort PE32Plus = 0x20b;
@@ -142,7 +155,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 // Read the 15th Data Dictionary RVA field which contains the CLI header RVA.
                 // When this is non-zero then the file contains CLI data otherwise not.
                 var dataDictionaryStart = (ushort)(peHeaderPointer + (peFormat == PE32 ? 232 : 248));
-                fileStream.Position = dataDictionaryStart;
+                assemblyStream.Position = dataDictionaryStart;
 
                 var cliHeaderRva = binaryReader.ReadUInt32();
                 if (cliHeaderRva == 0)

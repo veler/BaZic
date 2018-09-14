@@ -63,6 +63,7 @@ Simply run `BaZic.Sample.exe`.
     * NuGet package manager
     * Text Template Transformation
     * Visual Studio SDK
+	* Windows 10 SDK (10.0.10240.0)
     * (optional) [T4 Toolbox](https://marketplace.visualstudio.com/items?itemName=OlegVSych.T4Toolbox)
 
 ### Setup

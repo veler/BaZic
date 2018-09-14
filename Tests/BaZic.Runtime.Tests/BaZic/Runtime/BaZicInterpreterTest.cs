@@ -421,8 +421,8 @@ END FUNCTION";
 
             using (var interpreter = new BaZicInterpreter(inputCode, false))
             {
-                var mscorlib = AssemblyInfoHelper.GetAssemblyDetailsFromName(typeof(object).Assembly.FullName);
-                var baZicCoreTest = AssemblyInfoHelper.GetAssemblyDetailsFromName(typeof(LogMock).Assembly.Location);
+                var mscorlib = AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(typeof(object).Assembly.FullName);
+                var baZicCoreTest = AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(typeof(LogMock).Assembly.Location);
                 interpreter.SetDependencies(mscorlib, baZicCoreTest);
 
                 var tempFile = Path.Combine(Path.GetTempPath(), "BaZic_Bin", Path.GetFileNameWithoutExtension(Path.GetTempFileName()) + ".exe");

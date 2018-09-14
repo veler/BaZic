@@ -66,8 +66,9 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblyName">Defines the name of the assembly to generate.</param>
         /// <param name="assemblyVersion">Defines the version of the assembly.</param>
         /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
+        /// <param name="releaseMode">Defines whether the compiler must build in release mode or debug mode.</param>
         /// <returns>Returns the result of the build.</returns>
-        internal CompilerResult Build(BaZicCompilerOutputType outputType, string assemblyName, string assemblyVersion, string assemblyCopyright)
+        internal CompilerResult Build(BaZicCompilerOutputType outputType, string assemblyName, string assemblyVersion, string assemblyCopyright, bool releaseMode)
         {
             if (_baZicInterpreter.Verbose)
             {
@@ -80,7 +81,8 @@ namespace BaZic.Runtime.BaZic.Runtime
             }
 
             var codeGen = new CSharpCodeGenerator();
-            var syntaxTree = CSharpSyntaxTree.ParseText(codeGen.Generate(_program, assemblyName, assemblyVersion, assemblyCopyright));
+            var csharpCode = codeGen.Generate(_program, assemblyName, assemblyVersion, assemblyCopyright);
+            var syntaxTree = CSharpSyntaxTree.ParseText(csharpCode);
 
             if (_baZicInterpreter.Verbose)
             {
@@ -100,7 +102,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             var references = GetAssemblyReferences();
             var options = new CSharpCompilationOptions(outputKind)
                 .WithAllowUnsafe(true)
-                .WithOptimizationLevel(OptimizationLevel.Debug)
+                .WithOptimizationLevel(releaseMode? OptimizationLevel.Release : OptimizationLevel.Debug)
                 .WithPlatform(Platform.AnyCpu);
 
             var cSharpCompilation = CSharpCompilation.Create(assemblyName, new[] { syntaxTree }, references, options);

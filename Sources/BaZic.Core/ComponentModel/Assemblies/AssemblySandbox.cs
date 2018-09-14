@@ -76,19 +76,26 @@ namespace BaZic.Core.ComponentModel.Assemblies
         public void LoadAssembly(string assemblyPath, bool forReflectionPurpose = true)
         {
             Requires.NotNullOrWhiteSpace(assemblyPath, nameof(assemblyPath));
-            _assemblyManager.LoadAssembly(AssemblyInfoHelper.GetAssemblyDetailsFromName(assemblyPath), forReflectionPurpose);
+            LoadAssembly(AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(assemblyPath), forReflectionPurpose);
         }
 
         /// <summary>
         /// Attempt to load the specified Assembly from its full name or location on the hard drive.
         /// </summary>
         /// <param name="assemblyStream">The assembly stream</param>
-        public void LoadAssembly(MemoryStream assemblyStream)
+        /// <param name="forReflectionPurpose">(optional) Defines whether the assembly must be load for reflection only or also execution. By default, the value is true.</param>
+        public void LoadAssembly(MemoryStream assemblyStream, bool forReflectionPurpose = true)
         {
             Requires.NotNull(assemblyStream, nameof(assemblyStream));
+
+            if (!forReflectionPurpose && !AssemblyInfoHelper.IsDotNetAssembly(assemblyStream))
+            {
+                throw new NotSupportedException("A unmanaged library cannot be loaded from a memory stream.");
+            }
+
             assemblyStream.Seek(0, SeekOrigin.Begin);
 
-            _assemblyManager.LoadAssembly(assemblyStream.ToArray());
+            _assemblyManager.LoadAssembly(assemblyStream.ToArray(), forReflectionPurpose);
         }
 
         /// <summary>

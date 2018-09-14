@@ -217,8 +217,9 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblyName">Defines the name of the assembly to generate.</param>
         /// <param name="assemblyVersion">Defines the version of the assembly.</param>
         /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
+        /// <param name="releaseMode">Defines whether the compiler must build in release mode or debug mode.</param>
         /// <returns>Returns the build errors, or null if it succeed.</returns>
-        internal void Build(MarshaledResultSetter<AggregateException> callback, BaZicCompilerOutputType outputType, string outputPath, string assemblyName, string assemblyVersion, string assemblyCopyright)
+        internal void Build(MarshaledResultSetter<AggregateException> callback, BaZicCompilerOutputType outputType, string outputPath, string assemblyName, string assemblyVersion, string assemblyCopyright, bool releaseMode)
         {
             Requires.NotNull(_middleware, nameof(_middleware));
             Requires.NotNullOrWhiteSpace(outputPath, nameof(outputPath));
@@ -262,7 +263,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 var outputFileName = Path.GetFileNameWithoutExtension(outputPath);
                 var outputPdbFile = new FileInfo(Path.Combine(directory.FullName, outputFileName + ".pdb"));
 
-                using (var compileResult = Build(outputType, assemblyName, assemblyVersion, assemblyCopyright))
+                using (var compileResult = Build(outputType, assemblyName, assemblyVersion, assemblyCopyright, releaseMode))
                 {
                     if (compileResult.BuildErrors != null)
                     {
@@ -278,7 +279,8 @@ namespace BaZic.Runtime.BaZic.Runtime
                             directory.Create();
                         }
 
-                        foreach (var assembly in _assemblySandbox.GetAssemblies().Where(a => a.CopyToLocal))
+                        var assembliesToCopy = _assemblySandbox.GetAssemblies().Where(a => a.CopyToLocal).Concat(Program.Assemblies.Where(a => a.CopyToLocal)).Distinct();
+                        foreach (var assembly in assembliesToCopy)
                         {
                             if (File.Exists(assembly.Location))
                             {
@@ -351,7 +353,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 LocalizationHelper.SetCurrentCulture(currentCulture, false, false);
 
-                _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary, string.Empty, string.Empty, string.Empty);
+                _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary, string.Empty, string.Empty, string.Empty, false);
 
                 if (_compilerResult.BuildErrors != null)
                 {
@@ -360,7 +362,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 }
                 else
                 {
-                    _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
+                    _assemblySandbox.LoadAssembly(_compilerResult.Assembly, false);
                     _compilerResult.Dispose();
                     _releaseModeForced = true;
                     ChangeState(this, new BaZicInterpreterStateChangeEventArgs(BaZicInterpreterState.Stopped));
@@ -392,7 +394,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     if (State == BaZicInterpreterState.Preparing)
                     {
-                        _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary, string.Empty, string.Empty, string.Empty);
+                        _compilerResult = Build(BaZicCompilerOutputType.DynamicallyLinkedLibrary, string.Empty, string.Empty, string.Empty, false);
 
                         if (_compilerResult.BuildErrors != null)
                         {
@@ -400,7 +402,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                         }
                         else
                         {
-                            _assemblySandbox.LoadAssembly(_compilerResult.Assembly);
+                            _assemblySandbox.LoadAssembly(_compilerResult.Assembly, false);
                             _compilerResult.Dispose();
                         }
                     }
@@ -774,8 +776,9 @@ namespace BaZic.Runtime.BaZic.Runtime
         /// <param name="assemblyName">Defines the name of the assembly to generate.</param>
         /// <param name="assemblyVersion">Defines the version of the assembly.</param>
         /// <param name="assemblyCopyright">Defines the copyright of the assembly.</param>
+        /// <param name="releaseMode">Defines whether the compiler must build in release mode or debug mode.</param>
         /// <returns>Returns a <seealso cref="CompilerResult"/>.</returns>
-        private CompilerResult Build(BaZicCompilerOutputType outputType, string assemblyName, string assemblyVersion, string assemblyCopyright)
+        private CompilerResult Build(BaZicCompilerOutputType outputType, string assemblyName, string assemblyVersion, string assemblyCopyright, bool releaseMode)
         {
             LoadAssemblies();
 
@@ -784,7 +787,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 _releaseModeRuntime = new CompiledProgramRunner(this, Program, _assemblySandbox);
             }
 
-            return _releaseModeRuntime.Build(outputType, assemblyName, assemblyVersion, assemblyCopyright);
+            return _releaseModeRuntime.Build(outputType, assemblyName, assemblyVersion, assemblyCopyright, releaseMode);
         }
 
         /// <summary>
@@ -1081,7 +1084,7 @@ namespace BaZic.Runtime.BaZic.Runtime
             {
                 if (assemblies.All(a => string.CompareOrdinal(a.ToLocationOrFullName(), path) != 0))
                 {
-                    assemblies.Add(AssemblyInfoHelper.GetAssemblyDetailsFromName(path));
+                    assemblies.Add(AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(path));
                 }
             }
 

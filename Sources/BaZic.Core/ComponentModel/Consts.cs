@@ -7,6 +7,9 @@ namespace BaZic.Core.ComponentModel
     /// </summary>
     public static class Consts
     {
+        // Native methods
+        internal const string Kernel32 = "kernel32.dll";
+
         // Abstract Syntax Tree
 
         /// <summary>

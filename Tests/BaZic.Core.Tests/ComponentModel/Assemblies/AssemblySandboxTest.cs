@@ -3,6 +3,7 @@ using BaZic.Core.Logs;
 using BaZic.Core.Tests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace BaZic.Core.Tests.ComponentModel.Assemblies
@@ -114,6 +115,37 @@ namespace BaZic.Core.Tests.ComponentModel.Assemblies
             Assert.AreEqual(1, sandbox1.GetAssemblies().Count);
             Assert.IsNotNull(sandbox1.GetTypeRef("System.Windows.UIElement"));
             Assert.AreEqual(6, sandbox1.GetAssemblies().Count);
+
+            sandbox1.Dispose();
+        }
+
+        [TestMethod]
+        public void AssemblySandboxWin32Call()
+        {
+            var sandbox1 = new AssemblySandbox();
+            var assetsFolder = Path.Combine(Directory.GetParent(GetType().Assembly.Location).FullName, "Assets");
+
+            sandbox1.LoadAssembly(Path.Combine(assetsFolder, "1", "ManagedLibrary.dll"), false);
+
+            try
+            {
+                sandbox1.Reflection.InvokeStaticMethod("ManagedLibrary.Class1", "TestCallUnmanaged");
+                Assert.Fail();
+            }
+            catch (DllNotFoundException)
+            {
+            }
+            catch (Exception)
+            {
+                Assert.Fail();
+            }
+
+            sandbox1.LoadAssembly(Path.Combine(assetsFolder, "2", "UnmanagedLibrary.dll"), false);
+
+            var result = sandbox1.Reflection.InvokeStaticMethod("ManagedLibrary.Class1", "TestCallUnmanaged");
+
+            Assert.IsInstanceOfType(result, typeof(int));
+            Assert.AreEqual(123, (int)result);
 
             sandbox1.Dispose();
         }
