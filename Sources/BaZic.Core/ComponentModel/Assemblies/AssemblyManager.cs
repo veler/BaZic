@@ -86,7 +86,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                     if (handler == IntPtr.Zero)
                     {
                         int errorCode = Marshal.GetLastWin32Error();
-                        throw new Exception($"Failed to load library '{Path.GetFileName(assemblyDetails.Location)}' (ErrorCode: {0})");
+                        throw new Exception($"Failed to load library '{Path.GetFileName(assemblyDetails.Location)}' (ErrorCode: {errorCode})");
                     }
 
                     _win32ModuleHandlers.Add(handler);
