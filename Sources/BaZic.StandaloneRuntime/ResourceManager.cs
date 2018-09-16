@@ -1,8 +1,10 @@
-﻿// Helper for CSharp generated code.
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Media.Imaging;
 
-namespace BaZicProgramReleaseMode
+namespace BaZic.StandaloneRuntime
 {
-
     /// <summary>
     /// Provides a static helper designed to bind imported resources in a BaZic program with UI, like images.
     /// </summary>
@@ -19,7 +21,7 @@ namespace BaZicProgramReleaseMode
         /// <summary>
         /// Gets the resources at runtime.
         /// </summary>
-        public static System.Collections.Generic.Dictionary<string, System.Windows.Freezable> Resources { get; private set; }
+        public static Dictionary<string, Freezable> Resources { get; private set; }
 
         #endregion
 
@@ -30,7 +32,7 @@ namespace BaZicProgramReleaseMode
         /// </summary>
         static ProgramResourceManager()
         {
-            Resources = new System.Collections.Generic.Dictionary<string, System.Windows.Freezable>();
+            Resources = new Dictionary<string, Freezable>();
         }
 
         #endregion
@@ -49,11 +51,11 @@ namespace BaZicProgramReleaseMode
             {
                 if (System.Linq.Enumerable.Any(ImageResourcesType, ext => resourceName.EndsWith(ext)))
                 {
-                    var bitmapImage = new System.Windows.Media.Imaging.BitmapImage();
+                    var bitmapImage = new BitmapImage();
                     using (var stream = currentAssembly.GetManifestResourceStream(resourceName))
                     {
                         bitmapImage.BeginInit();
-                        bitmapImage.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                         bitmapImage.StreamSource = stream;
                         bitmapImage.EndInit();
                     }
@@ -61,7 +63,7 @@ namespace BaZicProgramReleaseMode
                 }
                 else
                 {
-                    throw new System.NotSupportedException($"A resource of type '{resourceName}' is not supported in a BaZic program.");
+                    throw new NotSupportedException($"A resource of type '{resourceName}' is not supported in a BaZic program.");
                 }
             }
         }

@@ -86,9 +86,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyInfo.codegen.cs</LastGenOutput>
     </Content>
-    <Compile Include="..\BaZic.Runtime\Resources\ObservableDictionary.cs">
-      <Link>ComponentModel\Dictionaries\ObservableDictionary.cs</Link>
-    </Compile>
     <Compile Include="ComponentModel\Assemblies\AppDomainManager.cs" />
     <Compile Include="ComponentModel\Assemblies\AssemblyDetails.cs" />
     <Compile Include="ComponentModel\Assemblies\AssemblyManager.cs" />

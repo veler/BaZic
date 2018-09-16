@@ -42,17 +42,17 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'ReturnStatement'.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
-[Log] Return : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
+[Log] Return : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
-[Log] End of the execution of the method 'Main'. Returned value : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] End of the execution of the method 'Main'. Returned value : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [State] Idle
 ";
 
@@ -88,10 +88,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'ReturnStatement'.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
@@ -101,10 +101,10 @@ END FUNCTION";
 [Log] The expression returned the value '2' (System.Int32).
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '3' (System.String).
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 3)).
-[Log] Return : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 3))
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 3)).
+[Log] Return : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 3))
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
-[Log] End of the execution of the method 'Main'. Returned value : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 3))
+[Log] End of the execution of the method 'Main'. Returned value : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 3))
 [State] Idle
 ";
 
@@ -141,10 +141,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
@@ -163,11 +163,11 @@ END FUNCTION";
 [Log] The expression returned the value '4' (System.Int32).
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '5' (System.Int32).
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 3)).
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 3)).
-[Log] Return : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 3))
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 3)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 3)).
+[Log] Return : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 3))
 [Log] A Return statement or Break statement or Exception has been detected or thrown. Exiting the current block of statements.
-[Log] End of the execution of the method 'Main'. Returned value : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 3))
+[Log] End of the execution of the method 'Main'. Returned value : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 3))
 [State] Idle
 ";
 

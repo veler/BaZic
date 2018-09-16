@@ -1,4 +1,4 @@
-﻿using BaZicProgramReleaseMode;
+﻿using BaZic.StandaloneRuntime;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BaZic.Core.Tests.ComponentModel.Dictionary

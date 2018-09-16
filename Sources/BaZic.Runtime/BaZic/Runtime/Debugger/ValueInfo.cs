@@ -1,5 +1,5 @@
 ﻿using BaZic.Runtime.Localization;
-using BaZicProgramReleaseMode;
+using BaZic.StandaloneRuntime;
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;

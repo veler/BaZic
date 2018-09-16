@@ -33,16 +33,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        private dynamic Foo = null;
-
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             dynamic Bar = null;
@@ -62,8 +53,7 @@ namespace BaZic.Runtime.Tests.BaZic.Code
             }
             return null;
         }
-    }
-}";
+    }";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -103,14 +93,8 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        private dynamic var1 = null;
+@"        private dynamic var1 = null;
+
 
         private dynamic Window1
         { 
@@ -145,9 +129,10 @@ END FUNCTION
         }
         
 
+
         internal dynamic Window1_Loaded()
         {
-            _programHelperInstance.UIDispatcher.Invoke(() => { ListBox1.ItemsSource = new BaZicProgramReleaseMode.ObservableDictionary() { ""Value 1"", ""Value 2"" }; }, System.Windows.Threading.DispatcherPriority.Background);
+            _programHelperInstance.UIDispatcher.Invoke(() => { ListBox1.ItemsSource = new BaZic.StandaloneRuntime.ObservableDictionary() { ""Value 1"", ""Value 2"" }; }, System.Windows.Threading.DispatcherPriority.Background);
             _programHelperInstance.UIDispatcher.Invoke(() => { TextBox1.Text = ""Value to add""; }, System.Windows.Threading.DispatcherPriority.Background);
             return null;
         }
@@ -172,9 +157,7 @@ END FUNCTION
             return null;
         }
     }
-}
-
-// Helper for CSharp generated code.";
+}";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -208,14 +191,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             if (((1 < 2) && (3 < 4)) || (!false))
@@ -245,8 +221,7 @@ END FUNCTION
             }
             return null;
         }
-    }
-}";
+    }";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -270,14 +245,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             try
@@ -292,9 +260,7 @@ END FUNCTION
             _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
-        }
-    }
-}";
+        }";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -314,13 +280,37 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
+@"namespace BaZic.StandaloneRuntime
 {
-    [System.Serializable]
-    public class Program
+    public static class EntryProgram
     {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
+        /// <summary>
+        /// Entry point of the entire application.
+        /// </summary>
+        /// <param name=""args""></param>
+        [STAThread()]
+        public static void Main(string[] args)
+        {
+            var instance = new Program();
+            instance.Main(args);
+        }
+    }
+
+    [Serializable]
+    public class Program : IBaZicProgram
+    {
+        private ProgramHelper _programHelperInstance;
+
         public ProgramHelper ProgramHelperInstance => _programHelperInstance;
+
+        public Program()
+        {
+            var CSharpCodeGenerator_xamlCode = string.Empty;
+            _programHelperInstance = new ProgramHelper(CSharpCodeGenerator_xamlCode);
+        }
+
+
+
         public dynamic Main(dynamic args)
         {
             try {
@@ -352,14 +342,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             dynamic Baz = new System.Array();
@@ -368,9 +351,7 @@ END FUNCTION
             _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
-        }
-    }
-}";
+        }";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -393,14 +374,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             Foo(1, 2 - 1).GetAwaiter().GetResult();
@@ -416,9 +390,7 @@ END FUNCTION
         {
 
             return await System.Threading.Tasks.Task.FromResult<object>(null);
-        }
-    }
-}";
+        }";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -446,14 +418,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             dynamic foo = null;
@@ -464,15 +429,13 @@ END FUNCTION
             foo = true;
             foo = false;
             foo = null;
-            dynamic bar = new BaZicProgramReleaseMode.ObservableDictionary() { ""Hello"", new BaZicProgramReleaseMode.ObservableDictionary() { ""Foo"", ""Bar"", ""Buz"" } };
-            bar = new BaZicProgramReleaseMode.ObservableDictionary() { 1, 1.1234, ""Hello"" };
+            dynamic bar = new BaZic.StandaloneRuntime.ObservableDictionary() { ""Hello"", new BaZic.StandaloneRuntime.ObservableDictionary() { ""Foo"", ""Bar"", ""Buz"" } };
+            bar = new BaZic.StandaloneRuntime.ObservableDictionary() { 1, 1.1234, ""Hello"" };
             } finally {
             _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
-        }
-    }
-}";
+        }";
 
             Assert.IsTrue(code.Contains(expected));
         }
@@ -492,14 +455,7 @@ END FUNCTION
             var code = new CSharpCodeGenerator().Generate(program);
 
             var expected =
-@"namespace BaZicProgramReleaseMode
-{
-    [System.Serializable]
-    public class Program
-    {
-        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();
-        public ProgramHelper ProgramHelperInstance => _programHelperInstance;
-        public dynamic Main(dynamic args)
+@"        public dynamic Main(dynamic args)
         {
             try {
             dynamic foo = ""Hello"";
@@ -508,9 +464,7 @@ END FUNCTION
             _programHelperInstance.WaitAllUnwaitedThreads();
             }
             return null;
-        }
-    }
-}";
+        }";
 
             Assert.IsTrue(code.Contains(expected));
         }

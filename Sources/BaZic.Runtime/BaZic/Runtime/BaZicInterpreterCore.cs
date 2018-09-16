@@ -10,6 +10,7 @@ using BaZic.Runtime.BaZic.Runtime.Debugger;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using BaZic.Runtime.BaZic.Runtime.Interpreter;
 using BaZic.Runtime.Localization;
+using BaZic.StandaloneRuntime;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -284,19 +285,19 @@ namespace BaZic.Runtime.BaZic.Runtime
                         {
                             if (File.Exists(assembly.Location))
                             {
-                                File.Copy(assembly.Location, Path.Combine(directory.FullName, Path.GetFileName(assembly.Location)));
+                                File.Copy(assembly.Location, Path.Combine(directory.FullName, Path.GetFileName(assembly.Location)), true);
 
                                 var pdbFilePath = Path.Combine(Directory.GetParent(assembly.Location).FullName, Path.GetFileNameWithoutExtension(assembly.Location) + ".pdb");
                                 var xmlFilePath = Path.Combine(Directory.GetParent(assembly.Location).FullName, Path.GetFileNameWithoutExtension(assembly.Location) + ".xml");
 
                                 if (File.Exists(pdbFilePath))
                                 {
-                                    File.Copy(pdbFilePath, Path.Combine(directory.FullName, Path.GetFileName(pdbFilePath)));
+                                    File.Copy(pdbFilePath, Path.Combine(directory.FullName, Path.GetFileName(pdbFilePath)), true);
                                 }
 
                                 if (File.Exists(xmlFilePath))
                                 {
-                                    File.Copy(xmlFilePath, Path.Combine(directory.FullName, Path.GetFileName(xmlFilePath)));
+                                    File.Copy(xmlFilePath, Path.Combine(directory.FullName, Path.GetFileName(xmlFilePath)), true);
                                 }
                             }
                         }
@@ -1067,6 +1068,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         private void LoadAssemblies()
         {
             var assemblies = Program.Assemblies.ToList();
+            assemblies.Add(AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(typeof(ObservableDictionary).Assembly.Location)); // The BaZic.StandaloneRuntime.dll
 
             var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
 
@@ -1095,7 +1097,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     details = assemblies[i];
                     _assemblySandbox.LoadAssembly(details, false);
-                    if (Verbose)
+                    if (Verbose && string.CompareOrdinal(assemblies[i].Name, "BaZic.StandaloneRuntime") != 0)
                     {
                         ChangeState(this, new BaZicInterpreterStateChangeEventArgs(L.BaZic.Runtime.BaZicInterpreter.FormattedAssemblyLoaded(details.ToLocationOrFullName())));
                     }

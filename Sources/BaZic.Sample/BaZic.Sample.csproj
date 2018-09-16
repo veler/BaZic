@@ -103,6 +103,10 @@
       <Project>{bf5a111d-8643-40e7-810f-80776bf00b43}</Project>
       <Name>BaZic.Runtime</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BaZic.StandaloneRuntime\BaZic.StandaloneRuntime.csproj">
+      <Project>{b850b3db-4ada-45fc-92c1-a65bf131fc08}</Project>
+      <Name>BaZic.StandaloneRuntime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

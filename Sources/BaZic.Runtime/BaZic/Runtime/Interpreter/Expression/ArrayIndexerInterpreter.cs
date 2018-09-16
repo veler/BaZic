@@ -2,7 +2,7 @@
 using BaZic.Runtime.BaZic.Runtime.Debugger;
 using BaZic.Runtime.BaZic.Runtime.Debugger.Exceptions;
 using BaZic.Runtime.Localization;
-using BaZicProgramReleaseMode;
+using BaZic.StandaloneRuntime;
 using System;
 using System.Collections;
 

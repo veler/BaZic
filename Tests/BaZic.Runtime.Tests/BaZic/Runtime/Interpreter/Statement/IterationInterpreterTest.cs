@@ -49,10 +49,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
@@ -381,10 +381,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PrimitiveExpression'.

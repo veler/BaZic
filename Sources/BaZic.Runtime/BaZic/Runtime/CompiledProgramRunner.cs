@@ -4,6 +4,7 @@ using BaZic.Core.Enums;
 using BaZic.Runtime.BaZic.Code;
 using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
 using BaZic.Runtime.Localization;
+using BaZic.StandaloneRuntime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -24,7 +25,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         private readonly BaZicInterpreterCore _baZicInterpreter;
         private readonly BaZicProgram _program;
         private readonly AssemblySandbox _assemblySandbox;
-        private object _compiledProgramInstance;
+        private IBaZicProgram _compiledProgramInstance;
 
         #endregion
 
@@ -176,7 +177,7 @@ namespace BaZic.Runtime.BaZic.Runtime
                 {
                     InitializeProgram();
 
-                    var programHelper = _assemblySandbox.Reflection.GetProperty(_compiledProgramInstance, Consts.CompiledProgramHelperInstance);
+                    var programHelper = _compiledProgramInstance.ProgramHelperInstance;
 
                     _assemblySandbox.Reflection.SubscribeEvent(programHelper, Consts.CompiledProgramIdleStateOccuredEvent, () =>
                     {
@@ -216,8 +217,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         internal void CloseUserInterface()
         {
             InitializeProgram();
-            var programHelper = _assemblySandbox.Reflection.GetProperty(_compiledProgramInstance, Consts.CompiledProgramHelperInstance);
-            _assemblySandbox.Reflection.InvokeMethod(programHelper, Consts.CompiledCloseUserInterface);
+            _compiledProgramInstance.ProgramHelperInstance.CloseUserInterface();
         }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace BaZic.Runtime.BaZic.Runtime
         {
             if (_compiledProgramInstance == null)
             {
-                _compiledProgramInstance = _assemblySandbox.Reflection.Instantiate(_assemblySandbox.GetTypeRef(Consts.CompiledProgramClassName));
+                _compiledProgramInstance = (IBaZicProgram)_assemblySandbox.Reflection.Instantiate(_assemblySandbox.GetTypeRef(Consts.CompiledProgramClassName));
             }
         }
 

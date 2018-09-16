@@ -1,4 +1,4 @@
-﻿namespace BaZicProgramReleaseMode
+﻿namespace BaZic.StandaloneRuntime
 {
     /// <summary> 
     /// Provides a thread-safe dictionary for use with data binding. 

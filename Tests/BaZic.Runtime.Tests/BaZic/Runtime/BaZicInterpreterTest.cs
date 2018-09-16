@@ -93,10 +93,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
@@ -134,10 +134,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
@@ -186,10 +186,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
@@ -392,10 +392,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Executing an expression of type 'PropertyReferenceExpression'.
@@ -432,10 +432,12 @@ END FUNCTION";
                 Assert.IsTrue(File.Exists(tempFile));
                 Assert.IsTrue(File.Exists(tempFile.Replace(".exe", ".pdb")));
                 Assert.IsTrue(File.Exists(Path.Combine(Path.GetTempPath(), "BaZic_Bin", "BaZic.Core.Tests.dll")));
+                Assert.IsTrue(File.Exists(Path.Combine(Path.GetTempPath(), "BaZic_Bin", "BaZic.StandaloneRuntime.dll")));
 
                 File.Delete(tempFile);
                 File.Delete(tempFile.Replace(".exe", ".pdb"));
                 File.Delete(Path.Combine(Path.GetTempPath(), "BaZic_Bin", "BaZic.Core.Tests.dll"));
+                File.Delete(Path.Combine(Path.GetTempPath(), "BaZic_Bin", "BaZic.StandaloneRuntime.dll"));
                 Directory.Delete(Path.Combine(Path.GetTempPath(), @"BaZic_Bin"), true);
             }
         }

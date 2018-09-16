@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationGenerator", "Tools\LocalizationGenerator\LocalizationGenerator.csproj", "{CE71A362-F253-4446-9B16-DF0B22FEDCE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationGenerator", "Tools\LocalizationGenerator\LocalizationGenerator.csproj", "{6399EB54-150A-48C9-97F2-6E1D49444982}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaZic.Sample", "Sources\BaZic.Sample\BaZic.Sample.csproj", "{AF3EE5C9-2FDF-485A-A570-C4FBFE58C555}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaZic.Core", "Sources\BaZic.Core\BaZic.Core.csproj", "{7CEAF4BF-7FFA-4E0D-8811-F4E6E13CCE99}"
 	ProjectSection(ProjectDependencies) = postProject
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8} = {CE71A362-F253-4446-9B16-DF0B22FEDCE8}
+		{6399EB54-150A-48C9-97F2-6E1D49444982} = {6399EB54-150A-48C9-97F2-6E1D49444982}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sources", "Sources", "{7402B7F0-3EB5-468E-9FFB-B7CD994B687C}"
@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaZic.Core.Tests", "Tests\B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaZic.Runtime", "Sources\BaZic.Runtime\BaZic.Runtime.csproj", "{BF5A111D-8643-40E7-810F-80776BF00B43}"
 	ProjectSection(ProjectDependencies) = postProject
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8} = {CE71A362-F253-4446-9B16-DF0B22FEDCE8}
+		{6399EB54-150A-48C9-97F2-6E1D49444982} = {6399EB54-150A-48C9-97F2-6E1D49444982}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaZic.Runtime.Tests", "Tests\BaZic.Runtime.Tests\BaZic.Runtime.Tests.csproj", "{1D1874AC-731C-4FBF-8982-697D2483D39B}"
@@ -45,16 +45,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaZic.StandaloneRuntime", "Sources\BaZic.StandaloneRuntime\BaZic.StandaloneRuntime.csproj", "{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6399EB54-150A-48C9-97F2-6E1D49444982}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6399EB54-150A-48C9-97F2-6E1D49444982}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6399EB54-150A-48C9-97F2-6E1D49444982}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6399EB54-150A-48C9-97F2-6E1D49444982}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AF3EE5C9-2FDF-485A-A570-C4FBFE58C555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AF3EE5C9-2FDF-485A-A570-C4FBFE58C555}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF3EE5C9-2FDF-485A-A570-C4FBFE58C555}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -75,17 +77,22 @@ Global
 		{1D1874AC-731C-4FBF-8982-697D2483D39B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D1874AC-731C-4FBF-8982-697D2483D39B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D1874AC-731C-4FBF-8982-697D2483D39B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{CE71A362-F253-4446-9B16-DF0B22FEDCE8} = {4C7F40B8-2F22-43A6-A9DC-2F6A3B8CFCE4}
+		{6399EB54-150A-48C9-97F2-6E1D49444982} = {4C7F40B8-2F22-43A6-A9DC-2F6A3B8CFCE4}
 		{AF3EE5C9-2FDF-485A-A570-C4FBFE58C555} = {7402B7F0-3EB5-468E-9FFB-B7CD994B687C}
 		{7CEAF4BF-7FFA-4E0D-8811-F4E6E13CCE99} = {7402B7F0-3EB5-468E-9FFB-B7CD994B687C}
 		{FFF4CE9D-CAC2-4CFA-8277-CC4B8D473F25} = {353DBD5E-4F62-47C2-9E30-10229DD3911E}
 		{BF5A111D-8643-40E7-810F-80776BF00B43} = {7402B7F0-3EB5-468E-9FFB-B7CD994B687C}
 		{1D1874AC-731C-4FBF-8982-697D2483D39B} = {353DBD5E-4F62-47C2-9E30-10229DD3911E}
+		{B850B3DB-4ADA-45FC-92C1-A65BF131FC08} = {7402B7F0-3EB5-468E-9FFB-B7CD994B687C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {298BA68D-6064-4DD4-86FA-911C371389FA}

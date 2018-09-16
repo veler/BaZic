@@ -44,15 +44,15 @@ END FUNCTION";
 [Log] Executing an expression of type 'ArrayCreationExpression'.
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value 'Hello World' (System.String).
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 1)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 1)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 1))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 1))
 [Log] Registering labels.
 [Log] Executing a statement of type 'ReturnStatement'.
 [Log] Executing an expression of type 'ArrayIndexerExpression'.
 [Log] Executing an expression of type 'VariableReferenceExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 1)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 1)).
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '0' (System.Int32).
 [Log] The expression returned the value 'Hello World' (System.String).

@@ -51,10 +51,10 @@ END FUNCTION";
 [Log] Preparing to invoke the method 'Main'.
 [Log] Executing the argument values of the method.
 [Log] Executing an expression of type 'ArrayCreationExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 0)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 0)).
 [Log] Invoking the synchronous method 'Main'.
 [Log] Variable 'args' declared. Default value : {Null}
-[Log] Variable 'args' value set to : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 0))
+[Log] Variable 'args' value set to : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 0))
 [Log] Registering labels.
 [Log] Executing a statement of type 'VariableDeclaration'.
 [Log] Variable 'var1' declared. Default value : {Null}
@@ -66,8 +66,8 @@ END FUNCTION";
 [Log] The expression returned the value '2' (System.Int32).
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '3' (System.Int32).
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 3)).
-[Log] Variable 'var2' declared. Default value : BaZicProgramReleaseMode.ObservableDictionary (BaZicProgramReleaseMode.ObservableDictionary (length: 3))
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 3)).
+[Log] Variable 'var2' declared. Default value : BaZic.StandaloneRuntime.ObservableDictionary (BaZic.StandaloneRuntime.ObservableDictionary (length: 3))
 [Log] Executing a statement of type 'AssignStatement'.
 [Log] Assign 'var1' to ''1' (type:System.Int32) == '2' (type:System.Int32)'.
 [Log] Executing an expression of type 'BinaryOperatorExpression'.
@@ -101,7 +101,7 @@ END FUNCTION";
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '1024' (System.Int32).
 [Log] Executing an expression of type 'VariableReferenceExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 3)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 3)).
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '0' (System.Int32).
 [Log] 'var2['0' (type:System.Int32)]' is now equal to '1024'(type:System.Int32)
@@ -109,7 +109,7 @@ END FUNCTION";
 [Log] Assign 'var1' to 'var2['0' (type:System.Int32)]'.
 [Log] Executing an expression of type 'ArrayIndexerExpression'.
 [Log] Executing an expression of type 'VariableReferenceExpression'.
-[Log] The expression returned the value 'BaZicProgramReleaseMode.ObservableDictionary' (BaZicProgramReleaseMode.ObservableDictionary (length: 3)).
+[Log] The expression returned the value 'BaZic.StandaloneRuntime.ObservableDictionary' (BaZic.StandaloneRuntime.ObservableDictionary (length: 3)).
 [Log] Executing an expression of type 'PrimitiveExpression'.
 [Log] The expression returned the value '0' (System.Int32).
 [Log] The expression returned the value '1024' (System.Int32).

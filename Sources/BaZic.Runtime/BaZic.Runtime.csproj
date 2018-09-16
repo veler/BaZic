@@ -299,7 +299,7 @@
     <Compile Include="BaZic\Runtime\Interpreter\Statement\VariableDeclarationInterpreter.cs" />
     <Compile Include="BaZic\Runtime\Memory\ControlAccessor.cs" />
     <Compile Include="BaZic\Runtime\Memory\Variable.cs" />
-    <EmbeddedResource Include="Resources\CSharpCodeGeneratorResourceManager.cs" />
+    <EmbeddedResource Include="Resources\CompiledProgramTemplate.cs" />
     <Content Include="Properties\AssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyInfo.codegen.cs</LastGenOutput>
@@ -315,9 +315,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyInfo.tt</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Resources\CSharpCodeGeneratorHelper.cs" />
-    <EmbeddedResource Include="Resources\CSharpCodeGeneratorUiHelper.cs" />
-    <EmbeddedResource Include="Resources\ObservableDictionary.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Localization\L.tt">
@@ -335,6 +332,10 @@
       <Project>{7ceaf4bf-7ffa-4e0d-8811-f4e6e13cce99}</Project>
       <Name>BaZic.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BaZic.StandaloneRuntime\BaZic.StandaloneRuntime.csproj">
+      <Project>{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}</Project>
+      <Name>BaZic.StandaloneRuntime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -342,8 +343,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.2.6.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.Analyzers.2.6.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
+    <Analyzer Include="$(SolutionDir)\packages\Microsoft.CodeAnalysis.Analyzers.2.6.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
+    <Analyzer Include="$(SolutionDir)\packages\Microsoft.CodeAnalysis.Analyzers.2.6.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />

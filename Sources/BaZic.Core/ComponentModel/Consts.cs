@@ -20,11 +20,9 @@ namespace BaZic.Core.ComponentModel
         /// <summary>
         /// Names of the main namespace and class generated when a BaZic program is compiled.
         /// </summary>
-        public const string CompiledProgramClassName = "BaZicProgramReleaseMode.Program";
+        public const string CompiledProgramClassName = "BaZic.StandaloneRuntime.Program";
 
         public const string CompiledProgramIdleStateOccuredEvent = "IdleStateOccured";
-        public const string CompiledProgramHelperInstance = "ProgramHelperInstance";
-        public const string CompiledCloseUserInterface = "CloseUserInterface";
 
         // Assembly Properties
         internal const string AssemblyPropertyVersion = "Version=";

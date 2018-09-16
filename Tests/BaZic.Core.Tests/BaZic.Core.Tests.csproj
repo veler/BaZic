@@ -69,6 +69,10 @@
       <Project>{7ceaf4bf-7ffa-4e0d-8811-f4e6e13cce99}</Project>
       <Name>BaZic.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Sources\BaZic.StandaloneRuntime\BaZic.StandaloneRuntime.csproj">
+      <Project>{B850B3DB-4ADA-45FC-92C1-A65BF131FC08}</Project>
+      <Name>BaZic.StandaloneRuntime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\1\ManagedLibrary.dll">

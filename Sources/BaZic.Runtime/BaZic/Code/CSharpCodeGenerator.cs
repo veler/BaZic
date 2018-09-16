@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using System.Windows.Markup;
 
 namespace BaZic.Runtime.BaZic.Code
 {
@@ -85,24 +84,13 @@ namespace BaZic.Runtime.BaZic.Code
             DecreaseIndent();
             DecreaseIndent();
 
-            var csharpCodeGeneratorHelper = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorHelper.cs"));
-            var observableConcurrentDictionary = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.ObservableDictionary.cs"));
+            var compiledProgramTemplate = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CompiledProgramTemplate.cs"));
 
-            return $"// CSharp code generated automatically" + Environment.NewLine + Environment.NewLine +
-                   GenerateAssemblyInformation(assemblyName, assemblyVersion, assemblyCopyright) +
-                   $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
-                   $"{{" + Environment.NewLine +
-                   $"    [System.Serializable]" + Environment.NewLine +
-                   $"    public class Program" + Environment.NewLine +
-                   $"    {{" + Environment.NewLine +
-                   $"        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();" + Environment.NewLine +
-                   $"        public ProgramHelper ProgramHelperInstance => _programHelperInstance;" + Environment.NewLine +
-                   $"{globalVariablesString}" +
-                   $"{methodsString}" + Environment.NewLine +
-                   $"    }}" + Environment.NewLine +
-                   $"}}" + Environment.NewLine + Environment.NewLine +
-                   csharpCodeGeneratorHelper.ReadToEnd() + Environment.NewLine + Environment.NewLine +
-                   observableConcurrentDictionary.ReadToEnd();
+            return compiledProgramTemplate.ReadToEnd()
+                   .Replace("[CSharpCodeGenerator_AssemblyInformation]", GenerateAssemblyInformation(assemblyName, assemblyVersion, assemblyCopyright))
+                   .Replace("[CSharpCodeGenerator_GlobalVariablesString]", globalVariablesString)
+                   .Replace("[CSharpCodeGenerator_MethodsString]", methodsString)
+                   .Replace("[CSharpCodeGenerator_BindingsString]", string.Empty);
         }
 
         /// <summary>
@@ -198,29 +186,15 @@ namespace BaZic.Runtime.BaZic.Code
                 }
             });
 
-            var csharpCodeGeneratorHelper = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorHelper.cs"));
-            var csharpCodeGeneratorUiHelper = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorUiHelper.cs"));
-            var csharpCodeGeneratorResourceManager = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CSharpCodeGeneratorResourceManager.cs"));
-            var observableConcurrentDictionary = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.ObservableDictionary.cs"));
+            var compiledProgramTemplate = new StreamReader(typeof(CSharpCodeGenerator).Assembly.GetManifestResourceStream("BaZic.Runtime.Resources.CompiledProgramTemplate.cs"));
 
-            return $"// CSharp code generated automatically" + Environment.NewLine + Environment.NewLine +
-                   GenerateAssemblyInformation(assemblyName, assemblyVersion, assemblyCopyright) +
-                   $"namespace BaZicProgramReleaseMode" + Environment.NewLine +
-                   $"{{" + Environment.NewLine +
-                   $"    [System.Serializable]" + Environment.NewLine +
-                   $"    public class Program" + Environment.NewLine +
-                   $"    {{" + Environment.NewLine +
-                   $"        private readonly ProgramHelper _programHelperInstance = new ProgramHelper();" + Environment.NewLine +
-                   $"        public ProgramHelper ProgramHelperInstance => _programHelperInstance;" + Environment.NewLine +
-                   $"{globalVariablesString}" +
-                   $"{bindingsString}" +
-                   $"{methodsString}" + Environment.NewLine +
-                   $"    }}" + Environment.NewLine +
-                   $"}}" + Environment.NewLine + Environment.NewLine +
-                   csharpCodeGeneratorHelper.ReadToEnd() + Environment.NewLine + Environment.NewLine +
-                   csharpCodeGeneratorUiHelper.ReadToEnd().Replace("{XAMLCode}", FormatLiteralString(xamlCode)) + Environment.NewLine + Environment.NewLine +
-                   csharpCodeGeneratorResourceManager.ReadToEnd() + Environment.NewLine + Environment.NewLine +
-                   observableConcurrentDictionary.ReadToEnd();
+            return compiledProgramTemplate.ReadToEnd()
+                   .Replace("[CSharpCodeGenerator_AssemblyInformation]", GenerateAssemblyInformation(assemblyName, assemblyVersion, assemblyCopyright))
+                   .Replace("[CSharpCodeGenerator_GlobalVariablesString]", globalVariablesString)
+                   .Replace("[CSharpCodeGenerator_MethodsString]", methodsString)
+                   .Replace("[CSharpCodeGenerator_BindingsString]", bindingsString)
+                   .Replace("[CSharpCodeGenerator_BindingsString]", bindingsString)
+                   .Replace("var CSharpCodeGenerator_xamlCode = string.Empty", $"var CSharpCodeGenerator_xamlCode = \"{FormatLiteralString(xamlCode)}\"");
         }
 
         /// <summary>
@@ -591,7 +565,7 @@ namespace BaZic.Runtime.BaZic.Code
                 values.Add(GenerateExpression(item));
             }
 
-            return $"new BaZicProgramReleaseMode.ObservableDictionary() {{ {string.Join(", ", values)} }}";
+            return $"new BaZic.StandaloneRuntime.ObservableDictionary() {{ {string.Join(", ", values)} }}";
         }
 
         /// <summary>
@@ -621,7 +595,7 @@ namespace BaZic.Runtime.BaZic.Code
                         values.Add(GenerateObjectStringRepresentation(item));
                     }
 
-                    return $"new BaZicProgramReleaseMode.ObservableDictionary() {{ {string.Join(", ", values)} }}";
+                    return $"new BaZic.StandaloneRuntime.ObservableDictionary() {{ {string.Join(", ", values)} }}";
 
                 default:
                     return value.ToString();
@@ -1212,7 +1186,7 @@ namespace BaZic.Runtime.BaZic.Code
                     xamlCode = xamlCode.Remove(indexOfB, (indexOfEndB - indexOfB) + 1);
                 }
 
-                var xmlnsRes = $@"xmlns:b=""clr-namespace:BaZicProgramReleaseMode;assembly={assemblyName}""";
+                var xmlnsRes = $@"xmlns:b=""clr-namespace:BaZic.StandaloneRuntime;assembly={assemblyName}""";
                 xamlCode = xamlCode.Replace(xmlns, $"{xmlns} {xmlnsRes}");
 
                 if (!xamlCode.Contains(xmlnsx))

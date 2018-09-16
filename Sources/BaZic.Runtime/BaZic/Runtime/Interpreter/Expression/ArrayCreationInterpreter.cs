@@ -1,5 +1,5 @@
-﻿using BaZicProgramReleaseMode;
-using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
+﻿using BaZic.Runtime.BaZic.Code.AbstractSyntaxTree;
+using BaZic.StandaloneRuntime;
 
 namespace BaZic.Runtime.BaZic.Runtime.Interpreter.Expression
 {

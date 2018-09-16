@@ -172,7 +172,7 @@ END FUNCTION";
                 var result = await interpreter.InvokeMethod(true, "Method1", true, 123);
 
                 Assert.AreEqual(null, result);
-                Assert.AreEqual("Unexpected and unmanaged error has been detected : The method 'Method1' does not exist in the type 'BaZicProgramReleaseMode.Program'.", interpreter.Error.Exception.Message);
+                Assert.AreEqual("Unexpected and unmanaged error has been detected : The method 'Method1' does not exist in the type 'BaZic.StandaloneRuntime.Program'.", interpreter.Error.Exception.Message);
                 Assert.AreEqual(BaZicInterpreterState.StoppedWithError, interpreter.State);
             }
         }
