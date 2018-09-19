@@ -121,7 +121,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Get a reference to a type from a loaded assembly.
         /// </summary>
-        /// <param name="fullName">The full name (namespace and class name) of the type.</param>
+        /// <param name="fullName">The namespace and class name.</param>
         /// <param name="assemblyFullName">(optional) The assembly full name.</param>
         /// <returns>Returns the type if it has been found. Otherwise, throws a <see cref="TypeLoadException"/>.<returns>
         public Type GetTypeRef(string fullName, string assemblyFullName = "")
@@ -131,9 +131,22 @@ namespace BaZic.Core.ComponentModel.Assemblies
         }
 
         /// <summary>
+        /// Creates an instance of the specified class.
+        /// </summary>
+        /// <param name="fullName">The namespace and class name.</param>
+        /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
+        /// <param name="arguments">The arguments to pass to the constructors.</param>
+        /// <returns></returns>
+        public object CreateInstance(string fullName, string assemblyFullName, params object[] arguments)
+        {
+            Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
+            return _assemblyManager.CreateInstance(fullName, assemblyFullName, arguments);
+        }
+
+        /// <summary>
         /// Creates an instance of the specified class and invoke the given method with its arguments.
         /// </summary>
-        /// <param name="fullName">The name of the class.</param>
+        /// <param name="fullName">The namespace and class name.</param>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="arguments">The arguments to pass to the method.</param>
         /// <returns>Returns the result of the method.</returns>
@@ -145,7 +158,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Creates an instance of the specified class and invoke the given method with its arguments.
         /// </summary>
-        /// <param name="fullName">The name of the class.</param>
+        /// <param name="fullName">The namespace and class name.</param>
         /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="arguments">The arguments to pass to the method.</param>
@@ -161,13 +174,13 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Creates the instance marshal by reference object.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="args">The arguments.</param>
+        /// <param name="arguments">The arguments to pass to the constructors.</param>
         /// <returns></returns>
-        public T CreateInstanceMarshalByRefObject<T>(params object[] args) where T : MarshalByRefObject
+        public T CreateInstanceMarshalByRefObject<T>(params object[] arguments) where T : MarshalByRefObject
         {
             var flags = System.Reflection.BindingFlags.CreateInstance | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
             var type = typeof(T);
-            return (T)_appDomain.CreateInstanceFromAndUnwrap(type.Assembly.Location, type.FullName, false, flags, null, args, null, null);
+            return (T)_appDomain.CreateInstanceFromAndUnwrap(type.Assembly.Location, type.FullName, false, flags, null, arguments, null, null);
         }
 
         /// <summary>

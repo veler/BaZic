@@ -250,7 +250,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Get a reference to a type from a loaded assembly.
         /// </summary>
-        /// <param name="fullName">The full name (namespace and class name) of the type.</param>
+        /// <param name="fullName">The namespace and class name.</param>
         /// <param name="assemblyFullName">The assembly full name.</param>
         /// <returns>Returns the type if it has been found. Otherwise, throws a <see cref="TypeLoadException"/>.<returns>
         internal Type GetTypeRef(string fullName, string assemblyFullName)
@@ -294,9 +294,29 @@ namespace BaZic.Core.ComponentModel.Assemblies
         }
 
         /// <summary>
+        /// Creates an instance of the specified class.
+        /// </summary>
+        /// <param name="fullName">The namespace and class name.</param>
+        /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
+        /// <param name="arguments">The arguments to pass to the constructor.</param>
+        /// <returns>Returns the result of the method.</returns>
+        internal object CreateInstance(string fullName, string assemblyFullName, object[] arguments)
+        {
+            var type = GetTypeRef(fullName, assemblyFullName);
+            var instance = type.Assembly.CreateInstance(type.FullName, false, Consts.LimitedBindingFlags, null, arguments, null, null);
+
+            if (instance == null)
+            {
+                throw new MissingMemberException($"Unable to find a constructor for '{fullName}'.");
+            }
+
+            return instance;
+        }
+
+        /// <summary>
         /// Creates an instance of the specified class and invoke the given method with its arguments.
         /// </summary>
-        /// <param name="fullName">The name of the class.</param>
+        /// <param name="fullName">The namespace and class name.</param>
         /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="arguments">The arguments to pass to the method.</param>
