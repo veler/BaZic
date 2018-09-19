@@ -19,10 +19,12 @@ namespace BaZic.Core.ComponentModel.Assemblies
     {
         #region Fields & Constants
 
+        private readonly ResolveEventHandler AssemblyReflectionOnlyResolveEventHandler;
         private readonly ResolveEventHandler AssemblyResolveEventHandler;
         private readonly List<LoadedAssemblyDetails> _explicitLoadedAssemblies;
         private readonly List<IntPtr> _win32ModuleHandlers;
 
+        private string _currentResovlingAssembly;
         private DirectoryInfo _assemblyResolutionDirectory = null;
         private Exception _exceptionThrown;
 
@@ -48,12 +50,22 @@ namespace BaZic.Core.ComponentModel.Assemblies
             _explicitLoadedAssemblies = new List<LoadedAssemblyDetails>();
             _win32ModuleHandlers = new List<IntPtr>();
 
-            AssemblyResolveEventHandler = (s, e) =>
+            AssemblyReflectionOnlyResolveEventHandler = (s, e) =>
             {
-                return OnReflectionOnlyResolve(e, _assemblyResolutionDirectory);
+                var assembly = OnAssemblyResolve(e, _assemblyResolutionDirectory, isReflectionOnly: true);
+                _currentResovlingAssembly = string.Empty;
+                return assembly;
             };
 
-            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += AssemblyResolveEventHandler;
+            AssemblyResolveEventHandler = (s, e) =>
+            {
+                var assembly = OnAssemblyResolve(e, _assemblyResolutionDirectory, isReflectionOnly: false);
+                _currentResovlingAssembly = string.Empty;
+                return assembly;
+            };
+
+            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += AssemblyReflectionOnlyResolveEventHandler;
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolveEventHandler;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             Dispatcher.CurrentDispatcher.UnhandledException += CurrentDispatcher_UnhandledException;
         }
@@ -239,15 +251,15 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Get a reference to a type from a loaded assembly.
         /// </summary>
         /// <param name="fullName">The full name (namespace and class name) of the type.</param>
-        /// <param name="assemblyPath">The assembly path.</param>
+        /// <param name="assemblyFullName">The assembly full name.</param>
         /// <returns>Returns the type if it has been found. Otherwise, throws a <see cref="TypeLoadException"/>.<returns>
-        internal Type GetTypeRef(string fullName, string assemblyPath)
+        internal Type GetTypeRef(string fullName, string assemblyFullName)
         {
             Type result = null;
 
-            if (!string.IsNullOrWhiteSpace(assemblyPath))
+            if (!string.IsNullOrWhiteSpace(assemblyFullName))
             {
-                result = Type.GetType($"{fullName}, {assemblyPath}", true, false);
+                result = Type.GetType($"{fullName}, {assemblyFullName}", throwOnError: false, ignoreCase: false);
             }
             else
             {
@@ -265,7 +277,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
                     {
                         _assemblyResolutionDirectory = new FileInfo(loadedAssembly.Assembly.Location).Directory;
                     }
-                    result = loadedAssembly.Assembly.GetTypes().SingleOrDefault(type => type.IsPublic && string.Compare(type.FullName, fullName, StringComparison.Ordinal) == 0);
+                    result = loadedAssembly.Assembly.GetTypes().FirstOrDefault(type => type.IsPublic && string.Compare(type.FullName, fullName, StringComparison.Ordinal) == 0);
 
                     i++;
                 }
@@ -285,12 +297,13 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Creates an instance of the specified class and invoke the given method with its arguments.
         /// </summary>
         /// <param name="fullName">The name of the class.</param>
+        /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="arguments">The arguments to pass to the method.</param>
         /// <returns>Returns the result of the method.</returns>
-        internal object CreateInstanceAndInvoke(string fullName, string methodName, object[] arguments)
+        internal object CreateInstanceAndInvoke(string fullName, string assemblyFullName, string methodName, object[] arguments)
         {
-            var type = GetTypeRef(fullName, string.Empty);
+            var type = GetTypeRef(fullName, assemblyFullName);
             var instance = type.Assembly.CreateInstance(type.FullName);
             var method = type.GetRuntimeMethods().SingleOrDefault(m => m.IsPublic && string.Compare(m.Name, methodName, StringComparison.Ordinal) == 0);
 
@@ -340,7 +353,10 @@ namespace BaZic.Core.ComponentModel.Assemblies
                         NativeMethods.FreeLibrary(win32ModuleHandler);
                     }
 
-                    AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= AssemblyResolveEventHandler;
+                    AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= AssemblyReflectionOnlyResolveEventHandler;
+                    AppDomain.CurrentDomain.AssemblyResolve -= AssemblyResolveEventHandler;
+                    AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+                    Dispatcher.CurrentDispatcher.UnhandledException -= CurrentDispatcher_UnhandledException;
                 }
             }
 
@@ -373,10 +389,11 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// </summary>
         /// <param name="args">ReflectionOnlyAssemblyResolve event args</param>
         /// <param name="directory">The current Assemblies Directory</param>
+        /// <param name="isReflectionOnly">Defines whether the assembly must be load for reflection only or also execution.</param>
         /// <returns>ReflectionOnlyLoadFrom loaded dependant Assembly</returns>
-        private Assembly OnReflectionOnlyResolve(ResolveEventArgs args, DirectoryInfo directory)
+        private Assembly OnAssemblyResolve(ResolveEventArgs args, DirectoryInfo directory, bool isReflectionOnly)
         {
-            var loadedAssembly = GetAssembliesInternal().FirstOrDefault(asm => string.Equals(asm.Assembly.FullName, args.Name, StringComparison.OrdinalIgnoreCase));
+            var loadedAssembly = GetAssembliesInternal().FirstOrDefault(asm => string.Compare(asm.Assembly.FullName, args.Name, StringComparison.InvariantCulture) == 0);
 
             if (loadedAssembly != null)
             {
@@ -384,6 +401,13 @@ namespace BaZic.Core.ComponentModel.Assemblies
             }
 
             var assemblyName = new AssemblyName(args.Name);
+
+            if (string.Compare(_currentResovlingAssembly, assemblyName.FullName) == 0)
+            {
+                return null;
+            }
+
+            _currentResovlingAssembly = assemblyName.FullName;
 
             if (directory != null)
             {
@@ -393,7 +417,15 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 {
                     if (File.Exists(dependentAssemblyFilename))
                     {
-                        var assembly = Assembly.ReflectionOnlyLoadFrom(dependentAssemblyFilename);
+                        Assembly assembly = null;
+                        if (isReflectionOnly)
+                        {
+                            assembly = Assembly.ReflectionOnlyLoadFrom(dependentAssemblyFilename);
+                        }
+                        else
+                        {
+                            assembly = Assembly.LoadFrom(dependentAssemblyFilename);
+                        }
                         _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
                         {
                             Assembly = assembly,
@@ -404,7 +436,15 @@ namespace BaZic.Core.ComponentModel.Assemblies
                 }
             }
 
-            var assembly2 = Assembly.ReflectionOnlyLoad(assemblyName.FullName);
+            Assembly assembly2 = null;
+            if (isReflectionOnly)
+            {
+                assembly2 = Assembly.ReflectionOnlyLoad(assemblyName.FullName);
+            }
+            else
+            {
+                assembly2 = Assembly.Load(assemblyName.FullName);
+            }
             _explicitLoadedAssemblies.Add(new LoadedAssemblyDetails
             {
                 Assembly = assembly2,

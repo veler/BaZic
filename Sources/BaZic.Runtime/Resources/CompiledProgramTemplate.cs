@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using BaZic.StandaloneRuntime;
 
 [CSharpCodeGenerator_AssemblyInformation]
+[assembly: System.Resources.NeutralResourcesLanguage("en")]
 
 namespace BaZic.StandaloneRuntime
 {

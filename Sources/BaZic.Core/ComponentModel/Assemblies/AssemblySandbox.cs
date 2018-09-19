@@ -122,12 +122,12 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Get a reference to a type from a loaded assembly.
         /// </summary>
         /// <param name="fullName">The full name (namespace and class name) of the type.</param>
-        /// <param name="assemblyPath">(optional) The assembly path.</param>
+        /// <param name="assemblyFullName">(optional) The assembly full name.</param>
         /// <returns>Returns the type if it has been found. Otherwise, throws a <see cref="TypeLoadException"/>.<returns>
-        public Type GetTypeRef(string fullName, string assemblyPath = "")
+        public Type GetTypeRef(string fullName, string assemblyFullName = "")
         {
             Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
-            return _assemblyManager.GetTypeRef(fullName, assemblyPath);
+            return _assemblyManager.GetTypeRef(fullName, assemblyFullName);
         }
 
         /// <summary>
@@ -137,11 +137,24 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <param name="methodName">The name of the method.</param>
         /// <param name="arguments">The arguments to pass to the method.</param>
         /// <returns>Returns the result of the method.</returns>
-        public object CreateInstanceAndInvoke(string fullName, string methodName, object[] arguments)
+        public object CreateInstanceAndInvoke(string fullName, string methodName, params object[] arguments)
+        {
+            return CreateInstanceAndInvokeWithAssemblyName(fullName, string.Empty, methodName, arguments);
+        }
+
+        /// <summary>
+        /// Creates an instance of the specified class and invoke the given method with its arguments.
+        /// </summary>
+        /// <param name="fullName">The name of the class.</param>
+        /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="arguments">The arguments to pass to the method.</param>
+        /// <returns>Returns the result of the method.</returns>
+        public object CreateInstanceAndInvokeWithAssemblyName(string fullName, string assemblyFullName, string methodName, params object[] arguments)
         {
             Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
             Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
-            return _assemblyManager.CreateInstanceAndInvoke(fullName, methodName, arguments);
+            return _assemblyManager.CreateInstanceAndInvoke(fullName, assemblyFullName, methodName, arguments);
         }
 
         /// <summary>
