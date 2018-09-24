@@ -13,9 +13,9 @@ using System.Windows.Threading;
 namespace BaZic.Core.ComponentModel.Assemblies
 {
     /// <summary>
-    /// Provides a set of methods designed to manage assemblies at runtime.
+    /// Provides a set of methods designed to manage assemblies at runtime in the current app domain.
     /// </summary>
-    internal class AssemblyManager : MarshalByRefObject, IDisposable
+    public class AssemblyManager : MarshalByRefObject, IDisposable
     {
         #region Fields & Constants
 
@@ -42,10 +42,19 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Initializes a new instance of the <see cref="AssemblyManager"/> class.
         /// </summary>
-        public AssemblyManager(object logger, object culture) // Public constructor is important here !
+        /// <param name="logger">The logger to use in this assembly manager. If this constructor is called from a app domain where the logger instance is already setted, this can be null.</param>
+        /// <param name="culture">The culture to use.</param>
+        public AssemblyManager(Logger logger, CultureInfo culture) // Public constructor is important here !
         {
-            Logger.Instance = logger as Logger;
-            Localization.LocalizationHelper.SetCurrentCulture(culture as CultureInfo, false);
+            Requires.NotNull(culture, nameof(culture));
+
+            if (Logger.Instance == null)
+            {
+                Requires.NotNull(logger, nameof(logger));
+                Logger.Instance = logger;
+            }
+
+            Localization.LocalizationHelper.SetCurrentCulture(culture, false);
 
             _explicitLoadedAssemblies = new List<LoadedAssemblyDetails>();
             _win32ModuleHandlers = new List<IntPtr>();
@@ -86,10 +95,23 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// <summary>
         /// Attempt to load the specified Assembly from its full name or location on the hard drive.
         /// </summary>
+        /// <param name="assemblyPath">The assembly's full name or location on the hard drive</param>
+        /// <param name="forReflectionPurpose">(optional) Defines whether the assembly must be load for reflection only or also execution. By default, the value is true.</param>
+        public void LoadAssembly(string assemblyPath, bool forReflectionPurpose = true)
+        {
+            Requires.NotNullOrWhiteSpace(assemblyPath, nameof(assemblyPath));
+            LoadAssembly(AssemblyInfoHelper.GetAssemblyDetailsFromNameOrLocation(assemblyPath), forReflectionPurpose);
+        }
+
+        /// <summary>
+        /// Attempt to load the specified Assembly from its full name or location on the hard drive.
+        /// </summary>
         /// <param name="assemblyDetails">The assembly's informations</param>
         /// <param name="forReflectionPurpose">Defines whether the assembly must be load for reflection only or also execution.</param>
-        internal void LoadAssembly(AssemblyDetails assemblyDetails, bool forReflectionPurpose)
+        public void LoadAssembly(AssemblyDetails assemblyDetails, bool forReflectionPurpose)
         {
+            Requires.NotNull(assemblyDetails, nameof(assemblyDetails));
+
             if (!assemblyDetails.IsDotNetAssembly)
             {
                 if (!forReflectionPurpose && File.Exists(assemblyDetails.Location))
@@ -156,6 +178,25 @@ namespace BaZic.Core.ComponentModel.Assemblies
         }
 
         /// <summary>
+        /// Attempt to load the specified Assembly from its full name or location on the hard drive.
+        /// </summary>
+        /// <param name="assemblyStream">The assembly stream</param>
+        /// <param name="forReflectionPurpose">(optional) Defines whether the assembly must be load for reflection only or also execution. By default, the value is true.</param>
+        public void LoadAssembly(MemoryStream assemblyStream, bool forReflectionPurpose = true)
+        {
+            Requires.NotNull(assemblyStream, nameof(assemblyStream));
+
+            if (!forReflectionPurpose && !AssemblyInfoHelper.IsDotNetAssembly(assemblyStream))
+            {
+                throw new NotSupportedException("A unmanaged library cannot be loaded from a memory stream.");
+            }
+
+            assemblyStream.Seek(0, SeekOrigin.Begin);
+
+            LoadAssembly(assemblyStream.ToArray(), forReflectionPurpose);
+        }
+
+        /// <summary>
         /// Attempt to load the specified Assembly.
         /// </summary>
         /// <param name="assemblyByteArray">A byte array that represents the assembly.</param>
@@ -186,7 +227,7 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Gets the assemblies that have been loaded.
         /// </summary>
         /// <returns>Returns the assemblies that have been loaded.</returns>
-        internal ReadOnlyCollection<AssemblyDetails> GetAssemblies()
+        public ReadOnlyCollection<AssemblyDetails> GetAssemblies()
         {
             return GetAssembliesInternal().Select(a => a.Details).ToList().AsReadOnly();
         }
@@ -196,8 +237,10 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// </summary>
         /// <param name="assemblyDetails">The assembly details.</param>
         /// <returns>Returns the list of types. Returns null if the assembly is not found.</returns>
-        internal ReadOnlyCollection<TypeDetails> GetTypes(AssemblyDetails assemblyDetails)
+        public ReadOnlyCollection<TypeDetails> GetTypes(AssemblyDetails assemblyDetails)
         {
+            Requires.NotNull(assemblyDetails, nameof(assemblyDetails));
+
             if (!assemblyDetails.IsDotNetAssembly)
             {
                 return new ReadOnlyCollection<TypeDetails>(new List<TypeDetails>());
@@ -251,10 +294,12 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Get a reference to a type from a loaded assembly.
         /// </summary>
         /// <param name="fullName">The namespace and class name.</param>
-        /// <param name="assemblyFullName">The assembly full name.</param>
+        /// <param name="assemblyFullName">(optional) The assembly full name.</param>
         /// <returns>Returns the type if it has been found. Otherwise, throws a <see cref="TypeLoadException"/>.<returns>
-        internal Type GetTypeRef(string fullName, string assemblyFullName)
+        public Type GetTypeRef(string fullName, string assemblyFullName = "")
         {
+            Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
+
             Type result = null;
 
             if (!string.IsNullOrWhiteSpace(assemblyFullName))
@@ -297,11 +342,13 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Creates an instance of the specified class.
         /// </summary>
         /// <param name="fullName">The namespace and class name.</param>
-        /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
+        /// <param name="assemblyFullName">(optional) The full name of the assembly. Pass null value or <see cref="String.Empty"/> to ignore this argument.</param>
         /// <param name="arguments">The arguments to pass to the constructor.</param>
         /// <returns>Returns the result of the method.</returns>
-        internal object CreateInstance(string fullName, string assemblyFullName, object[] arguments)
+        public object CreateInstance(string fullName, string assemblyFullName, params object[] arguments)
         {
+            Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
+
             var type = GetTypeRef(fullName, assemblyFullName);
             var instance = type.Assembly.CreateInstance(type.FullName, false, Consts.LimitedBindingFlags, null, arguments, null, null);
 
@@ -317,12 +364,15 @@ namespace BaZic.Core.ComponentModel.Assemblies
         /// Creates an instance of the specified class and invoke the given method with its arguments.
         /// </summary>
         /// <param name="fullName">The namespace and class name.</param>
-        /// <param name="assemblyFullName">(optional) The full name of the assembly.</param>
+        /// <param name="assemblyFullName">(optional) The full name of the assembly. Pass null value or <see cref="String.Empty"/> to ignore this argument.</param>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="arguments">The arguments to pass to the method.</param>
         /// <returns>Returns the result of the method.</returns>
-        internal object CreateInstanceAndInvoke(string fullName, string assemblyFullName, string methodName, object[] arguments)
+        public object CreateInstanceAndInvoke(string fullName, string assemblyFullName, string methodName, object[] arguments)
         {
+            Requires.NotNullOrWhiteSpace(fullName, nameof(fullName));
+            Requires.NotNullOrWhiteSpace(methodName, nameof(methodName));
+
             var type = GetTypeRef(fullName, assemblyFullName);
             var instance = type.Assembly.CreateInstance(type.FullName);
             var method = type.GetRuntimeMethods().SingleOrDefault(m => m.IsPublic && string.Compare(m.Name, methodName, StringComparison.Ordinal) == 0);

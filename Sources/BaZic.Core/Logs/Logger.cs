@@ -33,11 +33,6 @@ namespace BaZic.Core.Logs
         {
             get
             {
-                if (instance == null)
-                {
-                    throw new NullReferenceException($"There is no instance for '{nameof(Logger)}'.");
-                }
-
                 return instance;
             }
             set

@@ -22,6 +22,7 @@ namespace BaZic.Core.ComponentModel.Reflection
         private readonly EventReflection _eventReflection = new EventReflection();
 
         private AssemblySandbox _assemblySandbox;
+        private AssemblyManager _assemblyManager;
 
         #endregion
 
@@ -49,6 +50,16 @@ namespace BaZic.Core.ComponentModel.Reflection
         {
             Requires.NotNull(assemblySandbox, nameof(assemblySandbox));
             _assemblySandbox = assemblySandbox;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FastReflection"/> class.
+        /// </summary>
+        /// <param name="assemblyManager">The assembly manager.</param>
+        public FastReflection(AssemblyManager assemblyManager)
+        {
+            Requires.NotNull(assemblyManager, nameof(assemblyManager));
+            _assemblyManager = assemblyManager;
         }
 
         /// <summary>
@@ -82,9 +93,17 @@ namespace BaZic.Core.ComponentModel.Reflection
                 throw new ObjectDisposedException(nameof(FastReflection));
             }
 
-            Requires.NotNull(_assemblySandbox, nameof(_assemblySandbox));
+            if (_assemblySandbox != null)
+            {
+                return _assemblySandbox.GetTypeRef(fullName);
+            }
 
-            return _assemblySandbox.GetTypeRef(fullName);
+            if (_assemblyManager != null)
+            {
+                return _assemblyManager.GetTypeRef(fullName);
+            }
+
+            throw new InvalidOperationException("Please initialize this class with another constructor.");
         }
 
         /// <summary>
@@ -127,7 +146,7 @@ namespace BaZic.Core.ComponentModel.Reflection
         /// <param name="action">The action to run when the event is raised.</param>
         public void SubscribeStaticEvent(string targetTypeFullName, string eventName, Action action)
         {
-            var targetType = _assemblySandbox.GetTypeRef(targetTypeFullName);
+            var targetType = GetTypeRef(targetTypeFullName);
             SubscribeStaticEvent(targetType, eventName, action);
         }
 
